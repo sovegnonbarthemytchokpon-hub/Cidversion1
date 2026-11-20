@@ -1,0 +1,38 @@
+/*
+ * Active-view layer isolation.
+ *
+ * This file is deliberately scoped to dedicated active views. It does not
+ * change the global shell, the Croix presentation, or responsive geometry;
+ * it only gives the currently selected surface an opaque stacking context so
+ * detached legacy graphics cannot show through it.
+ */
+body[data-cid-dedicated-view] {
+  isolation: isolate;
+}
+
+body[data-cid-dedicated-view="matrice"] #results,
+body[data-cid-dedicated-view="rejected"] #results {
+  position: fixed !important;
+  /* Keep the Matrice title/country band (z-index:40) above this surface. */
+  z-index: 30 !important;
+  isolation: isolate;
+}
+
+body[data-cid-dedicated-view="matrice"] #results {
+  background: var(--cid-dedicated-bg, #f6f8fb) !important;
+}
+
+body[data-cid-dedicated-view="rejected"] #results {
+  background: #ffffff !important;
+}
+
+body[data-cid-dedicated-view="categories"] #categoriesView,
+body[data-cid-dedicated-view="croix"] #croixViewContainer,
+body[data-cid-dedicated-view="tableaux"] #tableauxViewContainer,
+body[data-cid-dedicated-view="calculator"] #matrixCalculatorPanel,
+body[data-cid-dedicated-view="profile"] #profileViewContainer {
+  position: fixed !important;
+  z-index: 100 !important;
+  isolation: isolate;
+  background: var(--cid-dedicated-bg, #f6f8fb) !important;
+}

@@ -1,0 +1,420 @@
+{
+  "Accueil": "الرئيسية",
+  "Catégories": "الفئات",
+  "Tableaux": "الجداول",
+  "Matrice": "المصفوفة",
+  "Croix": "الصليب",
+  "Compte": "الحساب",
+  "Connexion": "تسجيل الدخول",
+  "Se connecter": "تسجيل الدخول",
+  "Déconnexion": "تسجيل الخروج",
+  "Partager": "مشاركة",
+  "Solde": "الرصيد",
+  "Notifications": "الإشعارات",
+  "Changer de langue": "تغيير اللغة",
+  "Recherche": "بحث",
+  "Retour": "رجوع",
+  "Fermer": "إغلاق",
+  "Annuler": "إلغاء",
+  "Continuer": "متابعة",
+  "Copier": "نسخ",
+  "Aide": "مساعدة",
+  "Langue": "اللغة",
+  "Choisir": "اختيار",
+  "Actualiser": "تحديث",
+  "Envoyer": "إرسال",
+  "étoiles": "نجوم",
+  "jetons": "رموز",
+  "assistant.name": "سيدماب الافتراضي",
+  "assistant.verified": "حساب موثّق",
+  "assistant.online": "المساعد الرسمي · متصل",
+  "assistant.back": "العودة إلى الفئات",
+  "assistant.attach": "إضافة مرفق",
+  "assistant.document": "مستند",
+  "assistant.photo": "صورة",
+  "assistant.messagePlaceholder": "اكتب رسالة…",
+  "assistant.messageLabel": "اكتب رسالة",
+  "assistant.helpDefault": "مرحباً، أحتاج إلى مساعدة.",
+  "assistant.dictate": "إملاء رسالة",
+  "assistant.send": "إرسال الرسالة",
+  "assistant.greeting": "مرحباً، أنا سيدماب الافتراضي. يمكنني أن أعرّفك بالموقع وعروضه وطرقه. كيف يمكنني مساعدتك؟",
+  "assistant.greetingResponse": "مرحباً! ماذا تريد أن تفعل أو تعرف؟",
+  "assistant.askCountry": "لأي بلد؟ أدخل رمزه (مثل BJ أو CI أو GH أو NE أو SN أو TG).",
+  "assistant.recognizedCountry": "البلد المعترف به",
+  "assistant.latestMemorizedResult": "آخر نتيجة محفوظة",
+  "assistant.groupOne": "المجموعة 1",
+  "assistant.groupTwo": "المجموعة 2",
+  "assistant.drawNumber": "رقم السحب",
+  "assistant.bonus": "إضافي",
+  "assistant.missingSchedule": "الفترات الزمنية المفقودة في الذاكرة: {{slots}}.",
+  "assistant.analysisPeriodPrompt": "هل تريد مقارنة آخر 3 أيام أم الأسبوع الماضي بأكمله؟",
+  "assistant.askDate": "ما تاريخ السحب؟ استخدم الصيغة YYYY-MM-DD أو DD/MM/YYYY.",
+  "assistant.askTime": "في أي وقت وصل السحب؟ مثال: 08:00.",
+  "assistant.askTimeOptions": "ما الوقت الذي تريد تسجيله؟ اختر من: {{times}}.",
+  "assistant.askFirstNumbers": "أرسل الأرقام الخمسة الأولى للسحب.",
+  "assistant.askMachineNumbers": "أرسل أرقام الآلة الخمسة.",
+  "assistant.askBonusNumbers": "هل توجد أرقام إضافية؟ اكتبها أو أجب «لا يوجد».",
+  "assistant.askConfirm": "أجب «نعم» للتأكيد أو «تعديل» للبدء من جديد.",
+  "assistant.summaryCountry": "البلد: {{country}}",
+  "assistant.summaryDate": "التاريخ: {{date}}",
+  "assistant.summaryTime": "الوقت: {{time}}",
+  "assistant.summaryFirstNumbers": "الأرقام الأولى: {{numbers}}",
+  "assistant.summaryMachineNumbers": "الآلة: {{numbers}}",
+  "assistant.summaryBonusNumbers": "الإضافية: {{numbers}}",
+  "assistant.submitIntro": "حسناً. كل شيء يتم هنا في سيدماب الافتراضي. {{notice}} ستبقى النتيجة معلّقة للتأكيد ولن تكون عامة حتى يؤكدها مشترك من البلد نفسه أو الإدارة.",
+  "assistant.countryUnknown": "لم أتعرف على هذا البلد.",
+  "assistant.invalidDate": "التاريخ غير صالح.",
+  "assistant.invalidTime": "الوقت غير صالح.",
+  "assistant.scheduleUnavailable": "هذا الوقت غير موجود ضمن السحوبات المهيأة لهذا البلد.",
+  "assistant.duplicateResult": "نتيجة الساعة {{time}} مسجلة بالفعل لهذا التاريخ. اختر وقتاً آخر.",
+  "assistant.invalidNumbers": "أحتاج إلى خمسة أرقام مختلفة بين 1 و90.",
+  "assistant.invalidBonus": "لم أتعرف على الأرقام الإضافية. اكتبها أو أجب «لا يوجد».",
+  "assistant.restart": "حسناً، لنبدأ من جديد.",
+  "assistant.resultNotFound": "لا توجد حالياً نتيجة منشورة لـ {{country}}. إذا كان لديك حساب متصل، قل «أريد إرسال نتيجة» لفتح النموذج في سيدماب الافتراضي. ستبقى النتيجة معلّقة إلى حين تأكيدها قبل نشرها.",
+  "assistant.latestResult": "أحدث نتيجة منشورة متاحة لـ {{country}}:",
+  "assistant.dateTime": "التاريخ: {{date}} · الوقت: {{time}}",
+  "assistant.firstNumbers": "الأرقام الأولى: {{numbers}}",
+  "assistant.machineNumbers": "الآلة: {{numbers}}",
+  "assistant.bonusNumbers": "الإضافية: {{numbers}}",
+  "share.singular": "مشاركة",
+  "share.plural": "مشاركات",
+  "partage": "مشاركة",
+  "partages": "مشاركات",
+  "assistant.loading": "جارٍ الاتصال بسيدماب الافتراضي…",
+  "assistant.typing": "يكتب",
+  "assistant.selectedAttachment": "تم اختيار المرفق: {{name}}",
+  "assistant.dictationUnavailable": "الإملاء غير متاح في هذا المتصفح.",
+  "assistant.sessionLimit": "تم بلوغ حد الأسئلة لهذه الجلسة.",
+  "assistant.unavailable": "سيدماب الافتراضي غير متاح مؤقتاً.",
+  "assistant.presentationUnavailable": "العرض الافتراضي غير متاح مؤقتاً.",
+  "assistant.accountRequired": "يلزم وجود حساب للدخول في المحادثة مع سيدماب الافتراضي.",
+  "assistant.accountVerificationUnavailable": "التحقق من الحساب غير متاح مؤقتاً.",
+  "assistant.accountVerification": "جارٍ التحقق من الحساب…",
+  "assistant.openAccount": "افتح حسابك للمتابعة",
+  "assistant.publicResultsOnly": "يمكن للزوار الاطلاع على النتائج المنشورة. المحادثة مع سيدماب الافتراضي مخصصة للحسابات المنشأة أو المتصلة.",
+  "assistant.loginOrCreate": "إنشاء حساب أو تسجيل الدخول",
+  "assistant.accessRecognized": "تم التعرف على وصول {{scope}}: {{programs}}.",
+  "assistant.noTable": "لا توجد جداول",
+  "assistant.planRecognized": "تم التعرف على الخطة: {{name}}.",
+  "assistant.connectedPublic": "الحساب متصل: النتائج المنشورة والمعلومات العامة متاحة.",
+  "assistant.individualAccess": "تم التعرف على وصول فردي: {{programs}}.",
+  "assistant.submitResult": "إرسال نتيجة",
+  "assistant.submitResultTitle": "إرسال نتيجة",
+  "assistant.submitResultHelp": "أدخل معلومات السحب. تتم مزامنة الأوقات المتاحة مع الإعداد الحالي.",
+  "assistant.closeForm": "إغلاق النموذج",
+  "assistant.resultCountry": "البلد",
+  "assistant.resultDate": "تاريخ السحب",
+  "assistant.resultTime": "وقت السحب",
+  "assistant.firstGroup": "المجموعة الأولى",
+  "assistant.numberCount": "العدد",
+  "assistant.numbers": "الأرقام",
+  "assistant.numbersHint": "افصل الأرقام بمسافات أو فواصل. يجب أن يكون كل رقم مختلفاً وبين 1 و90.",
+  "assistant.hasSecondGroup": "إضافة مجموعة ثانية",
+  "assistant.secondGroup": "المجموعة الثانية",
+  "assistant.hasBonus": "إضافة مجموعة إضافية",
+  "assistant.bonusGroup": "المجموعة الإضافية",
+  "assistant.prepareResult": "تحقق وأرسل",
+  "assistant.formOpened": "تم فتح نموذج الإرسال. الحقول منظمة حسب المجموعة والأوقات متزامنة مع الإعداد الحالي.",
+  "assistant.syncedAt": "تمت مزامنة البيانات في {{date}}.",
+  "assistant.none": "لا شيء",
+  "balance.back": "رجوع",
+  "balance.wallet": "المحفظة",
+  "balance.walletPurchase": "المحفظة والشراء",
+  "balance.intro": "أدر رصيدك واختر حزمة رموز.",
+  "balance.stars": "النجوم",
+  "balance.tokens": "الرموز",
+  "balance.yourBalance": "رصيدك",
+  "balance.myWallet": "محفظتي",
+  "balance.myBalance": "رصيدي",
+  "balance.updated": "محدّث",
+  "balance.availableBalances": "الأرصدة المتاحة",
+  "balance.buyTokens": "شراء الرموز",
+  "balance.tokensPurpose": "لعروضك الافتراضية",
+  "balance.tokenSingular": "رمز",
+  "balance.tokenPlural": "رموز",
+  "balance.starSingular": "نجمة",
+  "balance.starPlural": "نجوم",
+  "balance.noPack": "لا توجد حزمة متاحة",
+  "balance.priceUnavailable": "السعر غير متاح لهذا البلد",
+  "balance.validatePurchase": "تأكيد الشراء",
+  "balance.buyStars": "شراء النجوم",
+  "balance.requiredBalance": "حساب الرصيد المطلوب",
+  "balance.currentBalance": "الرصيد الحالي",
+  "balance.formulaCost": "تكلفة الصيغة",
+  "balance.missingTokens": "الرموز الناقصة",
+  "balance.sufficientBalance": "الرصيد كافٍ",
+  "balance.tokenPack": "حزمة رموز",
+  "balance.orderConfiguration": "إعداد الطلب",
+  "balance.choosePack": "اختر حزمتك وتحقق من الإجمالي قبل التأكيد.",
+  "balance.universalPrices": "الأسعار العامة محدّثة من الإدارة",
+  "balance.yourCountry": "بلدك",
+  "balance.adminUpdatedPrice": "السعر محدّث من الإدارة",
+  "balance.askAdminPrice": "اطلب من الإدارة إعداد هذا السعر.",
+  "balance.quantityOf": "كمية {{unit}}",
+  "balance.totalXof": "الإجمالي (XOF)",
+  "balance.choosePackValidate": "اختر حزمة وتحقق من الإجمالي وأكد طلبك.",
+  "balance.loginToView": "سجّل الدخول لرؤية رصيدك",
+  "balance.openAccount": "فتح حسابي",
+  "balance.paymentUnavailable": "إعداد الدفع غير متاح مؤقتاً.",
+  "balance.retry": "إعادة المحاولة",
+  "balance.loadingPayment": "جارٍ تحميل إعداد الدفع…",
+  "balance.paystackTokensOnly": "Paystack مخصص لحزم الرموز.",
+  "balance.selectTokenPack": "اختر حزمة رموز.",
+  "balance.minimumPurchase": "أدخل وحدة واحدة على الأقل من {{unit}} للشراء.",
+  "balance.redirectPaystack": "جارٍ التحويل إلى Paystack…",
+  "balance.paymentStartFailed": "تعذر بدء الدفع.",
+  "anticipation.cost": "التكلفة {{value}}",
+  "anticipation.free": "دخول مجاني",
+  "anticipation.daysLabel": "عدد أيام المعاينة",
+  "anticipation.dayOption": "{{days}} يوم/أيام · {{tokens}} رمز/رموز",
+  "anticipation.button": "معاينة {{days}} يوم/أيام",
+  "anticipation.buttonCost": "معاينة {{days}} يوم/أيام — التكلفة {{amount}}",
+  "anticipation.openingConfirmation": "جارٍ فتح التأكيد…",
+  "anticipation.loginToConfirm": "سجّل الدخول لتأكيد هذه المعاينة.",
+  "anticipation.cancelled": "تم إلغاء المعاينة.",
+  "anticipation.unavailable": "المعاينة غير متاحة.",
+  "anticipation.chooseFromFirstDate": "اختر الخطة من أول تاريخ مستقبلي.",
+  "anticipation.accessExpiresBeforeDate": "ينتهي وصولك قبل هذا التاريخ.",
+  "anticipation.loadingPublication": "جارٍ تحميل المنشور المعتمد…",
+  "anticipation.loadingAccess": "جارٍ قراءة الوصول المهيأ…",
+  "anticipation.noneConfigured": "لا يوجد حالياً أي منشور معاينة مهيأ.",
+  "anticipation.noneAvailable": "لا يوجد حالياً أي منشور مستقبلي متاح للمعاينة.",
+  "pageTitle": "مرحباً بكم في موقعي",
+  "heading": "مهمتنا",
+  "welcomeMessage": "يسعدنا الترحيب بكم.",
+  "assistant.adminAccess": "تم التعرف على وصول الإدارة. البيانات المسموح بها متاحة.",
+  "assistant.opening": "مرحباً! يمكنني شرح طرق Cidmap وعرض النتائج المنشورة أو مساعدتك في إرسال نتيجة. ماذا تريد أن تفعل؟",
+  "assistant.previewResult": "عرض الملخص",
+  "assistant.resultSummary": "ملخص النتيجة",
+  "assistant.resultSummaryHelp": "تحقق من مجموعات الأرقام قبل النشر.",
+  "assistant.editResult": "تعديل البيانات",
+  "assistant.publishResult": "نشر النتيجة",
+  "promo.discover": "اكتشف",
+  "promo.publicCatalog": "الكتالوج العام",
+  "promo.availableOffers": "العروض المتاحة",
+  "promo.days": "أيام",
+  "promo.noOffers": "لا توجد عروض متاحة حالياً.",
+  "promo.offerAvailableToday": "عرض متاح اليوم",
+  "promo.viewOffers": "عرض العروض",
+  "schedule.title": "جداول البرامج — تنطبق على جميع الفئات، بما فيها الصليب الوطني",
+  "schedule.sunday": "الأحد ← يُنشأ يوم السبت الساعة 16:00 بتاريخ الأحد",
+  "schedule.monday": "الاثنين ← يُنشأ يوم الأحد الساعة 16:00 بتاريخ الاثنين",
+  "schedule.tuesday": "الثلاثاء ← يُنشأ يوم الاثنين الساعة 16:00 بتاريخ الثلاثاء",
+  "schedule.wednesday": "الأربعاء ← يُنشأ يوم الثلاثاء الساعة 16:00 بتاريخ الأربعاء",
+  "schedule.thursday": "الخميس ← يُنشأ يوم الأربعاء الساعة 16:00 بتاريخ الخميس",
+  "schedule.friday": "الجمعة ← يُنشأ يوم الخميس الساعة 16:00 بتاريخ الجمعة",
+  "schedule.saturday": "السبت ← يُنشأ يوم الجمعة الساعة 16:00 بتاريخ السبت",
+  "schedule.nextGeneration": "الإنشاء التالي لهذا اليوم: {{date}}"
+  ,"account.quickVirtualTitle": "Cidmap الافتراضي"
+  ,"account.quickVirtualDescription": "التحدث مع الذكاء الاصطناعي"
+  ,"account.quickSubscriptionTitle": "الاشتراك"
+  ,"account.quickSubscriptionDescription": "إدارة عروضي"
+  ,"account.quickHistoryTitle": "الرصيد والسجل",
+  "account.quickPrivacyTitle": "الخصوصية والأمان",
+  "account.quickPrivacyDescription": "الأمان والبيانات",
+  "offers.active": "نشط",
+  "offers.purchase": "شراء",
+  "offers.includedTables": "الجداول المشمولة",
+  "offers.promotion": "عرض",
+  "offers.activeSubscription": "اشتراك نشط",
+  "offers.exactEnd": "النهاية الدقيقة:",
+  "offers.includedTablesTitle": "الجداول المشمولة"
+  ,"history.configuredPrice": "السعر مهيأ ضمن العروض"
+  ,"ui.results": "النتائج"
+  ,"ui.result": "النتيجة"
+  ,"ui.resultsDescription": "تُجمع نتائج البلدان حسب البلد والوقت."
+  ,"ui.publishedResults": "النتائج المنشورة"
+  ,"ui.selectCountry": "اختر بلداً لعرض نتائجه."
+  ,"ui.searchCountry": "البحث عن بلد"
+  ,"ui.refreshResults": "تحديث النتائج"
+  ,"ui.chooseCountry": "اختيار بلد"
+  ,"ui.loading": "جارٍ التحميل…"
+  ,"ui.noPublishedDraws": "لا توجد سحوبات منشورة بعد."
+  ,"ui.publishedResult": "نتيجة منشورة"
+  ,"ui.noDrawNumbers": "أرقام هذا السحب غير متاحة."
+  ,"ui.winners": "الفائزون:"
+  ,"ui.machine": "الآلة:"
+  ,"ui.bonus": "الإضافي:"
+  ,"ui.draw": "السحب:"
+  ,"ui.drawSingular": "سحب"
+  ,"ui.draws": "سحوبات"
+  ,"ui.weeklyDraws": "السحوبات المقيّمة"
+  ,"ui.weeklyDrawsDetail": "الملاحظات التاريخية المعتمدة"
+  ,"ui.averageScore": "متوسط النتيجة المرصودة"
+  ,"ui.averageScoreDetail": "المتوسط المرجّح للنتائج المحسوبة"
+  ,"ui.followedCountries": "البلدان المتابعة"
+  ,"ui.followedCountriesDetail": "النطاق الجغرافي المسجل"
+  ,"ui.comparedPrograms": "البرامج المقارنة"
+  ,"ui.comparedProgramsDetail": "Intuition وLNB والبرامج المتاحة"
+  ,"ui.week": "الأسبوع {{value}}"
+  ,"ui.marker": "المؤشر {{value}}"
+  ,"ui.observedProgram": "البرنامج المرصود"
+  ,"ui.calculatedScore": "النتيجة المحسوبة"
+  ,"ui.noWeeklyObservations": "لا توجد ملاحظات أسبوعية منشورة للفترة المحددة."
+  ,"ui.dailyAnalysis": "التحليل اليومي"
+  ,"ui.weeklyAnalysis": "التحليل الأسبوعي"
+  ,"ui.summary": "الملخص"
+  ,"ui.observationScope": "نطاق الملاحظات"
+  ,"ui.refresh": "تحديث"
+  ,"ui.historicalSearch": "محطة البحث التاريخي"
+  ,"ui.globalStatistics": "الإحصاءات العامة"
+  ,"ui.globalStatisticsSubtitle": "قراءة منظمة للأرشيفات المسجلة لمقارنة التكرارات والأداء المرصود حسب البلد والأسبوع واليوم."
+  ,"ui.recordedArchives": "الأرشيفات المسجلة"
+  ,"ui.statisticsDisclaimer": "تعتمد هذه الاتجاهات الإحصائية حصراً على الأرشيفات التاريخية المسجلة. وهي أداة مساعدة للبحث ولا تضمن النتائج المستقبلية."
+  ,"ui.weeklyScores": "الأسابيع والنتائج المحسوبة"
+  ,"ui.weeklyComparison": "مقارنة البرامج انطلاقاً من السحوبات المقيّمة."
+  ,"ui.dailyGrid": "شبكة مقارنة حسب اليوم"
+  ,"ui.dailyDescription": "قراءة وصفية للاتجاهات المسجلة."
+  ,"ui.noDailyTrends": "لم يُنشر أي اتجاه يومي بعد."
+  ,"ui.noStatistics": "الإحصاءات غير متاحة."
+  ,"ui.noPublishedResults": "السحوبات المنشورة غير متاحة."
+  ,"ui.backToResults": "العودة إلى النتائج"
+  ,"rejected.dailyProgram": "برنامج اليوم"
+  ,"rejected.title": "الكرات المستبعدة"
+  ,"rejected.titleForDay": "الكرات المستبعدة ليوم {{day}}"
+  ,"rejected.dailyKey": "مفتاحك اليومي"
+  ,"rejected.copy": "نسخ {{title}}"
+  ,"rejected.copied": "تم النسخ"
+  ,"rejected.copyFailed": "تعذر النسخ"
+  ,"rejected.loading": "جارٍ قراءة الكرات المستبعدة…"
+  ,"rejected.unavailable": "الكرات المستبعدة غير متاحة مؤقتاً."
+  ,"rejected.allCopied": "تم نسخ جميع الكرات المستبعدة."
+  ,"rejected.allCopyFailed": "تعذر نسخ الكرات المستبعدة."
+  ,"rejected.special": "خاص بـ {{country}}"
+  ,"rejected.ivorianSelection": "اختيار ساحل العاج"
+  ,"rejected.beninSelection": "اختيار بنين"
+  ,"rejected.countrySelection": "اختيار البلد"
+  ,"rejected.daySelection": "اختيار اليوم"
+  ,"rejected.keepNearby": "للاحتفاظ به قريباً"
+  ,"rejected.keyOfDay": "مفتاح اليوم"
+  ,"rejected.beninFestival": "احتفال بنين"
+  ,"matrix.dayProgram": "برنامج اليوم"
+  ,"matrix.dailyKey": "مفتاحك اليومي"
+  ,"matrix.titleForDay": "مصفوفة {{day}}"
+  ,"matrix.today": "مصفوفة اليوم"
+  ,"matrix.back": "العودة"
+  ,"matrix.copyCountry": "نسخ جميع نتائج هذا البلد"
+  ,"matrix.availableSlots": "الفترات الزمنية المتاحة"
+  ,"matrix.noProgramForCountry": "لا يوجد برنامج متاح لهذا البلد."
+  ,"matrix.viewProgram": "عرض البرنامج"
+  ,"matrix.copyResults": "نسخ جميع النتائج"
+  ,"matrix.copy": "نسخ"
+  ,"matrix.name": "الاسم"
+  ,"matrix.date": "التاريخ"
+  ,"matrix.event": "الحدث"
+  ,"matrix.special": "خاص بـ {{country}}"
+  ,"matrix.ivorianKey": "مفتاح ساحل العاج اليومي"
+  ,"matrix.beninKey": "مفتاح بنين اليومي"
+  ,"matrix.custom": "مصفوفتك المخصصة"
+  ,"matrix.keyOfDay": "مفتاح اليوم"
+  ,"matrix.personalized": "المصفوفة التي تشبهك"
+  ,"matrix.edition": "إصدار مخصص"
+  ,"croix.official": "منشور رسمي"
+  ,"croix.title": "الصليب الوطني"
+  ,"croix.selectedTitle": "الصليب الوطني في {{date}}"
+  ,"croix.todayTitle": "الصليب الوطني لليوم"
+  ,"croix.historyLabel": "صلبان الأيام التسعة الأخيرة"
+  ,"croix.historyLoading": "جارٍ تحميل الأيام التسعة الأخيرة…"
+  ,"croix.sectionLabel": "الصليب الوطني والسجل"
+  ,"croix.historyLoadingShort": "جارٍ تحميل السجل…"
+  ,"Récompenses": "المكافآت"
+  ,"Achats": "المشتريات"
+  ,"0 personne aime": "0 إعجاب"
+  ,"J’aime cette calculatrice": "أعجبني هذه الآلة الحاسبة"
+  ,"NATIONALE": "وطني"
+  ,"numéros rejetés": "الأرقام المستبعدة"
+  ,"Chargement des publications…": "جارٍ تحميل المنشورات…"
+  ,"Français": "الفرنسية"
+  ,"English": "الإنجليزية"
+  ,"Português": "البرتغالية"
+  ,"Español": "الإسبانية"
+  ,"Cidmap": "Cidmap"
+  ,"Croix nationale": "الصليب الوطني"
+  ,"Numéros rejetés": "الأرقام المستبعدة"
+  ,"Anticipé": "الوصول المبكر"
+  ,"Déchiffrement MT": "فك تشفير MT"
+  ,"Nos réseaux": "شبكاتنا الاجتماعية"
+  ,"Offres": "العروض"
+  ,"Résultats": "النتائج"
+  ,"Historiques": "السجل"
+  ,"Cidmap virtuel": "Cidmap الافتراضي"
+  ,"J’aime": "إعجاب"
+  ,"Code": "الرمز"
+  ,"Event": "الحدث"
+  ,"Copier résultats": "نسخ النتائج"
+  ,"Résultat — 10 numéros": "النتيجة — 10 أرقام"
+  ,"Déchiffrement avancé": "فك التشفير المتقدم"
+  ,"Utilisez les 10 numéros proposés ou saisissez-les directement.": "تُملأ الأرقام العشرة المحسوبة تلقائيًا؛ استبدلها بأي عدد من الأرقام المختلفة التي تريده."
+  ,"10 numéros à analyser (facultatif)": "الأرقام المطلوب تحليلها (اختياري)"
+  ,"Les résultats sont insérés automatiquement; modifiez-les ou effacez-les si nécessaire.": "تُستخدم الأرقام العشرة افتراضيًا؛ استبدلها باختيارك اليدوي إذا أردت."
+  ,"Résultat du calcul": "نتيجة الحساب"
+  ,"Vos 10 numéros": "أرقامك العشرة"
+  ,"Les numéros sont prêts pour Déchiffrement avancé.": "الأرقام جاهزة لفك التشفير المتقدم."
+  ,"Votre matrice d'aujourd'hui": "مصفوفتك اليوم"
+  ,"Choisir une date": "اختيار تاريخ"
+  ,"historique matrice": "سجل المصفوفة"
+  ,"Couleurs de la Croix (par jour)": "ألوان الصليب حسب اليوم"
+  ,"Horaires des programmes": "جداول البرامج"
+  ,"Générer la clé": "إنشاء المفتاح"
+  ,"Copier la clé": "نسخ المفتاح"
+  ,"Aucune donnée disponible.": "لا توجد بيانات متاحة."
+  ,"Bienvenue — Choisissez votre pays et langue": "مرحباً — اختر بلدك ولغتك"
+  ,"-- Sélectionner --": "-- اختيار --"
+  ,"Passer": "تخطي"
+  ,"Enregistrer": "حفظ"
+  ,"Installer l'application": "تثبيت التطبيق"
+  ,"J'ai compris": "فهمت"
+  ,"assistant.customCountry": "اسم البلد أو رمزه (مثال: Angola أو AO)"
+  ,"assistant.optionalDrawNumber": "اختياري — مثال: 2710"
+  ,"assistant.firstNumbersPlaceholder": "مثال: 04 18 27 36 72"
+  ,"assistant.secondNumbersPlaceholder": "مثال: 03 11 22 48 69"
+  ,"assistant.bonusNumbersPlaceholder": "مثال: 09"
+  ,"assistant.chooseCountry": "اختيار بلد"
+  ,"assistant.confirming": "جارٍ حفظ تأكيدك…"
+  ,"assistant.confirmationFailed": "تعذر حفظ التأكيد."
+  ,"assistant.rightsVerificationFailed": "التحقق من الحقوق غير متاح مؤقتاً. حاول مرة أخرى."
+  ,"notifications.closeDetail": "إغلاق التفاصيل"
+  ,"notifications.accountDetail": "تفاصيل الحساب"
+  ,"notifications.detail": "تفاصيل الإشعار"
+  ,"notifications.defaultTitle": "إشعار"
+  ,"notifications.noDetail": "لا توجد تفاصيل إضافية."
+  ,"notifications.close": "إغلاق"
+  ,"notifications.viewAccount": "عرض حسابي"
+  ,"notifications.viewPublication": "عرض المنشور"
+  ,"notifications.unknownDate": "تاريخ غير معروف"
+  ,"notifications.type": "النوع"
+  ,"notifications.receivedAt": "تاريخ الاستلام"
+  ,"notifications.duration": "المدة"
+  ,"notifications.validUntil": "الوصول صالح حتى"
+  ,"notifications.amount": "المبلغ"
+  ,"notifications.balanceAfter": "الرصيد بعد العملية"
+  ,"notifications.information": "معلومات"
+  ,"notifications.unreadCount": "{{count}} إشعار غير مقروء"
+  ,"notifications.openUnread": "فتح الإشعارات، {{count}} غير مقروء"
+  ,"social.heading": "اعثر على Cidmap في الشبكات وتواصل مع الفريق."
+  ,"social.empty": "ستتم إضافة الروابط العامة من قبل الإدارة."
+  ,"social.contact": "تواصل مع الفريق"
+  ,"offers.unavailable": "العروض غير متاحة مؤقتاً."
+  ,"smart.customCountry": "بلد البرنامج المخصص"
+  ,"smart.customCountryHelp": "يُستخدم هذا الاختيار فقط لتحديد برامجك مسبقاً."
+  ,"smart.profileHelp": "ستستخدم مصفوفتا المصفوفة والكرات المستبعدة هذا البلد افتراضياً."
+  ,"smart.customProgram": "البرنامج المخصص: {{country}}"
+  ,"smart.matrixFiltered": "تمت تصفية المصفوفة حسب بلدك."
+  ,"smart.globalProgram": "البرنامج العام"
+  ,"smart.allCountries": "جميع البلدان متاحة."
+  ,"smart.otherCountries": "عرض برامج البلدان الأخرى"
+  ,"smart.otherRejected": "عرض الكرات المستبعدة من البلدان الأخرى"
+  ,"smart.otherSchedules": "عرض جداول البلدان الأخرى"
+  ,"smart.backToProgram": "العودة إلى برنامج {{country}}"
+  ,"smart.backToRejected": "العودة إلى الكرات المستبعدة لـ {{country}}"
+  ,"smart.customRejected": "الكرات المستبعدة المخصصة: {{country}}"
+  ,"smart.existingMethod": "تظل الطريقة الحالية كما هي؛ تتم تصفية العرض فقط."
+  ,"smart.globalRejected": "الكرات المستبعدة العامة"
+  ,"smart.allDisplayed": "يتم عرض جميع البلدان."
+  ,"smart.customSchedule": "الجداول المخصصة: {{country}}"
+  ,"smart.existingSchedules": "تبقى الجداول الحالية دون تغيير وتشمل جميع البرامج."
+  ,"smart.globalView": "تم تفعيل العرض العام لجميع البلدان."
+  ,"Boules rejetées": "الكرات المستبعدة"
+  ,"Ajouter à l'écran d'accueil": "إضافة إلى الشاشة الرئيسية"
+  ,"Sur l'écran d'accueil": "على الشاشة الرئيسية"
+}

@@ -1,0 +1,48 @@
+# Dependencies and generated build output
+node_modules/
+.next/
+dist/
+build/
+.cache/
+coverage/
+.turbo/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+
+# Runtime data, local databases and logs
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Uploads, exports and packaging artefacts
+uploads/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# Local platform/tool caches
+supabase/.temp/
+.vercel/
+.wrangler/
+.DS_Store
+Thumbs.db
+
+# Generated reports and local screenshots
+coverage/
+screenshots/

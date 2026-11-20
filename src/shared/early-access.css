@@ -1,0 +1,109 @@
+.cid-early-access-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: min(96%, 800px);
+  margin: 8px auto;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border: 1px solid rgba(9, 98, 214, .16);
+  border-radius: 12px;
+  background: #f6f9ff;
+  color: #16345d;
+  font-size: 13px;
+}
+
+.cid-early-access-control--tableau {
+  width: 100%;
+  margin: 8px 0 12px;
+}
+
+.cid-early-access-copy {
+  min-width: 0;
+  font-weight: 700;
+}
+
+.cid-early-access-button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: #0962d6;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cid-early-access-button:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+.cid-early-access-button.is-activated,
+.cid-fb-early-access.is-activated {
+  background: #16834b;
+  color: #fff;
+  border-color: #16834b;
+  opacity: 1;
+  cursor: default;
+}
+
+.cid-fb-early-access.is-activated::before {
+  content: '✓';
+  display: inline-block;
+  margin-right: 4px;
+  font-weight: 900;
+}
+
+.cid-fb-early-access.is-unconfigured {
+  opacity: .62;
+}
+
+.cid-early-access-badge {
+  flex: 0 0 auto;
+  color: #18794e;
+}
+
+.cid-croix-early-access {
+  color: #0962d6;
+}
+
+.cid-croix-early-access:hover,
+.cid-croix-early-access:focus-visible {
+  color: #064da9;
+}
+
+/* Shared anticipation confirmation state. The debit is never triggered
+ * before this dialog has been explicitly confirmed. */
+.cid-early-access-confirmation .cid-unlock-confirmation__included li {
+  flex-basis: 100%;
+}
+
+.cid-early-access-confirmation .cid-unlock-confirmation__summary .is-insufficient,
+.cid-early-access-confirmation .cid-unlock-confirmation__summary .is-insufficient dt,
+.cid-early-access-confirmation .cid-unlock-confirmation__summary .is-insufficient dd {
+  color: #b42318;
+  background: #fff1f0;
+}
+
+.cid-early-access-confirmation [data-cid-early-confirm]:disabled {
+  cursor: not-allowed;
+  border-color: #d4dbe5;
+  background: #eef1f5;
+  color: #758196;
+  opacity: 1;
+}
+
+@media (max-width: 520px) {
+  .cid-early-access-control {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cid-early-access-button {
+    width: 100%;
+  }
+}

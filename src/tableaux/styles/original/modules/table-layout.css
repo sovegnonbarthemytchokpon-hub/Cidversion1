@@ -1,0 +1,150 @@
+.table-container {
+  width: 100%;
+  max-width: var(--table-max-width);
+  margin: 5px auto;
+  padding: 0 20px;
+}
+
+/* Add spacing between Universal Plan and Intuition Plan tables */
+.intuition-table {
+  margin-top: 40px !important; /* Add space above intuition table */
+}
+
+/* Add spacing between Universal Plan and Satellites tables */
+.satellite-decryption-table {
+  margin-top: 5px !important; /* Reduced from 10px to bring closer to cross */
+}
+
+/* Update cell widths to make satellite column wider */
+.color-table tr td,
+.color-table tr th {
+  width: auto; /* Changed from 20% to auto for better flexibility */
+  max-width: none;
+  white-space: nowrap;
+  padding: 8px 4px; /* Reduced padding for better fit */
+  font-size: 13px; /* Slightly smaller font for better fit */
+}
+
+/* Make satellite column wider */
+.color-table tr td:last-child,
+.color-table tr th:last-child {
+  width: 50%; /* Increased from 40% for better satellite display */
+  white-space: normal; /* Allow wrapping for satellite combinations */
+}
+
+/* First two columns optimized for mobile */
+.color-table tr td:nth-child(1),
+.color-table tr td:nth-child(2),
+.color-table tr th:nth-child(1),
+.color-table tr th:nth-child(2) {
+  width: 25%; /* Increased from 15% for better balance */
+}
+
+/* nap2 column adjusted */
+.color-table tr td:nth-child(3),
+.color-table tr th:nth-child(3) {
+  width: 30%; /* Medium width for nap2 column */
+}
+
+/* Style the satellite combinations */
+.satellite-combination {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* slightly increased spacing for clarity */
+  justify-content: center;
+  flex-wrap: wrap; /* Allow wrapping on very small screens */
+}
+
+/* Make satellite numbers and combination numbers visually larger and bolder for readability
+   without changing table cell layout or overall table dimensions. */
+.satellite-number {
+  font-weight: 900;
+  font-size: 40px; /* increased for better legibility */
+  line-height: 1;
+  padding: 6px 10px;
+}
+
+/* Keep yellow variations distinct but maintain increased size */
+.satellite-number.yellow-text {
+  color: #FFD700;
+}
+
+/* Operators between numbers made slightly larger and clearer */
+.satellite-operator {
+  color: white;
+  margin: 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* NAP label/value emphasis: keep layout but increase number prominence for readability */
+.nap-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.nap-label { font-size: 12px; font-weight: 800; }
+.nap-value {
+  font-size: 44px; /* increased so NAP values are clearly readable */
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  padding: 6px 10px;
+  color: white;
+}
+
+/* Ensure these increases respect small-screen constraints (scale down slightly on very small screens) */
+@media (max-width: 480px) {
+  .satellite-number { font-size: 20px; }
+  .satellite-operator { font-size: 14px; margin: 0 4px; }
+  .nap-value { font-size: 22px; }
+}
+
+/* Style the NAP row at the bottom of satellite table */
+.satellite-decryption-table tr:last-child td {
+  border-top: 2px solid var(--accent-color);
+  font-weight: bold;
+  padding: 10px;
+}
+
+.satellite-decryption-table tr:last-child td:first-child,
+.satellite-decryption-table tr:last-child td:nth-child(2) {
+  text-align: center;
+  width: 25%;
+}
+
+.satellite-decryption-table tr:last-child td:last-child {
+  text-align: center;
+  width: 50%;
+}
+
+/* Add specific equal-width styling for intuition cross satellites table */
+.intuition-cross-satellites {
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+.intuition-cross-satellites th,
+.intuition-cross-satellites td {
+  width: 33.33% !important; /* Equal width for all 3 columns */
+  text-align: center !important;
+  padding: 8px 4px !important;
+  vertical-align: middle !important;
+}
+
+/* Override any existing width constraints for intuition cross satellites */
+.intuition-cross-satellites tr td:nth-child(1),
+.intuition-cross-satellites tr td:nth-child(2),
+.intuition-cross-satellites tr td:nth-child(3),
+.intuition-cross-satellites tr th:nth-child(1),
+.intuition-cross-satellites tr th:nth-child(2),
+.intuition-cross-satellites tr th:nth-child(3) {
+  width: 33.33% !important;
+  max-width: none !important;
+  white-space: normal !important;
+}
+
+/* Update margins for remaining tables */
+.valid-numbers-table {
+  margin-top: 20px !important;
+}
+
+.intuition-satellites {
+  margin-top: 40px !important;
+}

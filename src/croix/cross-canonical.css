@@ -1,0 +1,278 @@
+/*
+ * Croix nationale — canonical color layer.
+ *
+ * Geometry, typography and coordinates remain owned by the existing Croix
+ * composition. This file is the only color layer: the service supplies
+ * --cid-cross-color and --cid-cross-ink for the programme day.
+ */
+#redCross,
+#redCrossClone {
+  --cid-cross-color: var(--redCross-bg, #0962d6);
+  --cid-cross-ink: #ffffff;
+  /*
+   * The Croix is one canonical coordinate plane. Prevent mobile text
+   * autosizing or a browser's layout heuristics from changing its artwork;
+   * responsive code may scale the whole square, never its internal design.
+   */
+  contain: layout paint;
+  isolation: isolate;
+  font-synthesis: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--cid-cross-color) !important;
+}
+
+#redCross[data-cross-day="0"],
+#redCrossClone[data-cross-day="0"] {
+  --cid-cross-color: #ffd700 !important;
+  --cid-cross-ink: #000000 !important;
+}
+
+#redCross[data-cross-day="1"],
+#redCrossClone[data-cross-day="1"] {
+  --cid-cross-color: #1877f2 !important;
+  --cid-cross-ink: #ffffff !important;
+}
+
+#redCross[data-cross-day="2"],
+#redCrossClone[data-cross-day="2"] {
+  --cid-cross-color: #008000 !important;
+  --cid-cross-ink: #ffffff !important;
+}
+
+#redCross[data-cross-day="3"],
+#redCrossClone[data-cross-day="3"] {
+  --cid-cross-color: #6a0dad !important;
+  --cid-cross-ink: #ffffff !important;
+}
+
+#redCross[data-cross-day="4"],
+#redCrossClone[data-cross-day="4"] {
+  --cid-cross-color: #808080 !important;
+  --cid-cross-ink: #ffffff !important;
+}
+
+#redCross[data-cross-day="5"],
+#redCrossClone[data-cross-day="5"] {
+  --cid-cross-color: #ff0000 !important;
+  --cid-cross-ink: #ffffff !important;
+}
+
+#redCross[data-cross-day="6"],
+#redCrossClone[data-cross-day="6"] {
+  --cid-cross-color: #800020 !important;
+  --cid-cross-ink: #ffffff !important;
+}
+
+#redCross[data-cross-ink="dark"],
+#redCrossClone[data-cross-ink="dark"] {
+  --cid-cross-ink: #000000;
+}
+
+#redCross .cross-numbers .num,
+#redCross #redCrossDate,
+#redCross .term-title,
+#redCross .term-paren,
+#redCross .right-label,
+#redCross .redCrossFooter,
+#redCrossClone .cross-numbers .num,
+#redCrossClone #redCrossDate-clone,
+#redCrossClone .term-title,
+#redCrossClone .term-paren,
+#redCrossClone .right-label,
+#redCrossClone .redCrossFooter {
+  color: var(--cid-cross-ink) !important;
+  -webkit-text-fill-color: var(--cid-cross-ink) !important;
+  text-shadow: none !important;
+}
+
+/*
+ * One typography contract for the eight national-cross digits.
+ *
+ * The live Croix, archive clones and Anticipé clones do not share the same
+ * DOM parent, so a rule scoped only to #redCross made the historical copies
+ * fall back to a thinner browser font. Keep the glyph itself identical in
+ * every context; the surrounding geometry is still allowed to scale.
+ */
+#redCross:not(.cid-croix-history-component) .cross-numbers .num,
+#redCrossClone:not(.cid-croix-history-component) .cross-numbers .num,
+.cid-fb-home-history-cross .cross-numbers .num,
+.cid-croix-anticipation-component .cross-numbers .num,
+.anticipation-cross-canonical-slot .cross-numbers .num {
+  font-family: "Archivo Black", "Arial Black", Arial, sans-serif !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+  font-synthesis: none !important;
+  font-kerning: none !important;
+  letter-spacing: 0 !important;
+  line-height: .9 !important;
+  color: var(--cid-cross-ink, #ffffff) !important;
+  -webkit-text-fill-color: var(--cid-cross-ink, #ffffff) !important;
+  -webkit-text-stroke: 1.45px var(--cid-cross-ink, #ffffff) !important;
+  text-stroke: 1.45px var(--cid-cross-ink, #ffffff) !important;
+  /* Small same-colour fallbacks reinforce glyphs in engines without
+     text-stroke support, without changing their coordinates. */
+  text-shadow:
+    .45px 0 var(--cid-cross-ink, #ffffff),
+    -.45px 0 var(--cid-cross-ink, #ffffff),
+    0 .45px var(--cid-cross-ink, #ffffff),
+    0 -.45px var(--cid-cross-ink, #ffffff) !important;
+}
+
+/*
+ * Keep the reference size imposing while allowing every square to shrink
+ * proportionally on a phone. `--cross-scale` is supplied by the live,
+ * archive and preview geometry synchronizers.
+ */
+#redCross:not(.cid-croix-history-component) .cross-numbers .num,
+#redCrossClone:not(.cid-croix-history-component) .cross-numbers .num,
+.cid-fb-home-history-cross .cross-numbers .num,
+.cid-croix-anticipation-component .cross-numbers .num,
+.anticipation-cross-canonical-slot .cross-numbers .num {
+  font-size: calc(56px * var(--cross-scale, 1)) !important;
+}
+
+#redCross:not(.cid-croix-history-component)[data-cross-day="0"] .cross-numbers .num,
+#redCrossClone:not(.cid-croix-history-component)[data-cross-day="0"] .cross-numbers .num,
+.cid-fb-home-history-cross[data-cross-day="0"] .cross-numbers .num,
+.cid-croix-anticipation-component[data-cross-day="0"] .cross-numbers .num,
+.anticipation-cross-canonical-slot
+  #redCross[data-cross-day="0"] .cross-numbers .num {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-text-stroke-color: #000000 !important;
+  text-stroke-color: #000000 !important;
+}
+
+/*
+ * Sunday is a light surface. Keep its glyphs solid and heavy: legacy rules
+ * used a contrasting text stroke, which made the digits look hollow when the
+ * cross switched to yellow. The fill is the only painted glyph layer.
+ */
+#redCross:not(.cid-croix-history-component)[data-cross-day="0"] .cross-numbers .num,
+#redCrossClone:not(.cid-croix-history-component)[data-cross-day="0"] .cross-numbers .num {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-text-stroke: 1.45px #000000 !important;
+  -webkit-text-stroke-color: #000000 !important;
+  text-stroke: 1.45px #000000 !important;
+  text-shadow:
+    .45px 0 #000000,
+    -.45px 0 #000000,
+    0 .45px #000000,
+    0 -.45px #000000 !important;
+  font-family: "Archivo Black", "Audiowide", "Noto Sans", Arial, sans-serif !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+}
+
+/* The date and peripheral labels also inherit legacy outline treatments.
+ * Sunday keeps those inscriptions as flat black glyphs for instant reading. */
+#redCross[data-cross-day="0"] #redCrossDate,
+#redCross[data-cross-day="0"] .term-title,
+#redCross[data-cross-day="0"] .term-paren,
+#redCross[data-cross-day="0"] .right-label,
+#redCross[data-cross-day="0"] .redCrossFooter,
+#redCross[data-cross-day="0"] .sunday-button,
+#redCrossClone[data-cross-day="0"] #redCrossDate-clone,
+#redCrossClone[data-cross-day="0"] .term-title,
+#redCrossClone[data-cross-day="0"] .term-paren,
+#redCrossClone[data-cross-day="0"] .right-label,
+#redCrossClone[data-cross-day="0"] .redCrossFooter,
+#redCrossClone[data-cross-day="0"] .sunday-button {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  -webkit-text-stroke: 0 !important;
+  -webkit-text-stroke-color: transparent !important;
+  text-stroke: 0 !important;
+  text-shadow: none !important;
+}
+
+#redCross svg .cross-line,
+#redCrossClone svg .cross-line {
+  stroke: var(--cid-cross-ink) !important;
+  stroke-linecap: round !important;
+}
+
+#redCross .sunday-button,
+#redCrossClone .sunday-button {
+  /*
+   * Keep the national badge in the reserved band below the date.  The
+   * responsive layer already uses these reference-plane coordinates; the
+   * canonical layer must not pull the badge back over the date or the first
+   * pair of numbers when it is loaded later in the cascade.
+   */
+  top: calc(46px * var(--cross-scale, 1)) !important;
+  left: calc(8px * var(--cross-scale, 1)) !important;
+  right: auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: calc(4.5px * var(--cross-scale, 1))
+           calc(10px * var(--cross-scale, 1)) !important;
+  border: 2px solid var(--cid-cross-ink) !important;
+  border-radius: 999px !important;
+  box-sizing: border-box !important;
+  font-size: calc(13.4px * var(--cross-scale, 1)) !important;
+  font-weight: 800 !important;
+  letter-spacing: .015em !important;
+  line-height: 1.15 !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+  transform: none !important;
+  background: var(--cid-cross-color) !important;
+  color: var(--cid-cross-ink) !important;
+  -webkit-text-fill-color: var(--cid-cross-ink) !important;
+}
+
+#redCross .redCrossFooter,
+#redCrossClone .redCrossFooter {
+  width: calc(100% - 16px) !important;
+  max-width: none !important;
+  padding: 0 !important;
+  font-size: clamp(8px, 2.3vw, 12px) !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  text-align: center !important;
+}
+
+#redCross .black-square-btn,
+#redCrossClone .black-square-btn {
+  background: #ffffff !important;
+  color: var(--cid-cross-color) !important;
+  border-color: rgba(0, 0, 0, .06) !important;
+}
+
+#redCross .black-square-btn svg circle,
+#redCrossClone .black-square-btn svg circle {
+  fill: var(--cid-cross-color) !important;
+  stroke: var(--cid-cross-color) !important;
+}
+
+#redCross .black-square-btn svg text:first-of-type,
+#redCrossClone .black-square-btn svg text:first-of-type {
+  fill: var(--cid-cross-ink) !important;
+}
+
+#redCross .black-square-btn svg textPath,
+#redCrossClone .black-square-btn svg textPath {
+  fill: var(--cid-cross-color) !important;
+}
+
+/* Every inscription in the Sunday control is black, including text on its
+ * white disc and the curved SVG caption. */
+#redCross[data-cross-day="0"] .black-square-btn,
+#redCrossClone[data-cross-day="0"] .black-square-btn {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+#redCross[data-cross-day="0"] .black-square-btn svg text,
+#redCross[data-cross-day="0"] .black-square-btn svg textPath,
+#redCrossClone[data-cross-day="0"] .black-square-btn svg text,
+#redCrossClone[data-cross-day="0"] .black-square-btn svg textPath {
+  fill: #000000 !important;
+}

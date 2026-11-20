@@ -1,0 +1,2052 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Ensure consistent text sizing on mobile browsers (iOS Safari, Chrome on iOS) */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Respect device safe-area (notch) on iPhones and modern devices */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
+:root {
+  --content-max-width: 1400px;
+  --section-padding: 20px;
+  --button-grid-columns: 4;
+  --button-min-width: 200px;
+  --button-gap: 20px;
+  --primary-bg: #0F3B29;
+  --secondary-bg: #4a0000;
+  --accent-color: #FFD700;
+  --text-color: white;
+  --button-text: #4a0000;
+  --button-hover: white;
+  --base-font-size: 14px;
+  --title-font-size: 28px;
+  --numbers-font-size: 48px;
+  --button-font-size: 14px;
+  --numbers-letter-spacing: 75px;
+  --container-border-radius: 12px;
+  --button-border-radius: 6px;
+  --element-margin: 15px;
+  --chat-animation-curve: cubic-bezier(0.4, 0, 0.2, 1);
+  --chat-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  --chat-border-radius: 12px 12px 0 0;
+  --chat-header-height: 40px;
+  --title-text-transform: lowercase;
+  --title-letter-spacing: 1px;
+  --instruction-button-gap: 10px;
+  --instruction-button-padding: 8px 15px;
+  --instruction-button-bg: #FFD700;
+  --instruction-button-text: #4a0000;
+  --instruction-button-hover: white;
+  --instruction-button-radius: 6px;
+  --instruction-button-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  --instruction-button-transition: all 0.3s ease;
+  --instruction-button-font-size: 14px;
+  --instruction-button-font-weight: bold;
+  --modal-text-spacing: 15px;
+  --modal-list-indent: 20px;
+  --modal-highlight-color: #FFD700;
+  --modal-text-size: 14px;
+  --modal-heading-size: 16px;
+  --modal-line-height: 1.6;
+  --intuition-primary: #4a0066;
+  --intuition-secondary: #9932CC;
+  --intuition-light: rgba(153, 50, 204, 0.3);
+  --intuition-border: #9932CC;
+  --intuition-highlight: rgba(153, 50, 204, 0.1);
+  --oracle-primary: #1a1a1a;
+  --oracle-secondary: #333333;
+  --oracle-border: #666666;
+  --oracle-highlight: rgba(26, 26, 26, 0.1);
+  --oracle-light: rgba(102, 102, 102, 0.5);
+  --oracle-text: #cccccc;
+  --manual-primary: #FFD700;
+  --manual-secondary: #FFD700;
+  --manual-border: #FFD700;
+  --manual-highlight: rgba(255, 215, 0, 0.1);
+  --manual-light: rgba(255, 215, 0, 0.25);
+  --manual-text: #FFD700;
+  --manual-input-bg: rgba(255, 215, 0, 0.06);
+  --manual-input-border: #FFD700;
+  --manual-button-bg: #FFD700;
+  --manual-button-hover: #FFB300;
+  --lnb-primary: #0066CC;
+  --lnb-secondary: #0080FF;
+  --lnb-border: #0080FF;
+  --lnb-highlight: rgba(0, 102, 204, 0.1);
+  --lnb-light: rgba(0, 128, 255, 0.5);
+  --lnb-text: #0080FF;
+  --interaction-transition: 80ms;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--primary-bg);
+  color: white;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* account for fixed header + device safe-area notch */
+  padding-top: calc(60px + var(--safe-area-inset-top));
+  padding-bottom: calc(12px + var(--safe-area-inset-bottom));
+  transition: padding-top 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+/* Update top controls menu styles */
+.top-controls {
+  width: 100%;
+  max-width: var(--content-max-width);
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 6px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.top-controls.scroll-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Hide previous large top-controls visual behaviors and ensure compact header styling */
+.top-controls { display: none !important; }
+
+/* Compact header styling */
+.compact-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--content-max-width);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-start;
+  margin: 0 auto 2px;
+  background: var(--accent-color); /* header background set to yellow */
+  color: #4a0000; /* dark text for contrast */
+  z-index: 2200;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.compact-header .menu-button {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-bg); /* changed from var(--accent-color) to site green */
+  border-radius: 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:none;
+  cursor:pointer;
+  order: -1;
+  flex-shrink: 0;
+}
+
+.compact-header .site-label { color: #4a0000; font-weight:700; margin-left:6px; }
+
+.compact-header .home-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  padding: 6px 12px;
+  background: white;
+  color: #4a0000;
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 2px solid rgba(0,0,0,0.06);
+  transition: background 160ms ease, transform 120ms ease;
+}
+
+.compact-header .home-button:hover {
+  background: #f6f6f6;
+  transform: translateY(-1px);
+}
+
+/* Ensure sidebar is visible and focusable when opened */
+.sidebar.open { left: 0; box-shadow: 2px 0 30px rgba(0,0,0,0.6); }
+
+.menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background: var(--primary-bg); /* changed from var(--accent-color) to site green */
+  border: none;
+  border-radius: 50%;
+  color: var(--button-text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  order: -1;
+  flex-shrink: 0;
+}
+
+.menu-button:hover,
+.menu-button.active {
+  /* Keep official green background and avoid transform on hover/active */
+  background-color: var(--primary-bg) !important;
+  transform: none !important;
+}
+
+.menu-icon {
+  font-size: 14px;
+  transition: transform 0.3s ease;
+  color: var(--accent-color); /* make the three bars yellow to match the header */
+}
+
+.menu-button.active .menu-icon {
+  /* Do not rotate the icon — keep the three bars yellow as the official look */
+  transform: none;
+}
+
+.top-buttons {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  gap: 8px;
+  margin-left: 15px;
+}
+
+.calculate-button {
+  min-width: 160px;
+  flex: 0 1 auto;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background-color: var(--calc-btn-bg);
+  border: none;
+  border-radius: var(--button-border-radius);
+  color: var(--calc-btn-text);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 12px;
+}
+
+.calculate-button:hover {
+  background-color: var(--calc-btn-hover);
+}
+
+.calc-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Remove update container styles */
+.update-container {
+  display: none; 
+}
+
+.date-input {
+  width: 35px;
+  height: 35px;
+  border: 2px solid #FFD700;
+  border-radius: 50%;
+  background-color: #FFD700;
+  color: #4a0000;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.date-input:hover {
+  background-color: white;
+  transform: scale(1.05);
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  filter: none;
+  background: none;
+  color: #4a0000;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+  filter: brightness(0.8);
+}
+
+/* Add calendar icon using CSS */
+.date-input::before {
+  content: "📅";
+  font-size: 16px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Hide old date selector */
+.date-selector {
+  display: none;
+}
+
+.numbers {
+  letter-spacing: var(--numbers-letter-spacing);
+  font-size: 42px; 
+  margin: var(--element-margin) 0;
+  font-weight: 900;
+  padding-right: var(--numbers-letter-spacing);
+  width: calc(100% - 10px);
+  text-align: center;
+  color: white;
+  -webkit-text-stroke: 0;
+  text-stroke: 0;
+  text-shadow: none;
+  font-family: "Arial Black", "Helvetica Black", "Helvetica Bold", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "salt" 1;
+  text-rendering: geometricPrecision;
+}
+
+.additional-info {
+  font-size: calc(var(--base-font-size) * var(--base-font, 1));
+  margin-top: var(--element-margin);
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--accent-color);
+  margin-bottom: var(--element-margin);
+}
+
+.date {
+  font-size: calc(var(--base-font-size) * var(--base-font, 1));
+  margin-bottom: var(--element-margin);
+}
+
+.key-info {
+  font-size: calc(var(--base-font-size) * var(--base-font, 1));
+  margin: var(--element-margin) 0;
+}
+
+p {
+  margin: 5px 0;
+}
+
+.title-text {
+  font-size: var(--title-font-size);
+  font-weight: bold;
+  color: var(--accent-color);
+  margin: var(--element-margin) 0;
+  text-transform: var(--title-text-transform);
+  letter-spacing: var(--title-letter-spacing);
+}
+
+.container:nth-child(2) .title-text {
+  font-size: var(--title-font-size);
+}
+
+.yellow-text {
+  color: var(--accent-color);
+}
+
+.site-url {
+  margin-top: var(--element-margin);
+  font-size: calc(var(--base-font-size) * var(--base-font, 1));
+  color: var(--accent-color);
+}
+
+/* Add yellow header styles */
+.site-header {
+  display: none;
+}
+
+.modal {
+  --modal-overlay-bg: rgba(0, 0, 0, 0.8);
+  --modal-content-bg: #4a0000;
+  --modal-border-color: #FFD700;
+  --modal-border-radius: 12px;
+  --modal-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --modal-transition: all 0.3s ease-in-out;
+  
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-overlay-bg);
+}
+
+/* @tweakable modal content styles */
+.modal-content {
+  background-color: var(--modal-content-bg);
+  margin: 15% auto;
+  padding: 20px;
+  border: 2px solid var(--modal-border-color);
+  border-radius: var(--modal-border-radius);
+  width: 80%;
+  max-width: 600px;
+  position: relative;
+  color: white;
+  box-shadow: var(--modal-box-shadow);
+  transition: var(--modal-transition);
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+/* @tweakable modal scrollbar styles */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.5);
+  border-radius: 4px;
+}
+
+/* @tweakable modal typography */
+.modal-content h2 {
+  color: #FFD700;
+  font-size: 20px;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modal-content .instructions-text {
+  color: white;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.modal-content .instructions-text strong {
+  color: #FFD700;
+}
+
+.modal-content ol,
+.modal-content ul {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.modal-content li {
+  margin-bottom: 15px;
+}
+
+/* Add to existing modal content styles */
+.modal-content .instructions-text li {
+  margin-bottom: 20px;
+}
+
+.modal-content .instructions-text ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.modal-content .instructions-text ul li {
+  margin-bottom: 8px;
+  list-style-type: disc;
+}
+
+.modal-content .instructions-text p {
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+/* Add styles for the satellite calculation modal content */
+.modal-content .note {
+  font-style: italic;
+  color: #FFD700;
+  margin: 10px 0;
+  padding: 10px;
+  border-left: 3px solid #FFD700;
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.modal-content strong {
+  color: #FFD700;
+}
+
+.modal-content ul li {
+  list-style-type: disc;
+}
+
+.modal-content ol li {
+  margin-bottom: 20px;
+}
+
+.modal-content p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+/* Style the examples and important notes */
+.modal-content .instructions-text li ul li {
+  color: #ddd;
+  font-size: 0.95em;
+  margin-left: 20px;
+}
+
+/* Highlight important points */
+.modal-content .instructions-text li:nth-child(3) ul li:first-child,
+.modal-content .instructions-text li:nth-child(2) ul li:last-child {
+  color: #FFD700;
+  font-weight: bold;
+}
+
+/* Additional spacing for nested lists */
+.modal-content .instructions-text ol > li {
+  margin-bottom: 20px;
+}
+
+.modal-content .instructions-text ul > li {
+  margin-bottom: 8px;
+}
+
+/* Update existing modal content styles */
+.modal-content .instructions-text li {
+  margin-bottom: 20px;
+}
+
+.modal-content .instructions-text ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.modal-content .instructions-text ul li {
+  margin-bottom: 8px;
+  list-style-type: disc;
+}
+
+.modal-content .instructions-text strong {
+  color: #FFD700;
+}
+
+/* Add styles for example calculations */
+.modal-content .instructions-text ul li ul {
+  margin-left: 20px;
+  margin-top: 5px;
+}
+
+.modal-content .instructions-text ul li ul li {
+  color: #ddd;
+  font-size: 0.95em;
+}
+
+.close {
+  color: var(--accent-color);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: var(--text-color);
+}
+
+.modal-date {
+  color: var(--accent-color);
+  font-size: var(--base-font-size);
+  margin: 10px 0;
+}
+
+.instructions-text {
+  text-align: left;
+  font-size: var(--base-font-size);
+  line-height: 1.6;
+}
+
+.valid-numbers {
+  font-size: 12px;
+  color: var(--accent-color);
+  word-wrap: break-word;
+}
+
+.instructions-buttons {
+  display: flex;
+  gap: var(--instruction-button-gap);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.instructions-button {
+  min-width: 180px;
+  margin-top: 10px;
+  padding: var(--instruction-button-padding);
+  background-color: var(--instruction-button-bg);
+  border: none;
+  border-radius: var(--instruction-button-radius);
+  color: var(--instruction-button-text);
+  font-weight: var(--instruction-button-font-weight);
+  font-size: var(--instruction-button-font-size);
+  cursor: pointer;
+  transition: var(--instruction-button-transition);
+  box-shadow: var(--instruction-button-shadow);
+}
+
+.instructions-button:hover {
+  background-color: var(--instruction-button-hover);
+}
+
+.font-size-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.top-controls::before,
+.top-controls::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  height: 80px;
+  width: 40px;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.6;
+}
+
+.top-controls::before {
+  left: 0;
+  background: linear-gradient(to right, var(--primary-bg), transparent);
+}
+
+.top-controls::after {
+  right: 0;
+  background: linear-gradient(to left, var(--primary-bg), transparent);
+}
+
+body.font-size-normal {
+  --base-font: 1;
+}
+
+body.font-size-large {
+  --base-font: 1.2;
+}
+
+body.font-size-larger {
+  --base-font: 1.4;
+}
+
+body.font-size-small {
+  --base-font: 0.9;
+}
+
+.chat-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: var(--button-border-radius);
+  color: var(--button-text);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chat-button:hover {
+  background-color: var(--button-hover);
+}
+
+.chat-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.chat-container {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  right: 20px;
+  width: 300px;
+  background-color: var(--secondary-bg);
+  border: 2px solid var(--accent-color);
+  border-radius: var(--chat-border-radius);
+  z-index: 1000;
+  transition: all 0.3s var(--chat-animation-curve);
+  box-shadow: var(--chat-shadow);
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: var(--accent-color);
+  border-radius: var(--chat-border-radius);
+  cursor: pointer;
+}
+
+.chat-header h3 {
+  margin: 0;
+  color: var(--button-text);
+  font-size: 16px;
+}
+
+.toggle-chat-btn {
+  background: none;
+  border: none;
+  color: var(--button-text);
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.toggle-icon {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  height: 400px;
+}
+
+.chat-messages {
+  flex: 1;
+  min-height: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.user-message {
+  background-color: var(--accent-color);
+  color: var(--button-text);
+  margin-left: auto;
+}
+
+.system-message {
+  background-color: var(--secondary-bg);
+  color: var(--text-color);
+  margin-right: auto;
+}
+
+.chat-input-area {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid var(--accent-color);
+  background-color: var(--secondary-bg);
+  position: sticky;
+  bottom: 0;
+}
+
+#chatInput {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--accent-color);
+  border-radius: 4px;
+  margin-right: 8px;
+  background-color: rgba(0,0,0,0.2);
+  color: var(--text-color);
+}
+
+#chatInput:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.send-btn {
+  padding: 8px 15px;
+  background-color: var(--accent-color);
+  border: none;
+  border-radius: 4px;
+  color: var(--button-text);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.send-btn:hover {
+  background-color: var(--button-hover);
+}
+
+.send-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #cca700;
+}
+
+.thinking {
+  font-style: italic;
+  color: var(--accent-color);
+  background-color: rgba(51, 51, 51, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thinking::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent-color);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: thinking-spinner 1s linear infinite;
+}
+
+@keyframes thinking-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.chat-container.active {
+  display: block !important;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Update intuition button styles to be more visible and connected to intuition section */
+.intuition-button,
+.calculate-button.intuition-button {
+  display: none;
+}
+
+/* Ensure buttons have consistent spacing */
+.calculate-button + .calculate-button {
+  margin-left: 0;
+}
+
+/* Add style for the key instructions button to match universal key color */
+.key-instructions-button {
+  background-color: var(--secondary-bg) !important; 
+  border: 2px solid var(--accent-color) !important;
+  color: var(--accent-color) !important;
+}
+
+.key-instructions-button:hover {
+  background-color: var(--accent-color) !important;
+  color: var(--secondary-bg) !important;
+}
+
+/* Add new white button style */
+.white-button {
+  background-color: white !important;
+  color: #4a0000 !important;
+  border: none !important;
+}
+
+.white-button:hover {
+  background-color: #f0f0f0 !important;
+  color: #4a0000 !important;
+}
+
+/* Add these styles for the satellite calculation display */
+.satellite-calculation {
+  color: white;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.satellite-calculation ol,
+.satellite-calculation ul {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+.satellite-calculation li {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.satellite-calculation strong {
+  color: var(--accent-color);
+}
+
+.satellite-calculation ul {
+  margin: 15px 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.satellite-calculation ul li {
+  margin-bottom: 8px;
+  color: white;
+}
+
+/* Add new class for lucky number display */
+.lucky-number {
+  color: #007bff !important; 
+  font-weight: bold;
+}
+
+/* Update additional info styling */
+.additional-info .lucky-number {
+  color: #007bff !important;
+  font-weight: bold;
+}
+
+/* Update key info styling */
+.key-info span.lucky-number {
+  color: #007bff !important;
+  font-weight: bold;
+}
+
+/* Apply trend styling to table cells - remove scaling */
+.color-table td.trend-27 {
+  color: #FFD700 !important;
+  background-color: rgba(255, 215, 0, 0.15) !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+.color-table td.trend-51 {
+  color: white !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+/* Add special highlighting for trend numbers */
+.trend-27 {
+  color: #FFD700 !important;
+  font-weight: bold;
+  background-color: rgba(255, 215, 0, 0.1);
+  border-radius: 3px;
+  padding: 2px 4px;
+  box-shadow: 0 0 3px rgba(255, 215, 0, 0.3);
+}
+
+.trend-51 {
+  color: white !important;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  padding: 2px 4px;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Apply trend styling to satellite numbers */
+.satellite-number.trend-27 {
+  color: #FFD700 !important;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.satellite-number.trend-51 {
+  color: white !important;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+/* Apply trend styling to key info */
+.key-info strong.trend-27 {
+  color: #FFD700 !important;
+  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5);
+}
+
+.key-info strong.trend-51 {
+  color: white !important;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+/* Styling for the lucky intuition modal */
+.valid-numbers-list {
+    background: rgba(153, 50, 204, 0.1);
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+}
+
+/* Add styles for the new satellite calculation sections */
+.satellite-steps {
+  background: rgba(255, 215, 0, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+}
+
+.satellite-steps h5 {
+  color: #FFD700;
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  padding-bottom: 5px;
+}
+
+.satellite-steps ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.satellite-steps li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.satellite-steps p {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.satellite-steps strong {
+  color: #FFD700;
+}
+
+/* Add styles for oracle applications */
+.oracle-application {
+  background: rgba(102, 102, 102, 0.1);
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border-left: 3px solid #666666;
+}
+
+.oracle-application p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.oracle-application strong {
+  color: #cccccc;
+}
+
+.oracle-application ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.oracle-application li {
+  margin: 6px 0;
+  color: #cccccc;
+}
+
+/* Manual portfolio styles */
+.portfolio-manual {
+  order: 4;
+  background: linear-gradient(to bottom, 
+    var(--manual-highlight) 0%,
+    rgba(255, 69, 0, 0.05) 100%
+  );
+  padding-top: 40px;
+  margin-top: 40px;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 15px;
+}
+
+.portfolio-manual::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right,
+    var(--manual-light) 0%,
+    var(--manual-border) 50%,
+    var(--manual-light) 100%
+  );
+}
+
+.portfolio-manual .table-container table {
+  border-color: var(--manual-border);
+  background-color: var(--manual-primary);
+}
+
+/* Add manual method button style */
+.key-instructions-button#showManualMethod {
+  background-color: var(--manual-primary) !important;
+  border: 2px solid var(--manual-border) !important;
+  color: white !important;
+}
+
+.key-instructions-button#showManualMethod:hover {
+  background-color: var(--manual-secondary) !important;
+  color: white !important;
+}
+
+/* Ensure manual results storage table also follows the same styling */
+.manual-results-storage {
+  border: 2px solid white !important;
+  background-color: var(--manual-primary) !important;
+}
+
+.manual-results-storage th {
+  background-color: var(--manual-primary) !important;
+  color: white !important;
+  border-color: white !important;
+}
+
+.manual-results-storage td {
+  background-color: var(--manual-primary) !important;
+  color: white !important;
+  border-color: white !important;
+}
+
+.manual-results-storage tr:nth-child(even) td {
+  background-color: var(--manual-secondary) !important;
+}
+
+.container.manual {
+  background-color: var(--manual-primary);
+  border: 2px solid var(--manual-border);
+  color: white;
+  max-width: 580px;
+  margin: 0 auto;
+  grid-column: 1 / -1;
+}
+
+.container.manual * {
+  color: #000000 !important; /* Balsa Plus: force all text and numbers to black */
+}
+
+.container.manual .title-text {
+  color: #000000 !important;
+}
+
+.container.manual .key-label,
+.container.manual .order-label {
+  background: rgba(255, 140, 0, 0.3);
+  color: #000000 !important;
+}
+
+.container.manual .numbers {
+  color: white;
+  font-weight: 900;
+  font-family: "Arial Black", "Helvetica Black", "Helvetica Bold", Arial, sans-serif;
+}
+
+.container.manual .key-info {
+  color: white;
+}
+
+.container.manual .key-info * {
+  color: white;
+}
+
+.container.manual .date {
+  color: white;
+}
+
+.container.manual .cross-number-1,
+.container.manual .cross-number-3 {
+  color: #000000 !important;
+}
+
+.container.manual .cross-number-2,
+.container.manual .cross-number-6 {
+  color: white;
+}
+
+.container.manual .cross-line {
+  background-color: white;
+}
+
+.container.manual .site-url {
+  color: white;
+}
+
+.manual-input-label {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.manual-inputs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.manual-number-input {
+  width: 60px;
+  height: 45px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  border: 2px solid var(--manual-input-border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--manual-primary);
+  transition: all 0.3s ease;
+}
+
+.manual-number-input:focus {
+  outline: none;
+  border-color: var(--manual-button-hover);
+  box-shadow: 0 0 8px rgba(255, 140, 0, 0.5);
+  transform: scale(1.05);
+}
+
+.manual-number-input:valid {
+  border-color: #28a745;
+  color: #FFD700; /* Yellow color for valid input */
+}
+
+.manual-number-input:invalid {
+  border-color: #dc3545;
+}
+
+.generate-manual-button {
+  display: block;
+  width: 200px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  background: var(--manual-button-bg);
+  color: white;
+  border: 2px solid #000000 !important; /* black outline to trace the button */
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.generate-manual-button:hover {
+  background: var(--manual-button-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+}
+
+.generate-manual-button:active {
+  transform: translateY(0);
+}
+
+.generate-manual-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Manual results table styles */
+.manual-results-container {
+  width: 100%;
+  margin: 20px 0;
+  padding: 0 20px;
+}
+
+.manual-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--manual-primary);
+  color: white;
+  border: 2px solid var(--manual-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.manual-results-table thead {
+  background-color: var(--manual-secondary);
+}
+
+.manual-results-table th,
+.manual-results-table td {
+  padding: 12px 8px;
+  text-align: center;
+  border: 1px solid var(--manual-border);
+  color: white;
+}
+
+.manual-results-table th {
+  font-weight: bold;
+  background-color: var(--manual-secondary);
+  color: white;
+}
+
+.manual-results-table tr:nth-child(even) {
+  background-color: rgba(255, 69, 0, 0.7);
+}
+
+.manual-results-table tr:hover {
+  background-color: rgba(255, 140, 0, 0.3);
+}
+
+.manual-results-table .input-numbers {
+  color: var(--manual-border);
+  font-weight: bold;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap; /* force numbers on the same line */
+  background: transparent;
+  padding: 8px 6px;
+}
+
+.manual-results-table .input-numbers .number-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--manual-secondary);
+  color: #fff;
+  font-weight: 800;
+  margin: 0 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  line-height: 1;
+}
+
+/* Date displayed above the numbers as a title */
+.manual-results-table .result-date {
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: none;
+  text-align: center; /* centered date */
+  width: 100%; /* ensure full-width centering */
+  display: block;
+}
+
+/* Slight spacing for the combined result cell */
+.manual-results-table .result-cell {
+  padding: 12px;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.manual-results-table .generated-key {
+  color: white;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.manual-results-table .generated-code,
+.manual-results-table .generated-filter {
+  color: white;
+  font-weight: bold;
+}
+
+.delete-result-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.delete-result-btn:hover {
+  background-color: rgba(255, 69, 0, 0.5);
+  transform: scale(1.1);
+}
+
+.delete-icon {
+  font-size: 16px;
+  color: #ff4444;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+.no-results p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Copy website button styles */
+.copy-website-button {
+  background-color: #28a745 !important;
+  border: 2px solid #28a745 !important;
+  color: white !important;
+}
+
+.copy-website-button:hover {
+  background-color: #218838 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Copy action styles */
+.copy-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.copy-action-button {
+  padding: 12px 24px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.copy-action-button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.copy-action-button:active {
+  transform: translateY(0);
+}
+
+.copy-status {
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  min-height: 20px;
+}
+
+.copy-status.success {
+  background-color: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 1px solid #28a745;
+}
+
+.copy-status.error {
+  background-color: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+/* Improve touch responsiveness and prevent double-tap delays */
+button, .calculate-button, .menu-button, .copy-action-button, .generate-manual-button {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  touch-action: manipulation; /* allow immediate pointer events */
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Fast-active minimal feedback state for instant UI */
+.calculate-button.fast-active,
+.copy-action-button.fast-active,
+.generate-manual-button.fast-active {
+  transform: translateY(0) scale(0.995);
+  transition: transform 80ms linear;
+  box-shadow: none;
+}
+
+/* Ensure pointer interactions are snappy on mobile */
+:root {
+  -webkit-tap-highlight-color: transparent;
+  --interaction-transition: 80ms;
+}
+
+/* Reduce heavy animations and prefer simple opacity/transform */
+.modal-content,
+.calculate-button,
+.copy-action-button,
+.generate-manual-button {
+  will-change: auto;
+  transition: transform var(--interaction-transition) ease, opacity var(--interaction-transition) ease;
+}
+
+/* Disable heavy text-stroke on very small devices for performance */
+@media (max-width: 480px) {
+  .numbers,
+  .cross-number {
+    -webkit-text-stroke: 0;
+    text-stroke: 0;
+  }
+}
+
+/* Reduce repaint cost for dynamic elements */
+.satellite-number,
+.nap-value,
+.nap-label,
+.valid-numbers-table td {
+  will-change: transform, opacity;
+}
+
+/* Ensure high-contrast focus ring for accessibility but lightweight */
+.calculate-button:focus,
+.copy-action-button:focus,
+.generate-manual-button:focus {
+  outline: 3px solid rgba(255,215,0,0.9);
+  outline-offset: 2px;
+  transition: outline 60ms ease;
+}
+
+/* Responsive updates */
+@media (max-width: 768px) {
+  /* Update menu button for mobile */
+  .menu-button {
+    display: flex;
+    width: 30px;
+    height: 30px;
+    background: var(--primary-bg); /* changed from var(--accent-color) to site green */
+    border: none;
+    border-radius: 50%;
+    color: var(--button-text);
+    order: -1;
+    flex-shrink: 0;
+  }
+
+  .menu-icon {
+    font-size: 12px;
+  }
+
+  /* Hide buttons by default on mobile */
+  .top-buttons {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 1000;
+    margin-left: 0;
+  }
+
+  .top-buttons.active {
+    display: flex;
+  }
+
+  /* Mobile-optimized controls layout */
+  .top-controls {
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 6px 8px;
+    gap: 10px;
+  }
+
+  /* Mobile date input improvements */
+  .date-input {
+    width: 100%;
+    max-width: 120px; 
+    margin-bottom: 10px;
+    padding: 6px;
+    font-size: 15px;
+    height: 32px; 
+  }
+
+  /* Prevent zoom on input focus */
+  input[type="date"] {
+    font-size: 16px;
+  }
+
+  body {
+    padding-top: 3px; 
+  }
+
+  /* Mobile modal improvements */
+  .modal {
+    padding: 10px;
+  }
+
+  .modal-content {
+    margin: 5vh auto;
+    width: 95%;
+    max-width: none;
+    max-height: 85vh;
+    border-radius: 8px;
+  }
+
+  /* Mobile chat improvements */
+  .chat-container {
+    position: fixed;
+    bottom: 80px;
+    right: 15px;
+    width: calc(100vw - 30px);
+    max-width: 350px;
+    z-index: 1001;
+  }
+
+  .chat-header {
+    border-radius: 8px 8px 0 0;
+    padding: 12px 15px;
+  }
+
+  .chat-input-area {
+    padding: 12px;
+  }
+
+  #chatInput {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
+  }
+
+  .send-btn {
+    padding: 10px 15px;
+    font-size: 16px;
+    min-width: 60px;
+  }
+
+  /* Remove table scaling on mobile */
+  .color-table,
+  .color-table td,
+  .color-table th,
+  .table-container,
+  .table-container * {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
+
+/* Mobile-specific utility classes */
+.mobile-hidden {
+  display: none;
+}
+
+.mobile-visible {
+  display: block;
+}
+
+/* Improve mobile performance */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better mobile scroll behavior */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Mobile-optimized animations */
+.calculate-button,
+.cross-number,
+.modal {
+  will-change: auto;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 375px) {
+  .top-controls {
+    padding: 5px 6px;
+  }
+
+  .calculate-button {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .site-label {
+    font-size: 20px;
+    font-weight: 900;
+    color: #FFD700;
+    margin-left: 10px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+}
+
+.standby-week-table {
+  width: 100%;
+  max-width: 900px;
+  margin: 20px auto;
+  border-collapse: collapse;
+  background: #FFD700 !important; /* make entire table yellow */
+  color: #000000 !important; /* dark text for contrast (ensure all table text is black) */
+  border: 2px solid #000000 !important; /* black outer border (changed to black as requested) */
+}
+
+/* Header row (make header yellow like site header) */
+.standby-week-table th {
+  background: #FFD700 !important;
+  color: #000000 !important; /* header text black */
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 16px;
+  border-bottom: 1px solid #000000 !important; /* black separator under header */
+}
+
+/* Make every cell in the table use the same yellow background and dark text,
+   with solid black borders separating cells so the table is visually one yellow block */
+.standby-week-table td {
+  background: #FFD700 !important;
+  color: #000000 !important; /* force all cell text to black */
+  font-weight: 700;
+  padding: 10px 12px;
+  border: 1px solid #000000 !important; /* black separators between all cells */
+}
+
+/* Ensure date inside table headers or .table-date uses black text too */
+.standby-week-table .table-date,
+.standby-week-table th .table-date,
+.standby-week-table td .table-date {
+  color: #000000 !important;
+}
+
+/* Sidebar (professional left drawer) */
+.sidebar {
+  position: fixed;
+  left: -320px;
+  top: 0;
+  height: 100dvh;
+  width: 320px;
+  max-width: 85%;
+  background: #0F3B29;
+  color: white;
+  box-shadow: 2px 0 20px rgba(0,0,0,0.6);
+  z-index: 2000;
+  transition: left 320ms cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  flex-direction: column;
+  padding: 0; /* remove internal padding in favor of inner containers */
+  overflow: hidden; /* keep footer visible while content scrolls */
+}
+
+/* Content area of sidebar is scrollable */
+.sidebar .sidebar-header {
+  padding: 18px;
+}
+.sidebar .sidebar-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 18px;
+}
+
+/* keep footer sticky at bottom and always visible */
+.sidebar .sidebar-footer {
+  flex: 0 0 auto;
+  position: relative;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 10px 12px;
+  background: linear-gradient(to top, rgba(0,0,0,0.08), transparent);
+}
+
+/* Video buttons layout */
+.sidebar .video-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar .video-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  width: 30%;
+  padding: 6px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.sidebar .video-btn img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+  object-fit: cover;
+}
+
+/* ensure sidebar open state still works */
+.sidebar.open { left: 0; }
+
+.sidebar-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom: 10px;
+}
+.close-sidebar {
+  background: transparent;
+  border: none;
+  color: var(--accent-color);
+  font-size: 28px;
+  cursor: pointer;
+}
+.sidebar-title { font-weight:700; color: var(--accent-color); }
+
+.sidebar-nav { margin-top:12px; }
+.sidebar-nav ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+.sidebar-nav a, .sidebar-nav button {
+  display:block;
+  text-decoration:none;
+  color: #4a0000;
+  padding:10px 12px;
+  border-radius:8px;
+  background: var(--accent-color);
+  border: 1px solid rgba(0,0,0,0.06);
+  text-align:left;
+}
+.sidebar-nav a:hover, .sidebar-nav button:hover { background: rgba(255,255,255,0.06); }
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1990;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 220ms ease;
+}
+.sidebar-overlay.visible { opacity:1; visibility: visible; }
+
+/* Make menu-button visually indicate sidebar on desktop */
+.menu-button.active { box-shadow: 0 4px 14px rgba(0,0,0,0.25); transform: none; }
+
+/* Responsive: narrower sidebar on small screens */
+@media (max-width: 480px) {
+  .sidebar { width: 260px; left: -260px; }
+}
+
+.manual-result-card {
+  background: #000000 !important; /* black background for Terminal balsa plus */
+  border: 1px solid #000000 !important; /* black border to keep a solid block look */
+  color: #ffffff !important; /* force all card text to white */
+  padding: 12px !important;
+  border-radius: 8px !important;
+  min-height: 90px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
+}
+
+/* Ensure the country label inside a posted result card is always white,
+   overriding other broader color rules (e.g. .container.manual text color). */
+.manual-result-card .result-country-label,
+.manual-result-card .result-date {
+  color: #ffffff !important;
+  background: transparent !important;
+  text-shadow: none !important;
+}
+
+.manual-result-card .number-tile {
+  background: #FF8C00 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25) !important;
+}
+
+.manual-result-card .result-date {
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: none;
+  text-align: center; /* centered date */
+  width: 100%; /* ensure full-width centering */
+  display: block;
+}
+
+.manual-result-card .meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.manual-result-card .manual-result-header {
+  display: flex;
+  justify-content: center; /* ensure header content is centered */
+  align-items: center;
+  gap: 8px;
+}
+
+/* center the country label and date inside the card */
+.manual-result-card .result-country-label,
+.manual-result-card .result-date {
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+.manual-prompt {
+  color: #FFD700;
+  background: rgba(255,215,0,0.06);
+  border: 1px solid rgba(255,215,0,0.12);
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-weight: 700;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* blinking indicator on the first input when prompting */
+.manual-number-input.focusing {
+  position: relative;
+  outline: 2px solid rgba(255,140,0,0.25);
+  box-shadow: 0 0 0 0 rgba(255,140,0,0.0);
+  transition: box-shadow 120ms linear;
+}
+
+/* create a blinking caret pseudo-element on the focusing input */
+.manual-number-input.focusing::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60%;
+  background: #FF8C00;
+  animation: manualCaretBlink 1s steps(1) infinite;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+@keyframes manualCaretBlink {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ensure focusing input has sufficient padding so pseudo-caret doesn't overlap content */
+.manual-number-input.focusing {
+  padding-right: 18px;
+}
+
+.manual-number-input.duplicate-shake {
+  animation: duplicateShake 320ms ease-in-out;
+}
+
+@keyframes duplicateShake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+
+.benin-card {
+  background: #0b5ea8 !important; /* deep blue */
+  border: 2px solid #ffffff !important;
+}
+.benin-card .result-country-label,
+.benin-card .result-date { color: #ffffff !important; }
+.benin-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  margin: 0 6px;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
+}
+
+/* New: Niger card styling (orange theme) */
+.niger-card {
+  background: linear-gradient(180deg, #FF8C00 0%, #FF6A00 100%) !important; /* orange gradient */
+  border: 2px solid #ffffff !important;
+}
+.niger-card .result-country-label,
+.niger-card .result-date { color: #ffffff !important; }
+.niger-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  margin: 0 6px;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
+}
+
+/* Add styles for the standby week table */
+.standby-week-table td {
+  background: #FFD700 !important;
+  color: #000000 !important; /* force all cell text to black */
+  font-weight: 700;
+  padding: 10px 12px;
+  border: 1px solid #000000 !important; /* black separators between all cells */
+}

@@ -1,0 +1,743 @@
+/*
+ * Cidmap mobile-modern
+ *
+ * Presentation-only layer for the main application shell. It is deliberately
+ * loaded last so the legacy views, controllers and inline content keep their
+ * existing contracts. This file owns responsive geometry, touch ergonomics,
+ * visual hierarchy and overflow protection only.
+ */
+
+:root {
+  --cid-blue: #1769e0;
+  --cid-blue-deep: #0d4db7;
+  --cid-ink: #162033;
+  --cid-muted: #667085;
+  --cid-surface: #ffffff;
+  --cid-canvas: #f5f7fb;
+  --cid-line: #e4e9f1;
+  --cid-header-height: 50px;
+  --cid-nav-height: 70px;
+  --cid-content-gutter: clamp(12px, 4vw, 24px);
+  --cid-safe-top: env(safe-area-inset-top, 0px);
+  --cid-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --cid-motion: 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  overflow-x: clip;
+  background-color: #f0f2f5 !important;
+  background-image: none !important;
+  color: var(--cid-ink);
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  overflow-x: clip !important;
+  background-color: #f0f2f5 !important;
+  background-image: none !important;
+  color: var(--cid-ink);
+  font-family: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent the legacy tap delay on touch browsers. Navigation buttons
+     should acknowledge a tap in the same gesture frame. */
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(23, 105, 224, .28);
+  outline-offset: 2px;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/*
+ * The page canvas must continue behind the floating navigation. The bottom
+ * inset belongs to the scrollable content's internal breathing room, never
+ * to the viewport surface itself.
+ */
+#app,
+#appRoot,
+main,
+.content-container,
+.main-wrapper,
+.main-content {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  background-color: #f0f2f5 !important;
+  background-image: none !important;
+}
+
+/* Persistent top chrome */
+
+.site-header {
+  height: calc(var(--cid-header-height) + var(--cid-safe-top)) !important;
+  min-height: calc(var(--cid-header-height) + var(--cid-safe-top)) !important;
+  padding-top: var(--cid-safe-top) !important;
+  background: rgba(255, 255, 255, .96) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.site-header .header-inner {
+  width: min(100%, 1180px) !important;
+  height: var(--cid-header-height) !important;
+  min-height: var(--cid-header-height) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 var(--cid-content-gutter) !important;
+  gap: 10px !important;
+}
+
+.site-header .search {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  visibility: hidden !important;
+}
+
+.site-header .logo {
+  min-width: 0;
+  color: var(--cid-ink) !important;
+  font-family: "Noto Sans", system-ui, sans-serif !important;
+  font-size: clamp(16px, 4vw, 19px) !important;
+  font-weight: 900 !important;
+  letter-spacing: -.04em !important;
+  text-shadow: none !important;
+}
+
+.site-header .logo img {
+  width: 36px !important;
+  height: 36px !important;
+  border: 1px solid rgba(23, 105, 224, .1);
+  border-radius: 11px !important;
+  box-shadow: 0 4px 10px rgba(20, 39, 72, .12) !important;
+}
+
+.site-header .actions {
+  display: flex !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  gap: 7px !important;
+}
+
+#shareBtn {
+  order: 2 !important;
+}
+
+#starBtn {
+  order: 1 !important;
+}
+
+.site-header .actions .top-action-btn,
+.site-header .actions .notification-bell-button {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  flex: 0 0 44px !important;
+  border: 1px solid rgba(23, 105, 224, .14) !important;
+  border-radius: 13px !important;
+  background: rgba(23, 105, 224, .07) !important;
+  color: var(--cid-blue) !important;
+  transition: transform var(--cid-motion), background-color var(--cid-motion),
+    box-shadow var(--cid-motion) !important;
+}
+
+.site-header .actions .top-action-btn:hover,
+.site-header .actions .top-action-btn:focus-visible,
+.site-header .actions .notification-bell-button:hover,
+.site-header .actions .notification-bell-button:focus-visible {
+  background: rgba(23, 105, 224, .14) !important;
+  box-shadow: 0 5px 14px rgba(23, 105, 224, .12) !important;
+}
+
+.site-header .actions .top-action-btn:active,
+.site-header .actions .notification-bell-button:active {
+  transform: scale(.95) !important;
+}
+
+/* One predictable touch scroll surface for every primary view. */
+
+#results,
+body[data-cid-dedicated-view] #categoriesView,
+body[data-cid-dedicated-view] #croixViewContainer,
+body[data-cid-dedicated-view] #tableauxViewContainer,
+body[data-cid-dedicated-view] #matrixCalculatorPanel,
+body[data-cid-dedicated-view] #profileViewContainer {
+  scrollbar-gutter: stable;
+  overscroll-behavior: none;
+}
+
+#results {
+  inset: calc(var(--cid-header-height) + var(--cid-safe-top)) 0 0 0 !important;
+  padding: 12px var(--cid-content-gutter)
+    calc(30px + var(--cid-nav-height) + var(--cid-safe-bottom)) !important;
+  background: transparent !important;
+}
+
+body.tableaux-active #tableauxViewContainer,
+body.croix-active #croixViewContainer,
+body[data-cid-dedicated-view] #categoriesView,
+body[data-cid-dedicated-view] #croixViewContainer,
+body[data-cid-dedicated-view] #tableauxViewContainer,
+body[data-cid-dedicated-view] #matrixCalculatorPanel,
+body[data-cid-dedicated-view] #profileViewContainer {
+  inset: calc(var(--cid-header-height) + var(--cid-safe-top)) 0 0 0 !important;
+}
+
+#results > *,
+#cid-home-feed {
+  width: min(100%, 720px);
+  margin-inline: auto;
+}
+
+#cid-home-feed {
+  padding: 4px 0 20px !important;
+}
+
+/* Feed and data surfaces */
+
+.cid-feed-page-heading {
+  min-height: 42px;
+  margin-bottom: 14px !important;
+  padding-inline: 2px !important;
+}
+
+.cid-feed-page-heading h1,
+#matrixPageTitle {
+  color: var(--cid-ink) !important;
+  font-size: clamp(20px, 5vw, 25px) !important;
+  font-weight: 900 !important;
+  letter-spacing: -.045em !important;
+}
+
+.cid-feed-today,
+.result-date,
+.fb-time,
+.cid-fb-time {
+  color: var(--cid-muted) !important;
+}
+
+.cid-fb-post,
+.fb-post,
+.country-section,
+.categories-option,
+.matrice-loader,
+.matrice-error,
+.profile-native-shell,
+.auth-card {
+  border: 1px solid var(--cid-line) !important;
+  border-radius: 18px !important;
+  background: var(--cid-surface) !important;
+  box-shadow: 0 8px 26px rgba(20, 39, 72, .06) !important;
+}
+
+.cid-fb-post,
+.fb-post {
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  margin: 0 8px 16px !important;
+}
+
+.cid-fb-post-header,
+.fb-post-header {
+  padding: 14px 16px 10px !important;
+}
+
+.cid-fb-post-copy,
+.fb-post-body {
+  padding-inline: 16px !important;
+}
+
+.cid-fb-post-copy {
+  margin-bottom: 4px !important;
+  padding-bottom: 0 !important;
+}
+
+.cid-fb-more-button {
+  margin-bottom: 4px !important;
+}
+
+.cid-fb-media,
+.cid-fb-cross-media {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 0 0 17px 17px !important;
+}
+
+.cid-fb-image-media {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 0 0 17px 17px !important;
+}
+
+.cid-fb-image-media .cid-fb-media-image {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 0 17px 17px !important;
+}
+
+.cid-fb-actions {
+  margin-top: 0 !important;
+  padding: 6px 12px !important;
+}
+
+.cid-fb-summary {
+  min-height: 32px !important;
+  margin-top: 0 !important;
+  padding: 6px 12px !important;
+}
+
+.cid-fb-action {
+  min-height: 46px !important;
+  border-radius: 11px !important;
+}
+
+.country-section {
+  max-width: 100% !important;
+  padding: clamp(14px, 4vw, 20px) !important;
+}
+
+.results-container {
+  width: 100%;
+  gap: 14px !important;
+}
+
+.matrix-keyboard-container {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px !important;
+}
+
+.matrix,
+.keyboard,
+.cerveau {
+  min-width: 0 !important;
+  padding: 10px !important;
+  border: 1px solid var(--cid-line) !important;
+  border-radius: 13px !important;
+  background: #fbfcfe !important;
+}
+
+table {
+  max-width: 100%;
+}
+
+#archiveContent,
+#rejectedContent,
+#rejectedInlineContainer,
+#rejectedInlineMain {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Form controls stay readable on iOS and comfortably tappable. */
+
+input,
+textarea,
+select {
+  max-width: 100%;
+  min-height: 44px;
+  border-color: var(--cid-line) !important;
+  border-radius: 12px !important;
+  color: var(--cid-ink);
+  background: #fff;
+  font-size: 16px !important;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+.copy-button,
+.categories-option,
+.cid-fb-more-button,
+.cid-fb-share-option,
+.plant-btn {
+  min-height: 44px;
+}
+
+/* Dedicated sections use the same quiet canvas and readable side gutters. */
+
+body[data-cid-dedicated-view] #categoriesView,
+body[data-cid-dedicated-view] #croixViewContainer,
+body[data-cid-dedicated-view] #tableauxViewContainer,
+body[data-cid-dedicated-view] #matrixCalculatorPanel,
+body[data-cid-dedicated-view] #profileViewContainer {
+  padding-left: var(--cid-content-gutter) !important;
+  padding-right: var(--cid-content-gutter) !important;
+  padding-bottom: calc(28px + var(--cid-nav-height) + var(--cid-safe-bottom)) !important;
+  background: transparent !important;
+}
+
+body[data-cid-dedicated-view="croix"] #croixViewContainer {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.categories-view-inner {
+  width: min(100%, 720px) !important;
+  padding-top: 18px !important;
+}
+
+.categories-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px !important;
+}
+
+.categories-option {
+  width: 100% !important;
+  min-height: 58px !important;
+  padding: 14px !important;
+  color: var(--cid-ink) !important;
+  text-align: left;
+  transition: transform var(--cid-motion), border-color var(--cid-motion),
+    box-shadow var(--cid-motion) !important;
+}
+
+.categories-option:hover,
+.categories-option:focus-visible {
+  border-color: rgba(23, 105, 224, .42) !important;
+  background: #fff !important;
+  box-shadow: 0 8px 18px rgba(23, 105, 224, .1) !important;
+}
+
+.categories-option:active {
+  transform: scale(.98);
+}
+
+/* Modern floating bottom navigation, with a safe-area-aware touch target. */
+
+.category-bar {
+  left: 50% !important;
+  right: auto !important;
+  bottom: calc(10px + var(--cid-safe-bottom)) !important;
+  width: min(calc(100% - 20px), 640px) !important;
+  height: var(--cid-nav-height) !important;
+  min-height: var(--cid-nav-height) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  transform: translateX(-50%) !important;
+}
+
+.category-bar .inner {
+  display: flex !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 5px !important;
+  gap: 4px !important;
+  overflow: hidden !important;
+  justify-content: stretch !important;
+  border: 1px solid rgba(226, 232, 240, .95) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, .96) !important;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, .14) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.category-bar .inner #nosReseauxButton {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.category-bar .inner #matrixCalcBtn {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.site-plant {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.category-bar .inner .category-item {
+  display: inline-flex !important;
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 6px 5px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  color: #70809a !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  gap: 4px !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1.1 !important;
+  transition: background-color var(--cid-motion), color var(--cid-motion),
+    transform var(--cid-motion) !important;
+}
+
+.category-bar .inner .category-item .nav-icon {
+  display: block !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.9 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.category-bar .inner .category-item .nav-label {
+  display: block !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+}
+
+.category-bar .inner .category-item.active,
+.category-bar .inner .category-item[aria-current="page"],
+.category-bar .inner .category-item[aria-pressed="true"] {
+  color: var(--cid-header-accent, var(--cid-blue)) !important;
+  background: color-mix(
+    in srgb,
+    var(--cid-header-accent, var(--cid-blue)) 12%,
+    transparent
+  ) !important;
+  box-shadow: none !important;
+}
+
+/* Date/cross remains proportional and never exceeds the phone viewport. */
+
+#redCross,
+#redCrossClone {
+  width: min(100%, 380px) !important;
+  height: min(100%, 380px) !important;
+  max-width: calc(100vw - 24px) !important;
+  max-height: calc(100vw - 24px) !important;
+}
+
+/* Dialogs become sheets on phones, while retaining centered dialogs on wide
+   screens. No dialog markup or interaction logic is changed. */
+
+@media (max-width: 640px) {
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .modal-window {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: min(88dvh, 760px) !important;
+    border-radius: 22px 22px 0 0 !important;
+    padding-bottom: var(--cid-safe-bottom) !important;
+  }
+
+  .modal-header {
+    padding: 16px !important;
+  }
+
+  .modal-body {
+    max-height: calc(88dvh - 74px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --cid-header-height: 50px;
+    --cid-nav-height: 66px;
+    --cid-content-gutter: 12px;
+  }
+
+  .site-header .header-inner {
+    gap: 7px !important;
+  }
+
+  .site-header .logo img {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .site-header .actions {
+    gap: 5px !important;
+  }
+
+  .site-header .actions .top-action-btn,
+  .site-header .actions .notification-bell-button {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    flex-basis: 44px !important;
+    border-radius: 12px !important;
+  }
+
+  #results {
+    padding-top: 10px !important;
+  }
+
+  .cid-fb-post,
+  .fb-post,
+  .country-section {
+    border-radius: 16px !important;
+  }
+
+  .cid-fb-post-header,
+  .fb-post-header {
+    padding-inline: 13px !important;
+  }
+
+  .cid-fb-post-copy,
+  .fb-post-body {
+    padding-inline: 13px !important;
+  }
+
+  .matrix-keyboard-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  .categories-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .category-bar .inner .category-item {
+    font-size: 10px !important;
+  }
+
+  .category-bar .inner .category-item .nav-icon {
+    width: 19px !important;
+    height: 19px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .site-header .logo {
+    font-size: 15px !important;
+  }
+
+  .site-header .actions .top-action-btn,
+  .site-header .actions .notification-bell-button {
+    width: 44px !important;
+    min-width: 44px !important;
+    flex-basis: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .category-bar {
+    width: calc(100% - 12px) !important;
+    bottom: calc(6px + var(--cid-safe-bottom)) !important;
+  }
+
+  .category-bar .inner .category-item {
+    padding-inline: 2px !important;
+    font-size: 9px !important;
+  }
+}
+
+@media (min-width: 760px) {
+  :root {
+    --cid-nav-height: 68px;
+  }
+
+  #results {
+    padding-top: 18px !important;
+  }
+
+  .category-bar {
+    bottom: calc(16px + var(--cid-safe-bottom)) !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  :root {
+    --cid-header-height: 48px;
+    --cid-nav-height: 58px;
+  }
+
+  .category-bar .inner .category-item .nav-label {
+    display: none !important;
+  }
+
+  .category-bar .inner .category-item {
+    flex-direction: row !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

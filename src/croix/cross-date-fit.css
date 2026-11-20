@@ -1,0 +1,28 @@
+/*
+ * The date occupies the same protected interval as the French reference
+ * composition: 7% breathing room on each side of the 380px square. The
+ * fitting script changes only font-size inside this box.
+ */
+#redCross,
+#redCrossClone {
+  --cross-date-inset: 7%;
+}
+
+#redCross #redCrossDate,
+#redCross #redCrossDate-clone,
+#redCrossClone #redCrossDate,
+#redCrossClone #redCrossDate-clone {
+  left: var(--cross-date-inset) !important;
+  right: var(--cross-date-inset) !important;
+  width: auto !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  justify-content: center !important;
+  transform: none !important;
+}

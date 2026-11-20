@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Installer Cidmap — PWA</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f0f2f5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/src/shared/images/squirrel-croix-192.png">
+  <script type="module" src="/src/shared/pwa-register.js"></script>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#ffffff;
+      --accent:#0962D6;
+      --muted:#666;
+      --radius:12px;
+    }
+    html,body{height:100%;margin:0;font-family:Inter, "Noto Sans", Arial, sans-serif;background:var(--bg);color:#111}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
+    .card{width:100%;max-width:760px;background:var(--card);border-radius:16px;box-shadow:0 16px 40px rgba(2,6,23,0.08);padding:22px;display:flex;flex-direction:column;gap:14px}
+    h1{margin:0;font-size:20px;color:var(--accent);font-weight:800}
+    p{margin:0;color:var(--muted);line-height:1.45}
+    .lead{font-size:15px;color:#222}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .btn{appearance:none;border:0;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
+    .btn-primary{background:var(--accent);color:#fff;box-shadow:0 10px 30px rgba(9,98,214,0.14)}
+    .btn-secondary{background:#f3f4f6;color:#111;border:1px solid rgba(0,0,0,0.06)}
+    .hint{font-size:13px;color:var(--muted)}
+    .cards{display:grid;grid-template-columns:1fr;gap:12px}
+    .platform{background:#fafafa;padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04)}
+    .platform h3{margin:0 0 8px 0;font-size:14px;color:#0A1840}
+    .small{font-size:13px;color:var(--muted)}
+    .footer{margin-top:6px;font-size:13px;color:var(--muted)}
+    @media(min-width:720px){ .cards{grid-template-columns:1fr 1fr} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="card" role="main" aria-labelledby="pageTitle">
+      <h1 id="pageTitle">Installer Cidmap comme application</h1>
+      <p class="lead">Ajoutez Cidmap à votre appareil pour un accès rapide, une expérience installée et (selon le navigateur) un fonctionnement hors‑connexion amélioré.</p>
+
+      <div class="actions" aria-hidden="false">
+        <button id="installNowBtn" class="btn btn-primary" disabled>Installer maintenant</button>
+        <button id="manualHelpBtn" class="btn btn-secondary" type="button">Aide d'installation manuelle</button>
+      </div>
+
+      <div id="status" class="hint" role="status" aria-live="polite">Vérification de la disponibilité d'installation…</div>
+
+      <section class="cards" aria-label="Instructions d'installation">
+        <div class="platform" id="androidCard">
+          <h3>Android (Chrome / Edge)</h3>
+          <p class="small">Si votre navigateur prend en charge l'installation PWA, appuyez sur <strong>Installer maintenant</strong> ci‑dessous ou utilisez le menu du navigateur (⋮) → <em>Ajouter à l'écran d'accueil</em>.</p>
+        </div>
+        <div class="platform" id="iosCard">
+          <h3>iOS (Safari)</h3>
+          <p class="small">Ouvrez le menu de partage (le carré avec la flèche) puis choisissez <em>Sur l'écran d'accueil</em>. Safari nève généralement pas l'invite beforeinstallprompt, utilisez l'aide manuelle si nécessaire.</p>
+        </div>
+        <div class="platform" id="desktopCard">
+          <h3>Bureau (Chrome / Edge)</h3>
+          <p class="small">Vous pouvez aussi installer depuis le navigateur via le menu (⋮) → <em>Installer Cidmap</em> ou l'icône d'installation dans la barre d'adresse.</p>
+        </div>
+        <div class="platform" id="fallbackCard">
+          <h3>Que faire si ça ne fonctionne pas ?</h3>
+          <p class="small">Assurez‑vous que vous visitez via HTTPS, que le manifeste et le service worker sont présents (ce site les propose). Si nécessaire, utilisez les instructions manuelles ci‑dessus.</p>
+        </div>
+      </section>
+
+      <div class="footer">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <small>Besoin d'aide ?</small>
+          <a href="/src/auth/auth.html" style="color:var(--accent);font-weight:800;text-decoration:none">Contactez‑nous</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function(){
+      const installBtn = document.getElementById('installNowBtn');
+      const manualHelpBtn = document.getElementById('manualHelpBtn');
+      const statusEl = document.getElementById('status');
+
+      // Store the beforeinstallprompt event so we can trigger it later
+      let deferredPrompt = null;
+
+      // Update UI when beforeinstallprompt fires
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.disabled = false;
+        statusEl.textContent = 'Prêt à installer — appuyez sur "Installer maintenant".';
+      });
+
+      // If page loaded in standalone mode already, hide install option
+      function updateStandaloneState(){
+        const isStandalone = navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+        if (isStandalone) {
+          installBtn.style.display = 'none';
+          statusEl.textContent = 'Cidmap est déjà installé sur cet appareil.';
+        }
+      }
+      updateStandaloneState();
+
+      // Click handler to show native install prompt
+      installBtn.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        if (!deferredPrompt) {
+          // fallback: instruct manual install
+          statusEl.textContent = 'Installation automatique indisponible — utilisez les instructions manuelles ci‑dessus.';
+          return;
+        }
+        try {
+          // show native prompt
+          deferredPrompt.prompt();
+          // wait for the user's choice
+          const choice = await deferredPrompt.userChoice;
+          if (choice && choice.outcome === 'accepted') {
+            statusEl.textContent = 'Merci — l\'installation a été acceptée.';
+            installBtn.disabled = true;
+          } else {
+            statusEl.textContent = 'Installation annulée par l\'utilisateur.';
+          }
+        } catch (err) {
+          console.warn('install prompt failed', err);
+          statusEl.textContent = 'Impossible d\'afficher l\'invite d\'installation.';
+        } finally {
+          // Clear reference per spec best practice
+          deferredPrompt = null;
+        }
+      });
+
+      // Manual help button shows a concise platform-specific hint dialog (accessible)
+      manualHelpBtn.addEventListener('click', () => {
+        const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const msg = isIOS
+          ? "iOS — Ouvrez le menu de partage (le carré avec la flèche) puis choisissez « Sur l'écran d'accueil ». Ensuite, confirmez l'ajout."
+          : "Android/Desktop — Ouvrez le menu du navigateur (⋮) et choisissez « Ajouter à l'écran d'accueil » ou « Installer ». Sur desktop, cherchez l'icône d'installation dans la barre d'adresse.";
+        // Accessible alert-style modal using alert() for simplicity and guaranteed visibility
+        alert(msg);
+      });
+
+      // Accessibility: also respond to keyboard Enter when focused
+      installBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter') installBtn.click(); });
+
+      // Show contextual hints if browser never fires beforeinstallprompt after a short delay
+      setTimeout(() => {
+        if (!deferredPrompt && !navigator.standalone && !window.matchMedia('(display-mode: standalone)').matches) {
+          statusEl.textContent = 'Si le bouton "Installer maintenant" n\'apparait pas, suivez les instructions manuelles ci‑dessus.';
+          installBtn.disabled = true;
+        }
+      }, 1200);
+
+      // Make deferredPrompt available to opener windows (helps when user navigates from index that saved the event)
+      try { window.deferredPrompt = deferredPrompt; } catch(e){}
+
+      // Listen for appinstalled event to update UI
+      window.addEventListener('appinstalled', () => {
+        statusEl.textContent = 'Cidmap a été installé — merci !';
+        installBtn.style.display = 'none';
+        try { installBtn.disabled = true; } catch(e){}
+      });
+
+    })();
+  </script>
+</body>
+</html>

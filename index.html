@@ -1,0 +1,2672 @@
+<html translate="no"><head>
+<script>
+  // Mobile Safari can restore the previous document position before the app
+  // shell is mounted. Keep the first frame at the top so the site header is
+  // never restored off-screen during the loading transition.
+  window.__cidBootStartedAt = performance.now();
+  try { window.history.scrollRestoration = 'manual'; } catch (_) {}
+  try { window.scrollTo(0, 0); } catch (_) {}
+  /*
+   * Safari can expose a visual viewport offset before external stylesheets
+   * finish loading. Seed the shell geometry in the parser's first frame so
+   * the fixed header/nav never discover that offset only at the end of load.
+   * scroll-stability.js keeps this value synchronized after the shell is
+   * mounted.
+   */
+  try {
+    const viewport = window.visualViewport;
+    const offsetTop = Math.max(0, Number(viewport?.offsetTop) || 0);
+    const visibleHeight = Math.max(1, Number(viewport?.height) || window.innerHeight || 1);
+    const bottomExtension = Math.max(
+      0,
+      visibleHeight + offsetTop - (window.innerHeight || document.documentElement.clientHeight || visibleHeight)
+    );
+    document.documentElement.style.setProperty(
+      '--cid-visual-offset-top',
+      `${offsetTop}px`
+    );
+    document.documentElement.style.setProperty(
+      '--cid-visual-bottom-extension',
+      `${bottomExtension}px`
+    );
+  } catch (_) {}
+
+  /*
+   * Absolute last-resort escape hatch for browsers/PWA sessions where a
+   * resource never dispatches `load`. The shell is intentionally paintable
+   * early, so this only releases the route lock if an optional controller is
+   * stuck.
+   */
+  window.setTimeout(() => {
+    const root = document.documentElement;
+    if (!root.classList.contains('cid-booting')) return;
+    root.classList.add('cid-render-ready');
+    root.classList.remove('cid-render-pending', 'cid-booting');
+    window.__cidRenderReady = true;
+    document.body?.setAttribute('aria-busy', 'false');
+  }, 650);
+
+  // The Supabase client restores its session asynchronously. Read its
+  // persisted auth envelope before the rest of the application can paint so
+  // an already signed-in visitor never sees the public home screen or the
+  // sign-in form for one frame. This is only an optimistic hint; bootstrap
+  // confirms the session with Supabase before releasing the shell.
+  (() => {
+    let authenticatedHint = false;
+    try {
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index) || '';
+        if (!/-auth-token$/.test(key)) continue;
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        if (parsed?.access_token || parsed?.user?.id) {
+          authenticatedHint = true;
+          window.__cidInitialSessionHint = parsed;
+          break;
+        }
+      }
+    } catch (_) {}
+    document.documentElement.dataset.cidAuthHint = authenticatedHint
+      ? 'authenticated'
+      : 'visitor';
+    document.documentElement.classList.add('cid-booting');
+  })();
+
+  // Mark the requested/restored in-document view before styles and controllers
+  // load. This prevents Accueil from flashing during a deep link or reload.
+  (() => {
+    const aliases = {
+      home: 'accueil',
+      accueil: 'accueil',
+      categories: 'categories',
+      'categories-cidmap-virtuel': 'categories-cidmap-virtuel',
+      tableaux: 'tableaux',
+      notifications: 'notifications',
+      early: 'anticipe',
+      anticipe: 'anticipe',
+      anticipees: 'anticipe',
+      matrice: 'matrice',
+      matrices: 'matrice',
+      croix: 'croix',
+      'croix nationale': 'croix',
+      'croix-nationale': 'croix',
+      rejetes: 'rejetes',
+      'boules-rejetees': 'rejetes',
+      'numeros-rejetes': 'rejetes',
+      calculator: 'calculator',
+      calculatrice: 'calculator',
+      'dechiffrement-mt': 'calculator',
+      resultats: 'categories-resultat-aide',
+      'categories-resultat-aide': 'categories-resultat-aide',
+      statistiques: 'global-statistics',
+      'statistiques-globales': 'global-statistics',
+      'global-statistics': 'global-statistics',
+      profil: 'profil',
+      profile: 'profil',
+      compte: 'profil',
+      account: 'profil',
+      wallet: 'wallet',
+      portefeuille: 'wallet',
+      jetons: 'wallet',
+      history: 'history',
+      historique: 'history',
+      historiques: 'history'
+    };
+    let section = new URLSearchParams(window.location.search).get('section');
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (!section && params.get('account') === '1') section = 'profil';
+      if (!section) {
+        const pathSection = {
+          '/accueil': 'accueil',
+          '/home': 'accueil',
+          '/categories': 'categories',
+          '/anticipe': 'anticipe',
+          '/anticipation': 'anticipe',
+          '/tableaux': 'tableaux',
+          '/compte': 'profil',
+          '/profil': 'profil',
+          '/profile': 'profil',
+          '/account': 'profil'
+        }[String(window.location.pathname || '').replace(/\/+$/, '')];
+        if (pathSection) section = pathSection;
+      }
+      if (!section) {
+        const raw = window.sessionStorage.getItem('cidmap:route-state:v1');
+        const saved = raw ? JSON.parse(raw) : null;
+        section = saved?.section || '';
+      }
+    } catch (_) {}
+    const normalized = aliases[String(section || '').trim().toLowerCase()] || 'accueil';
+    document.documentElement.dataset.cidInitialSection = normalized;
+  })();
+</script>
+<!-- Cache lifecycle runs before DOMContentLoaded and before route modules.
+     It invalidates stale application data without blocking first paint. -->
+<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v40" defer></script>
+<base href="/">
+<link rel="canonical" href="https://cidmap.com/" />
+<meta name="description" content="Cidmap — publications et programmes du jour." />
+<meta name="google" content="notranslate" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://cidmap.com/" />
+<meta property="og:site_name" content="Cidmap" />
+<meta property="og:title" content="Cidmap" />
+<meta property="og:description" content="Retrouvez les publications et programmes du jour sur Cidmap." />
+<meta property="og:image" content="https://cidmap.com/src/shared/images/squirrel-croix-512.png" />
+<meta property="og:image:alt" content="Logo Cidmap" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="512" />
+<meta property="og:image:height" content="512" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Cidmap" />
+<meta name="twitter:description" content="Publications et programmes du jour." />
+<meta name="twitter:image" content="https://cidmap.com/src/shared/images/squirrel-croix-512.png" />
+<meta name="apple-mobile-web-app-title" content="Cidmap" />
+<link rel="apple-touch-icon" href="/src/shared/images/squirrel-croix-192.png">
+<link id="cidDynamicFavicon" rel="icon" type="image/png" href="/src/shared/images/squirrel-croix-192.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Cidmap</title>
+<style>
+  /*
+   * This is intentionally inline and tiny: it is the only style allowed to
+   * decide what the parser's first frame looks like. The header and Accueil
+   * skeleton can paint before the auth/data controllers finish.
+   */
+  html.cid-booting body > * {
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+  html.cid-booting #cidSplash {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  html.cid-booting::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2147483640;
+    background: #fff;
+  }
+  html.cid-booting body {
+    overflow: hidden !important;
+  }
+
+  /*
+   * Keep the app shell and its local skeleton visible while data/controllers
+   * hydrate. The old rule hid every body child until the slowest module and
+   * made a fast cached visit look like a blank page.
+   */
+  html.cid-booting body > * {
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+  html.cid-booting .site-header,
+  html.cid-booting .category-bar,
+  html.cid-booting[data-cid-initial-section="accueil"] #results {
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  html.cid-booting[data-cid-initial-section]:not([data-cid-initial-section="accueil"]) #results {
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+  html.cid-render-ready:not(.cid-booting) body > * {
+    visibility: visible !important;
+    opacity: 1 !important;
+    transition: opacity 180ms ease-out !important;
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://vgebpqzyawnoezgarmfn.supabase.co" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Audiowide&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="/src/shared/splash-squirrel.css?squirrel-v6-red-sync">
+<meta name="theme-color" content="#f0f2f5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, viewport-fit=cover, interactive-widget=resizes-content">
+<style>
+:root {
+  --main-bg-color: #FFFFFF; /* changed to pure white for a clearer main display area */
+  --section-bg-color: #FFFFFF;
+  --text-color: #111111;
+  --cote-divoire-color: #FF8C00;
+  --niger-color: #FFFFFF;
+  --ghana-color: #008000;
+  --benin-color: #FF0000;
+  --archive-bg-color: #FF0000;
+
+  /* New: configurable bottom chrome height so white content can stretch exactly up to the blue category bar */
+  --category-bar-height: 64px; /* matches the visual height of the blue bottom bar */
+}
+
+/* Catégories is a real document-flow section. Legacy data/preload handlers
+   may try to reveal the Accueil cross when their work finishes; keep that
+   unrelated view out of the frame while Catégories is active. */
+html[data-cid-initial-section="categories"] #redCross,
+html[data-cid-initial-section="categories"] #redCrossClone,
+body.categories-active #redCross,
+body.categories-active #redCrossClone {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* Cross date button wrapper — placed in page flow between header/white area and the cross.
+   Hidden by default; the active Croix controller reveals it when needed. */
+.cross-date-button { display: none; width: 100%; max-width: 380px; margin: 12px auto 6px; text-align: center; z-index: 1100; }
+.cross-date-button #openCrossDateBtn { display: inline-block; font-size: 14px; }
+
+/* The official shell owns all header and bottom-navigation presentation. */
+.matrice-active { background-color: #FFFFFF; color: #0A1840; }
+.results-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px;
+}
+.country-section {
+  background-color: #ffffff; /* was var(--section-bg-color) */
+  color: #111111; /* ensure text is black */
+  border-radius: 10px;
+  padding: 12px;
+  margin: 0;
+  flex: 1 1 280px; /* flexible columns, no fixed ratio */
+  min-width: 220px;
+  max-width: 360px;
+  box-sizing: border-box;
+  /* clearer, brighter card appearance */
+  border: 1px solid rgba(10,24,64,0.04) !important; /* very light soft border */
+  background-color: #ffffff !important; /* force pure white for clarity */
+  box-shadow: 0 6px 18px rgba(10,24,64,0.04); /* gentle uplift for contrast */
+}
+/* make text stronger / more visible */
+.country-section h3, .country-container > h2, h1, h2, h3, h4 {
+  font-weight: 800;
+  color: #0A1840;
+}
+.lotto-result, .matrix-keyboard-container div div, .code-event span, .matrix-keyboard-container h4 {
+  font-weight: 700;
+  font-size: 15px;
+  color: #111111;
+}
+.cote-divoire { border-left: 6px solid var(--cote-divoire-color); background-color: #ffffff; }
+.niger { border-left: 6px solid #cccccc; background-color: #ffffff; }
+.ghana { border-left: 6px solid #008000; background-color: #ffffff; }
+.benin { border-left: 6px solid #FF0000; background-color: #ffffff; }
+.lotto-result {
+  background-color: transparent;
+  border-radius: 3px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+.matrix-keyboard-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+.matrix-number-column {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  font-weight: 700;
+}
+.matrix-number-column > span {
+  display: block;
+  min-height: 1.25em;
+  white-space: nowrap;
+}
+.matrix-publication-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+.matrix, .keyboard, .cerveau {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.code-event {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 0.8em;
+}
+h1, h2, h3, h4 {
+  text-align: center;
+  margin: 5px 0;
+  color: var(--text-color);
+}
+/* Ensure the main H1 is only visible in the Matrice view */
+h1 {
+  display: none !important;
+  margin: 5px 0;
+}
+/* When Matrice is active, reveal the H1 */
+.matrice-active h1 {
+  display: block !important;
+}
+#currentDateTime, #nextDay, #nextAvailableTime, #drawNumber {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 26px; /* increased slightly for better readability */
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  line-height: 1.1;
+  text-transform: lowercase;
+  color: #0A1840; /* dark for contrast on white background */
+  padding: 6px 0;
+  margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* make individual result dates prominent but slightly smaller */
+.result-date, #redCrossDate {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  color: #0A1840;
+  text-align: center;
+  margin: 6px 0 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.single-country {
+  order: 1;
+  width: 100%;
+}
+.copy-button, #showArchiveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;    /* compact vertical + flexible horizontal */
+  padding-inline: 10px; /* ensure horizontal breathing, will adapt to text length */
+  border: none;
+  border-radius: 999px; /* pill that follows text width */
+  cursor: pointer;
+  font-size: 14px;
+  background-color: #0962D6;
+  color: white;
+  margin: 5px;
+  width: auto;          /* size to content */
+  min-width: 0;         /* allow small labels */
+  box-sizing: border-box;
+}
+#showArchiveButton {
+  display: inline-block;
+  margin: 10px 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+#archiveContent {
+  background-color: var(--main-bg-color);
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  margin-top: 20px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+/* New modal styles for in-site windowed archive */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+.modal-overlay.open { display: flex; }
+.modal-window {
+  background: #fff;
+  width: min(920px, 95%);
+  max-height: 85vh;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+}
+.modal-title { font-weight:700; font-family: 'Noto Sans', sans-serif; }
+.modal-body { padding: 14px; overflow:auto; }
+.modal-close {
+  background:transparent;border:none;font-size:20px;cursor:pointer;padding:6px;border-radius:6px;
+}
+/* ensure archive content uses modal body sizing */
+.modal-body #archiveContent { margin-top:0; border:none; padding:0; max-height:none; }
+#archiveContent h2 {
+  color: #FFFFFF;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+  margin-top: 15px;
+}
+#archiveContent .country-container {
+  margin-bottom: 20px;
+}
+#archiveContent .results-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+#archiveContent .country-section {
+  background-color: #ffffff; /* force archive columns white instead of var(--archive-bg-color) */
+  color: #111111; /* ensure archive text is black */
+  border-radius: 10px;
+  padding: 10px;
+  margin: 0 10px 10px 0;
+  width: calc(33.33% - 10px);
+  box-sizing: border-box;
+}
+#archiveContent .lotto-result {
+  background-color: transparent;
+  border-radius: 3px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+#archiveContent .country-container > h2 {
+  color: #FF0000;  /* Changement de la couleur du titre du pays en rouge dans l'archive */
+  font-weight: bold;
+}
+/* hide the top visible archive button until user clicks the category "Archives" */
+#showArchiveButton { display: none; }
+.country-filter-btn {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin:6px 6px 0 0;
+  padding:8px 12px;
+  border-radius:8px;
+  background: transparent;   /* transparent buttons keep programme text readable */
+  color: #0962D6;            /* accent color for visibility */
+  border: 1px solid rgba(9,98,214,0.08);
+  cursor: pointer;
+  font-weight:700;
+  white-space: nowrap;
+  min-height:40px;
+  min-width:72px;
+}
+.country-filter-btn.active { background:#0962D6; color:#fff; box-shadow:0 6px 14px rgba(9,98,214,0.12); }
+/* new: burgundy/red cross box shown on Accueil at bottom of white area */
+#redCross {
+  display: none;
+  position: relative; /* changed from fixed -> place inside the normal flow of the white content area */
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  margin: 12px auto 24px; /* reduced top margin so cross sits closer to banner but retains safe gap */
+  width: 380px;
+  height: 380px;
+  max-width: 380px;
+  max-height: 380px;
+  background: var(--redCross-bg, #0962D6);
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  z-index: 10; /* lower than the category-bar (which uses z-index:999) to avoid overlap */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  position: relative; /* ensure it stays in document flow */
+  overflow: hidden; /* prevent any overflow of numbers or svg */
+}
+/* Never paint the static placeholder values from the HTML. The official
+   service reveals this same component only after its canonical payload has
+   been applied (or restored from the same-day official snapshot). */
+#redCross[data-cross-ready="false"] {
+  visibility: hidden !important;
+}
+/* Terminaison label styles: pinned to bottom center inside the cross */
+#redCross .termination {
+  position: absolute;
+  bottom: 68px; /* keep the termination block below the NATIONALE badge */
+  left: 12px;
+  transform: rotate(180deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-align: center;
+  color: #000;
+  line-height: 1;
+  pointer-events: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  /* allow the terminaison column to be wider so date and parentheses can use full column width */
+  max-width: 140px; /* increased from 64px */
+  width: 140px;
+  padding: 2px;
+}
+#redCross .termination .term-title {
+  font-size: clamp(12px, 2.6vw, 26px);
+  font-weight: 900;
+  line-height: 1;
+  word-break: break-word;
+}
+#redCross .termination .term-paren {
+  font-size: clamp(12px, 2.4vw, 24px);
+  font-weight: 900;
+  line-height: 1;
+  margin-top: 4px;
+  font-family: 'Archivo Black', 'Audiowide', 'Noto Sans', sans-serif;
+  -webkit-text-stroke: 0 !important;
+  text-stroke: 0 !important;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
+  text-shadow: none;
+  word-break: break-word;
+}
+/* added: ensure terminaison title is 24px as requested */
+#redCross .termination .term-title {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+}
+/* add explicit sizing for the parentheses line */
+#redCross .termination .term-paren {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  margin-top: 4px;
+  /* match cross numbers' font and stroke for identical appearance (size unchanged) */
+  font-family: 'Archivo Black', 'Audiowide', 'Noto Sans', sans-serif;
+  /* remove outline/stroke so parentheses have no contour */
+  -webkit-text-stroke: 0 !important;
+  text-stroke: 0 !important;
+  -webkit-text-fill-color: #000000;
+  color: #000000;
+  text-shadow: none; /* remove white shadow */
+}
+/* right-side vertical national label */
+#redCross .right-label {
+  display: none; /* hidden: replaced by the black button on the right */
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%) rotate(180deg); /* rotate so this vertical text reads bottom->top */
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  color: #000; /* changed from white to black */
+  font-family: 'Archivo Black', 'Audiowide', 'Noto Sans', sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1;
+  pointer-events: none;
+  -webkit-text-stroke: 0.8px rgba(0,0,0,0.12); /* subtle dark stroke */
+}
+/* black button shown on Sunday at bottom center of the cross */
+#redCross .sunday-button,
+#redCrossClone .sunday-button {
+  position: absolute;
+  /* compact badge anchored in the upper-left corner */
+  top: 46px;
+  left: 8px;
+  transform: none;
+  background: #ffffff;
+  color: #800020; /* changed to match column brown */
+  border: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-family: 'Noto Sans', sans-serif;
+  font-size: clamp(0.65rem, 1.8vw, 0.7rem);
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.14);
+  display: inline-block;
+  z-index: 1120;
+  white-space: nowrap;
+  max-width: none;
+  width: auto;
+  overflow: visible;
+  text-overflow: clip;
+  text-align: center;
+  box-sizing: border-box;
+}
+#redCross .sunday-button.show {
+  display: inline-block;
+}
+/* Update: make the NATIONALE button use the cross color, white border and white label */
+#redCross .sunday-button,
+#redCrossClone .sunday-button {
+  /* use CSS variable set by redCrossService (falls back to burgundy) */
+  background: var(--redCross-bg, #800020) !important;
+  color: #ffffff !important;
+  border: 1.5px solid #ffffff !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.14);
+}
+/* footer link on the cross */
+#redCross .redCrossFooter,
+#redCrossClone .redCrossFooter {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Archivo Black', 'Audiowide', 'Noto Sans', sans-serif;
+  font-weight: 900;
+  font-size: 0.75rem;
+  color: #ffffff;
+  background: transparent;
+  padding: 0 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  z-index: 1140;
+  width: calc(100% - 20px);
+  max-width: none;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  text-align: center;
+  box-sizing: border-box;
+}
+/* ensure anchor inside redCrossFooter is not underlined and inherits color */
+#redCross .redCrossFooter a,
+#redCrossClone .redCrossFooter a { text-decoration: none !important; color: inherit !important; }
+/* new: square black button pinned to bottom-center of the cross */
+#redCross .black-square-btn {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 72px;
+  height: 72px;
+  background: #000;
+  color: #FFD700; /* changed from #fff to yellow per request */
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1130;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.22);
+  -webkit-tap-highlight-color: transparent;
+}
+#redCross .black-square-btn.pulse {
+  box-shadow: 0 12px 30px rgba(0,0,0,0.28), 0 0 0 6px rgba(255,255,255,0.03) inset;
+  transform: translateY(-2px);
+  transition: transform 120ms ease, box-shadow 180ms ease;
+}
+/* Positioned numbers overlay on the cross (inspired by provided image) */
+#redCross .cross-numbers {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto; /* enabled dragging for children */
+  pointer-events: auto;
+  font-family: 'Archivo Black', 'Audiowide', 'Noto Sans', sans-serif; /* enforce Archivo Black first, Audiowide fallback */
+  color: #ffffff !important; /* force all cross text to white */
+  font-weight: 900;
+  display: block;
+  font-size: clamp(28px, 4.2vw, 46px);
+  line-height: 1;
+  overflow: visible;
+}
+/* enable pointer/touch on individual numbers for dragging */
+#redCross .cross-numbers .num { 
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+}
+#redCross .cross-numbers .num {
+  position: absolute;
+  width: auto;
+  height: auto;
+  display: inline-block;
+  transform-origin: center;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+  /* Increased visual weight for cross numbers only */
+  font-weight: 900;
+  font-size: 60px; /* increased digits size to 60px */
+  max-width: 22%; /* ensure numbers don't overflow their local area */
+  white-space: nowrap;
+  -webkit-text-stroke: 1.2px #ffffff !important; /* white outline for better contrast */
+  text-stroke: 1.2px #ffffff !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.12);
+  box-sizing: border-box;
+  padding: 0 2px;
+  transform: translate(-50%, -50%); /* normalize baseline for easier per-number adjustments */
+  -webkit-text-fill-color: #fff; /* ensure center is white */
+  color: #fff; /* fallback fill color */
+  -webkit-text-stroke-color: #000; /* explicit stroke color for webkit */
+}
+/* enforce 20px for all cross numbers (override previous responsive rules) */
+#redCross .cross-numbers .num {
+  font-size: 60px !important;
+   line-height: 1;
+}
+/* positions for 8 numbers placed at both ends and middle of each cross line */
+/* adjusted positions and micro-translations to millimeter-fit on the cross and avoid overflow */
+#redCross .cross-numbers .num.n1 { left: 34%; top: 26%; translate: none; transform: translate(-48%,-62%) translateY(calc(3.78px * var(--cross-scale, 1))); font-size: clamp(24px,3.6vw,40px); } /* léger ajustement proportionnel */
+#redCross .cross-numbers .num.n2 { left: 50%; top: 38%; transform: translate(-50%,-62%) translateY(calc(-10px * var(--cross-scale, 1))); font-size: clamp(22px,3.4vw,36px); } /* ajustement proportionnel */
+#redCross .cross-numbers .num.n3 { left: 66%; top: 26%; transform: translate(-52%,-62%); font-size: clamp(24px,3.6vw,40px); } /* mirror of n1 */
+#redCross .cross-numbers .num.n4 { left: 64%; top: 50%; transform: translate(-50%,-50%); font-size: clamp(24px,3.8vw,42px); } /* nudged right slightly to move away from center */
+#redCross .cross-numbers .num.n8 { left: 36%; top: 50%; transform: translate(-50%,-50%); font-size: clamp(24px,3.8vw,42px); } /* nudged left slightly to move away from center */
+#redCross .cross-numbers .num.n5 { left: 66%; top: 72%; transform: translate(-52%,-34%) translateY(calc(3.78px * var(--cross-scale, 1))); font-size: clamp(24px,3.6vw,40px); } /* léger ajustement proportionnel */
+#redCross .cross-numbers .num.n6 { left: 50%; top: 64% !important; transform: translate(-50%,-46%) translateY(calc(3.78px * var(--cross-scale, 1))) !important; font-size: clamp(22px,3.4vw,36px); } /* ajustement proportionnel */
+#redCross .cross-numbers .num.n7 { left: 34%; top: 72%; transform: translate(-48%,-34%); font-size: clamp(24px,3.6vw,40px); } /* bottom-left moved outward */
+/* scale down numbers slightly on small screens */
+@media (max-width:480px) {
+  #redCross .cross-numbers { font-size: 30px; }
+  #redCross .cross-numbers .num.n9 { font-size: 42px; }
+  /* ensure numbers scale down a bit more on very small viewports */
+  #redCross .cross-numbers .num { font-size: clamp(20px,4.8vw,36px); max-width: 28%; }
+  /* keep the cross at 380x380 on small screens but ensure it stays centered and not overflowing */
+  #redCross { 
+    width: 92vw; 
+    height: 92vw; 
+    max-width:380px; 
+    max-height:380px; 
+    left:auto; 
+    transform:none; 
+    margin: 10px auto 64px; /* tighter top spacing so cross is closer to banner but not touching */
+    padding: 0; 
+  }
+  #redCross svg { width: 100%; height: auto; }
+}
+/* new: date displayed on top of the cross */
+#redCrossDate {
+  /* align date to the terminaison column: occupy same horizontal span and remain on one line */
+  left: 0;
+  right: 0;
+  width: 100%; /* changed from 140px to full width */
+  text-align: center;
+  white-space: nowrap; /* keep date on a single line */
+  overflow: visible; /* allow full text to be shown (no ellipsis) */
+  text-overflow: clip;
+  position: absolute;
+  top: 6px;
+  font-family: 'Archivo Black', 'Audiowide', 'Noto Sans', sans-serif;
+  font-weight: 900;
+  font-size: clamp(20px, 5.0vw, 48px); /* reduced slightly */
+  color: #ffffff; /* changed to white */
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.1;
+  padding: 0 8px; /* added horizontal padding so long text doesn't touch edges */
+  box-sizing: border-box;
+
+  /* NEW: render date as inline row so it visually shares a line with nearby elements */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.result-date {
+  font-size: 20px;
+  font-weight: 900;
+  text-align: center;
+  margin: 6px 0 8px;
+  color: #0A1840;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.15;
+  -webkit-text-stroke: 0.9px #ffffff;
+  text-stroke: 0.9px #ffffff;
+}
+/* new: slimmer cross SVG lines and thinner matrix grid */
+#redCross svg { width: 60%; height: 60%; }
+#redCross .cross-line { stroke: #ffffff !important; stroke-width: 1; stroke-linecap: round; fill: none; }
+.matrix div {
+  border: 1px solid rgba(10,24,64,0.06);
+  padding: 10px;
+  border-radius: 6px;
+  line-height: 1.4;
+  text-align: center;
+  background: rgba(255,255,255,0.02);
+}
+.matrix div br { content: ""; display: block; height: 6px; } 
+@media (max-width: 1200px) {
+  .country-section, #archiveContent .country-section { width: calc(50% - 10px); }
+}
+@media (max-width: 768px) {
+  .country-section, #archiveContent .country-section { width: 100%; }
+  body { font-size: 16px; }
+  .matrix-keyboard-container { flex-direction: column; }
+  .copy-button, #showArchiveButton { width: 100%; padding: 12px 16px; }
+}
+@media (max-width: 480px) {
+  body { font-size: 12px; }
+  .code-event { flex-direction: column; }
+  /* keep the cross at 380x380 on small screens but ensure it stays centered and not overflowing */
+  #redCross { 
+    width: 92vw; 
+    height: 92vw; 
+    max-width:380px; 
+    max-height:380px; 
+    left:auto; 
+    transform:none; 
+    margin: 10px auto 64px; /* tighter top spacing so cross is closer to banner but not touching */
+    padding: 0; 
+  }
+  #redCross svg { width: 100%; height: auto; }
+}
+/* add archive background state: page background goes black, but country sections remain white and text inside them stays dark */
+.archive-active {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+.archive-active .country-section, .archive-active .modal-window, .archive-active .modal-body {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+}
+#redCross .cross-numbers .num {
+  /* normalized readable styling */
+  font-size: 160px !important; /* ENLARGED further: make digits much larger */
+   max-width: 90%;
+   font-weight: 900;
+   -webkit-text-stroke: 1.2px #ffffff !important; /* white outline as requested */
+   text-stroke: 1.2px #ffffff !important;
+   color: #ffffff !important;
+   -webkit-text-fill-color: #ffffff !important;
+   -webkit-text-stroke-color: #ffffff !important;
+   text-shadow: none; /* remove white shadow */
+}
+#countryButtons {
+  position: sticky;
+  top: calc(var(--header-height,64px) + 8px); /* moved from bottom to just under the header */
+  bottom: auto;
+  z-index: 1050;
+  background: transparent; /* transparent so it doesn't obscure programme text */
+  padding: 6px 12px;
+  display: flex;              /* horizontal layout */
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;          /* allow horizontal scrolling on small screens */
+  -webkit-overflow-scrolling: touch;
+  border-bottom: none;
+}
+/* results: single column, full width cards, larger tap targets */
+.results-container { gap:14px; }
+.country-section { padding:14px; min-width: auto; width: 100%; max-width: 100%; border-radius:12px; }
+
+/* make copy/archive buttons full-width and easier to tap */
+.copy-button, #showArchiveButton { width: 100%; padding:14px 16px; font-size:16px; border-radius:10px; }
+
+/* ensure the country filter bar is sticky and small on mobile */
+#countryButtons { top: 88px; padding:6px 12px; }
+
+/* Keep the cross in normal document flow on narrow viewports. It used to
+   retain the old fixed-position left:50% translation, which pushed it to the
+   right and left a large blank area on the left. */
+#redCross {
+  width:92vw;
+  height:92vw;
+  max-width:380px;
+  max-height:380px;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  transform:none !important;
+  margin:8px auto 64px;
+}
+#redCross .cross-numbers .num { font-size: clamp(56px, 14vw, 220px) !important; }
+
+/* increase line-height for modal body to aid readability on small screens */
+.modal-body { font-size: 1em; line-height:1.5; }
+#currentDateTime { display: none !important; }
+/* Hide poster texts as requested */
+#nextAvailableTime, #nextDay { display: none !important; }
+
+/* Ensure any leftover Croix history/calendar/date controls are hidden */
+#redCrossHistBtn,
+#redCrossHistoryOpen,
+#redCrossCalendarOpen,
+#redCrossDateIcon {
+  display: none !important;
+}
+
+/* NEW: Plant du pied (small footer button row above category bar) */
+.site-plant {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--safe-bottom, 0px) + 56px); /* sits above category-bar */
+  z-index: 1195;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  pointer-events: auto;
+}
+.site-plant .plant-btn {
+  background: #ffffff;
+  color: #0962D6;
+  border: 1px solid rgba(9,98,214,0.08);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  min-width: 110px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(2,6,23,0.06);
+}
+.site-plant .plant-btn:active { transform: translateY(1px); }
+/* small-screen tweak so it doesn't overlap category-bar */
+@media (max-width:480px){
+  .site-plant { left: 8px; right: 8px; bottom: calc(8px + var(--safe-bottom, 0px) + 72px); gap:8px; }
+  .site-plant .plant-btn { padding: 10px 10px; min-width: 86px; font-size: 14px; }
+}
+
+/* ===== ADDED to hide the plant-du-pied buttons as requested ===== */
+.site-plant {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide the inline "numéros rejetés" quick-access button when on Accueil */
+.accueil-active #showRejectedInlineButton,
+.accueil-active #rejectedInlineMain,
+.accueil-active #rejectedInlineContainer {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+</style>
+<link rel="stylesheet" href="/src/auth/auth.css" />
+<link rel="stylesheet" href="/src/auth/account-view.css" />
+<link rel="stylesheet" href="/src/auth/support-chat.css" />
+<link rel="stylesheet" href="/src/auth/admin-dashboard.css?v=dashboard-grid-v8-import-results" />
+<link rel="stylesheet" href="/src/auth/referral-system.css" />
+<link rel="stylesheet" href="/src/shared/facebook-feed.css" />
+<link rel="stylesheet" href="/src/shared/smart-country-filter.css" />
+<link rel="stylesheet" href="/src/shared/i18n.css" />
+<link rel="stylesheet" href="/src/shared/illustrations.css?history-overlay-scope-v2" />
+<link rel="stylesheet" href="/src/modules/boules-rejetees/BoulesRejetees.css" />
+<link rel="stylesheet" href="/src/shared/responsive.css" />
+<link rel="stylesheet" href="/src/notifications/notification-center.css" />
+<link rel="stylesheet" href="/src/croix/cross-geometry.css" />
+<link rel="stylesheet" href="/src/shared/native-shell.css?nav-shell-v23-squirrel-v4" />
+<link rel="stylesheet" href="/src/shared/croix-section.css?history-date-focus-v2-selected-date" />
+<link rel="stylesheet" href="/src/shared/dedicated-view-shell.css?route-scroll-fix-v4-virtual-messenger" />
+<link rel="stylesheet" href="/src/shared/mobile-modern.css?nav-shell-v23-squirrel-v4" />
+<link rel="stylesheet" href="/src/shared/header-polish.css?squirrel-v6-red-sync" />
+<link rel="stylesheet" href="/src/shared/native-pages.css?route-scroll-fix-v1" />
+<link rel="stylesheet" href="/src/shared/surface-palette.css?nav-shell-v22" />
+<link rel="stylesheet" href="/src/services/resultat-aide.css?v=published-result-rectangle-v10-stat-cards" />
+<link rel="stylesheet" href="/src/shared/balance-panel.css" />
+<link rel="stylesheet" href="/src/shared/anticipation-view.css?anticipation-v3" />
+<link rel="stylesheet" href="/src/shared/unlock-feedback.css" />
+<link rel="stylesheet" href="/src/shared/early-access.css" />
+<link rel="stylesheet" href="/src/tableaux/styles/sections.css" />
+<!-- Master layout contract: keep this stylesheet last so every route inherits
+     the same viewport, header and bottom-navigation geometry. -->
+<link rel="stylesheet" href="/src/shared/code-freeze.css?nav-shell-v27-scroll-fix" />
+<link rel="stylesheet" href="/src/calculatrice/calculatrice.css?calculator-v6-dedicated-plus" />
+<link rel="stylesheet" href="/src/shared/view-layer-isolation.css" />
+<link rel="stylesheet" href="/src/shared/first-paint-shell.css" />
+<link rel="stylesheet" href="/src/croix/cross-canonical.css?archive-card-geometry-v3-line-spacing" />
+<link rel="stylesheet" href="/src/croix/cross-date-fit.css" />
+<link rel="stylesheet" href="/src/shared/input-layout-lock.css" />
+<link rel="stylesheet" href="/src/shared/button-system.css" />
+<link rel="stylesheet" href="/src/services/public-offers.css?offers-dedicated-v2" />
+<link rel="stylesheet" href="/src/services/promo-banners.css" />
+<link rel="stylesheet" href="/src/services/virtual-messenger.css?messenger-v11-squirrel-red-sync" />
+<link rel="stylesheet" href="/src/services/history-access.css?history-v3" />
+<link rel="stylesheet" href="/src/shared/publication-history.css?publication-history-v6-persistent-paint" />
+<link rel="stylesheet" href="/src/shared/payment-overlays.css?payment-scroll-v1" />
+<link rel="stylesheet" href="/src/services/resultat-aide-cards.css?result-card-final-v4-pure-blue" />
+<link rel="stylesheet" href="/src/services/global-statistics.css?terminal-v1" />
+<link rel="stylesheet" href="/src/shared/route-layout.css?route-layout-v1" />
+<link rel="stylesheet" href="/src/shared/header-boundary.css?header-boundary-v1" />
+<!-- Final CLS contract: header boundary, reserved publication media and loader. -->
+<link rel="stylesheet" href="/src/shared/cls-stability.css?cls-shell-v1" />
+<!-- Component isolation contract: local skeletons, containment and stable list geometry. -->
+<link rel="stylesheet" href="/src/shared/isolated-components.css?isolated-components-v1" />
+<!-- Stable component geometry and cache-first runtime. Loaded last so legacy
+     route styles cannot collapse an already painted block during scroll. -->
+<link rel="stylesheet" href="/src/shared/component-stability.css?component-stability-v41-persistent-paint" />
+<!-- Translation runtime is registered before dynamic modules render UI. -->
+<script src="/src/shared/translation.js?language-session-v4"></script>
+<script src="/src/shared/persistent-cache.js?persistent-cache-v40"></script>
+<script src="/src/shared/component-runtime.js?component-runtime-v41-persistent-paint"></script>
+<script src="/src/shared/international-phone.js?dial-codes-v2-iso-profile"></script>
+<script src="/src/shared/scroll-stability.js?scroll-stability-v2"></script>
+<script src="/src/shared/like-sound.js?like-sound-v1"></script>
+<script src="/src/croix/cross-responsive.js" defer></script>
+<script src="/src/croix/cross-date-fit.js" defer></script>
+<script src="/src/croix/draggableCross.js"></script>
+<script src="/src/matrice/displayResults.js"></script>
+<script type="module" src="/src/services/site-config.js?anticipation-v2"></script>
+<script type="module" src="/src/services/public-social-links.js"></script>
+<script type="module" src="/src/services/public-offers.js?offers-dedicated-v2"></script>
+<script type="module" src="/src/services/promo-banners.js"></script>
+<script type="module" src="/src/services/resultat-aide.js?result-rectangle-v26-i18n"></script>
+<script type="module" src="/src/services/history-access.js?history-v4-cache-stable"></script>
+<script type="module" src="/src/shared/currency-mode.js"></script>
+<script type="module" src="/src/shared/content-control.js"></script>
+<script type="module" src="/src/shared/daily-illustrations.js?anticipation-v3-cross-theme"></script>
+<script type="module" src="/src/shared/splash-squirrel.js?squirrel-v4"></script>
+<script src="/src/croix/downloadCross.js"></script>
+<script src="/src/shared/security.js"></script>
+
+<!-- Remote account service and compatibility facade. -->
+<script src="/src/auth/user-stats.js"></script>
+<script src="/src/auth/supabase-config.js"></script>
+<script type="module" src="/src/shared/pwa-register.js"></script>
+<script type="module" src="/src/services/supabaseClient.js"></script>
+<script type="module" src="/src/services/social-repository.js"></script>
+<script src="/src/services/feature-access.js"></script>
+<script src="/src/services/access-actions.js"></script>
+<script src="/src/services/early-access-ui.js?anticipation-v2"></script>
+<script src="/src/shared/unlock-feedback.js"></script>
+<script src="/src/auth/message-repository.js"></script>
+<script src="/src/auth/admin-architecture.js"></script>
+<script src="/src/auth/admin-config.js"></script>
+<script src="/src/auth/admin-dashboard.js?v=functions-dashboard-v1"></script>
+<script src="/src/auth/auth.js"></script>
+<script src="/src/services/paystack-payment.js" defer></script>
+<script src="/src/services/paystack-return.js" defer></script>
+<script type="module" src="/src/auth/account-service.js?auth-flow-v4"></script>
+<script src="/src/notifications/notification-repository.js"></script>
+<script src="/src/notifications/notification-center.js"></script>
+<script src="/src/auth/header-sync.js"></script>
+<script type="module" src="/src/auth/referral-system.js"></script>
+<script src="/src/shared/balance-panel.js"></script>
+<script type="module" src="/src/auth/profile-native.js?account-route-v6-share-i18n"></script>
+<script src="/src/shared/social-auth-gate.js"></script>
+<script src="/src/shared/header-polish.js" defer></script>
+
+<script type="module" src="/src/croix/redCrossService.js?cross-geometry-scale-v2-official"></script>
+<script src="/src/shared/i18n.js"></script>
+<!-- Export only: never let an optional CDN library hold DOMContentLoaded. -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" async></script>
+<script type="module" src="/src/shared/app-controllers.js?navigation-v5-scroll-fix"></script>
+<script type="module" src="/src/shared/schedule.js"></script>
+<script type="module" src="/src/croix/redCross.js"></script>
+<script type="module" src="/src/shared/render-readiness.js?nav-shell-v23"></script>
+<script type="module" src="/src/shared/route-persistence.js?route-persistence-v3-result-route"></script>
+<script type="module" src="/src/shared/view-transition.js"></script>
+<script type="module" src="/src/shared/dedicated-view-shell.js"></script>
+<script type="module" src="/src/shared/categories-view.js?navigation-v9-date-binding"></script>
+<script type="module" src="/src/shared/anticipation-view.js?anticipation-v8"></script>
+<script type="module" src="/src/shared/croix-section.js?history-date-focus-v4-proportional-cross"></script>
+<script type="module" src="/src/shared/publication-history-view.js?publication-history-v7-cache-stable"></script>
+<script type="module" src="/src/shared/affichageSecurise.js"></script>
+<script type="module" src="/src/tableaux/tableaux-view.js?tableaux-contract-v4-offline-snapshot"></script>
+<script type="module" src="/src/croix/image-scanner.js"></script>
+<script type="module" src="/src/modules/croix-nationale/CroixNationaleView.js"></script>
+<script type="module" src="/src/modules/boules-rejetees/BoulesRejeteesView.js"></script>
+<!-- Stable SPA controller for the Catégories -> Matrice transition. -->
+<script type="module" src="/src/modules/matrices-plurijetees/MatricesView.js"></script>
+<script type="module" src="/src/calculatrice/matrix-text-parser.js"></script>
+<script type="module" src="/src/shared/facebook-feed.js?feed-date-archive-v3-proportional-cross"></script>
+<script type="module" src="/src/shared/smart-country-filter.js"></script>
+<script type="module" src="/src/shared/bootstrap.js?nav-shell-v24-route-fix"></script>
+<script type="module" src="/src/shared/isolated-components.js?isolated-components-v1"></script>
+</head>
+<body aria-busy="true">
+<div id="cidSplash" role="status" aria-live="polite" aria-label="Chargement de Cidmap">
+  <div class="cid-splash-content">
+    <span class="cid-splash-squirrel" aria-hidden="true"></span>
+    <span class="cid-splash-wordmark">Cidmap</span>
+  </div>
+</div>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="cid-header-squirrel cid-squirrel-mark" aria-hidden="true"></span>
+      Cidmap
+    </div>
+    <div id="cidSectionContext" class="section-context" aria-hidden="true" hidden>
+      <button id="cidSectionBack" class="section-context-button" type="button" aria-label="Retour aux catégories">
+        <span class="section-context-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="m15 18-6-6 6-6"></path>
+          </svg>
+        </span>
+        <span id="cidSectionTitle" class="section-context-title"></span>
+      </button>
+    </div>
+    <!-- refresh/continuous generation button removed to erase the refresh space in the header -->
+    <div class="search collapsed" role="search" aria-label="Recherche">
+      <button id="searchToggle" type="button" class="search-toggle" aria-label="Afficher la recherche">🔎</button>
+      <input id="searchInput" type="search" placeholder="Rechercher produits, programmes, pays..." aria-hidden="true" />
+      <button id="searchButton" type="button" style="background:#FF5000;color:#fff;border:none;padding:8px 12px;border-radius:4px;margin-left:8px;font-weight:700;display:none">Recherche</button>
+    </div>
+    <div class="actions" aria-label="Actions principales">
+      <button id="languageHeaderBtn" class="top-action-btn language-header-button" type="button" title="Changer de langue" aria-label="Changer de langue" aria-controls="langModal" aria-expanded="false">
+        <span class="top-action-icon" aria-hidden="true">
+          <span id="languageHeaderFlag" class="language-header-flag">🇫🇷</span>
+        </span>
+      </button>
+      <button id="starBtn" class="top-action-btn" type="button" title="Voir mon solde" aria-label="Voir mon solde d’étoiles et de jetons">
+        <span class="top-action-label">Solde</span>
+        <span class="top-action-icon" aria-hidden="true">
+          <svg class="header-action-svg header-action-svg--wallet" viewBox="0 0 24 24" focusable="false">
+            <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 17.5v-11Z"></path>
+            <path d="M4 7h14.5A1.5 1.5 0 0 1 20 8.5V16h-4.5a2.5 2.5 0 0 1 0-5H20"></path>
+            <path d="M16 13.5h.01"></path>
+          </svg>
+        </span>
+        <span id="starPoints" class="top-action-count" aria-hidden="true">0</span>
+        <span id="tokenPoints" class="top-action-count" aria-hidden="true">0</span>
+      </button>
+      <button id="shareBtn" class="top-action-btn" type="button" data-referral-share title="Partager avec votre lien" aria-label="Partager">
+        <span class="top-action-label">Partager</span>
+        <span class="top-action-icon" aria-hidden="true">
+          <svg class="header-action-svg header-action-svg--share" viewBox="0 0 24 24" focusable="false">
+            <path d="M5 19 19 5"></path>
+            <path d="M9 5h10v10"></path>
+          </svg>
+        </span>
+        <span id="sharePoints" class="top-action-count" aria-hidden="true">0</span>
+      </button>
+      <button id="notificationsBtn" class="notification-bell-button" type="button" aria-label="Ouvrir les notifications" aria-controls="notificationCenter" aria-expanded="false">
+        <span class="top-action-icon" aria-hidden="true">
+          <svg class="header-action-svg header-action-svg--bell" viewBox="0 0 24 24" focusable="false">
+            <path d="M18 10a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"></path>
+            <path d="M10 22h4"></path>
+          </svg>
+        </span>
+        <span id="notificationsBadge" class="notification-badge" hidden>0</span>
+      </button>
+      <!-- Login icon/button removed from header (moved to category bar) -->
+    </div>
+  </div>
+</header>
+
+<main id="notificationCenter" class="notification-center cid-layout-surface" hidden aria-hidden="true" aria-labelledby="notificationCenterTitle">
+  <section class="notification-dialog" aria-labelledby="notificationCenterTitle">
+    <h2 id="notificationCenterTitle" class="notification-route-title">Notifications</h2>
+    <div class="notification-filters" role="tablist" aria-label="Filtrer les notifications">
+      <button class="notification-filter is-active" type="button" role="tab" aria-selected="true" data-notification-filter="all">Toutes</button>
+      <button class="notification-filter" type="button" role="tab" aria-selected="false" data-notification-filter="unread">Non lues</button>
+      <button class="notification-filter" type="button" role="tab" aria-selected="false" data-notification-filter="reward">Récompenses</button>
+      <button class="notification-filter" type="button" role="tab" aria-selected="false" data-notification-filter="purchase">Achats</button>
+      <button id="markAllNotificationsRead" class="notification-mark-all" type="button">Tout marquer comme lu</button>
+    </div>
+    <div id="notificationList" class="notification-list" role="list"></div>
+    <div id="notificationEmpty" class="notification-empty" hidden>
+      <span class="notification-empty-icon" aria-hidden="true">✓</span>
+      <strong>Aucune notification</strong>
+      <span>Vous êtes à jour.</span>
+    </div>
+  </section>
+</main>
+
+<!-- Language chooser modal -->
+<div id="langModal" class="modal-overlay" role="region" aria-hidden="true" style="display:none;">
+  <div class="modal-window" role="document" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title">Choisir la langue</div>
+      <div><button id="langClose" type="button" class="modal-close" aria-label="Retour">‹</button></div>
+    </div>
+    <div class="modal-body" style="padding:12px;display:flex;flex-direction:column;gap:10px;">
+      <input id="langFilter" type="search" placeholder="Rechercher une langue..." style="padding:8px;border-radius:8px;border:1px solid #eee;font-weight:700;" />
+      <div id="langList" style="display:grid;grid-template-columns:1fr;gap:8px;max-height:52vh;overflow:auto;padding-right:6px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Main-area language chooser wiring
+(function(){
+  const commonLocales = [
+    // common + expanded list (base codes) — the chooser shows display names and will attempt to call changeLanguage(base)
+    'auto','fr','en','es','pt','de','it','ru','zh','ja','hi','ar','nl','sv','no','da','fi','pl','tr','ko','vi','id','ms','th','he','ro','hu','cs','sk','uk','bg','hr','sr','sl','lt','lv','et','el','sr-Latn','bs','eu','ca','gl','is','mt','sq','mk'
+  ];
+
+  const btn = document.getElementById('languageHeaderBtn');
+  const modal = document.getElementById('langModal');
+  const list = document.getElementById('langList');
+  const close = document.getElementById('langClose');
+  const filter = document.getElementById('langFilter');
+  const label = null;
+  const flag = document.getElementById('languageHeaderFlag');
+  const headerBtn = document.getElementById('languageHeaderBtn');
+  const headerFlag = document.getElementById('languageHeaderFlag');
+  let availableLocales = commonLocales.slice();
+
+  function getDisplayName(code) {
+    try {
+      if (code === 'auto') return 'Détecter automatiquement';
+      const databaseLocale = window.cidSiteConfig?.localization?.()?.locales
+        ?.find((item) => item?.code === code);
+      if (databaseLocale?.native_name) return databaseLocale.native_name;
+      const dn = new Intl.DisplayNames([code], { type: 'language' });
+      // show the language name in its own language when possible
+      return dn.of(code.split('-')[0]) || code;
+    } catch (e) {
+      return code;
+    }
+  }
+
+  function flagEmojiFromCode(code) {
+    if (!code) return '🇫🇷';
+    if (code === 'auto') return flagEmojiFromCode((navigator.language || 'fr').split('-')[0]);
+    // map special cases quickly (use regional indicator symbols for 2-letter codes)
+    const base = code.split('-')[0].toLowerCase();
+    const special = {
+      'zh': '🇨🇳',
+      'en': '🇬🇧',
+      'fr': '🇫🇷',
+      'es': '🇪🇸',
+      'pt': '🇵🇹',
+      'de': '🇩🇪',
+      'it': '🇮🇹',
+      'ru': '🇷🇺',
+      'ja': '🇯🇵',
+      'hi': '🇮🇳',
+      'ar': '🇸🇦',
+      'nl': '🇳🇱',
+      'sv': '🇸🇪',
+      'no': '🇳🇴',
+      'da': '🇩🇰',
+      'fi': '🇫🇮',
+      'pl': '🇵🇱',
+      'tr': '🇹🇷',
+      'ko': '🇰🇷',
+      'vi': '🇻🇳',
+      'id': '🇮🇩',
+      'ms': '🇲🇾',
+      'th': '🇹🇭',
+      'he': '🇮🇱',
+      'ro': '🇷🇴',
+      'hu': '🇭🇺',
+      'cs': '🇨🇿',
+      'sk': '🇸🇰',
+      'uk': '🇺🇦',
+      'bg': '🇧🇬',
+      'hr': '🇭🇷',
+      'sr': '🇷🇸',
+      'sl': '🇸🇮',
+      'lt': '🇱🇹',
+      'lv': '🇱🇻',
+      'et': '🇪🇪',
+      'el': '🇬🇷',
+      'bs': '🇧🇦',
+      'eu': '🇪🇺',
+      'ca': '🇨🇦',
+      'gl': '🇪🇸',
+      'is': '🇮🇸',
+      'mt': '🇲🇹',
+      'sq': '🇦🇱',
+      'mk': '🇲🇰'
+    };
+    return special[base] || (base.length === 2 ? String.fromCodePoint(0x1F1E6 + base.charCodeAt(0) - 97, 0x1F1E6 + base.charCodeAt(1) - 97) : '🏳️');
+  }
+
+  function buildList(items) {
+    list.innerHTML = '';
+    items.forEach(code => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'country-filter-btn';
+      row.style.display = 'flex';
+      row.style.justifyContent = 'space-between';
+      row.style.alignItems = 'center';
+      row.style.padding = '10px';
+      row.style.width = '100%';
+      row.style.fontWeight = '700';
+      const name = document.createElement('span');
+      name.textContent = getDisplayName(code) + (code === 'auto' ? '' : ` — ${code}`);
+      const choose = document.createElement('span');
+      choose.textContent = 'Choisir';
+      choose.style.opacity = '0.7';
+      const flagSpan = document.createElement('span');
+      flagSpan.textContent = flagEmojiFromCode(code);
+      flagSpan.style.marginRight = '8px';
+      flagSpan.style.fontSize = '16px';
+      row.appendChild(flagSpan);
+      row.appendChild(name);
+      row.appendChild(choose);
+      row.addEventListener('click', async () => {
+        try {
+          modal.classList.remove('open');
+          modal.setAttribute('aria-hidden','true');
+          document.body.style.overflow = '';
+          window.cidResetScrollLock?.({ resetSurfaces: false });
+          btn.setAttribute('aria-expanded','false');
+          headerBtn?.setAttribute('aria-expanded', 'false');
+          // set button label to chosen language
+          if (label) label.textContent = getDisplayName(code);
+          if (headerBtn) {
+            const headerLanguage = code === 'auto' ? 'auto-détection' : getDisplayName(code);
+            headerBtn.title = `Changer de langue — ${headerLanguage}`;
+            headerBtn.setAttribute('aria-label', `Changer de langue — ${headerLanguage}`);
+          }
+          // set flag emoji
+          const selectedFlag = flagEmojiFromCode(code);
+          if (flag) flag.textContent = selectedFlag;
+          if (headerFlag) headerFlag.textContent = selectedFlag;
+          // There is one language runtime. Persist the preference first,
+          // then reload the current route so every page/component starts from
+          // the selected catalogue instead of leaving stale French fragments.
+          const requestedLocale = code === 'auto'
+            ? (navigator.language || 'fr').split('-')[0]
+            : code.split('-')[0];
+          if (window.changeLanguage) {
+            await window.changeLanguage(requestedLocale);
+            window.location.reload();
+          } else if (window.cidI18n?.translatePage) {
+            await window.cidI18n.translatePage(requestedLocale);
+            window.location.reload();
+          } else {
+            try {
+              localStorage.setItem('cid_i18n_locale', requestedLocale);
+              localStorage.setItem('userLang', requestedLocale);
+            } catch (_) {}
+            window.location.reload();
+          }
+        } catch (err) { console.warn('Failed to apply language', err); }
+      });
+      list.appendChild(row);
+    });
+  }
+
+  // initial list
+  function refreshAvailableLocales() {
+    const databaseLocales = window.cidSiteConfig?.localization?.()?.locales;
+    const configured = Array.isArray(databaseLocales)
+      ? databaseLocales
+        .filter((item) => item?.enabled !== false && item?.catalog_ready !== false)
+        .map((item) => String(item.code || '').trim())
+        .filter(Boolean)
+      : [];
+    availableLocales = configured.length ? ['auto', ...configured] : commonLocales.slice();
+    buildList(availableLocales);
+  }
+  refreshAvailableLocales();
+  window.addEventListener('cid:site-config-loaded', refreshAvailableLocales);
+
+  // filter behaviour
+  filter.addEventListener('input', (e) => {
+    const q = (e.target.value || '').toLowerCase().trim();
+    const filtered = availableLocales.filter(c => {
+      return c === 'auto' || getDisplayName(c).toLowerCase().includes(q) || c.toLowerCase().includes(q);
+    });
+    buildList(filtered);
+  });
+
+  // open modal
+  btn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    btn.setAttribute('aria-expanded','true');
+    headerBtn?.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    // focus filter for quick search
+    setTimeout(() => filter.focus(), 80);
+  });
+  // close modal
+  close.addEventListener('click', () => {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    modal.style.display = 'none';
+    btn.setAttribute('aria-expanded','false');
+    headerBtn?.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    window.cidResetScrollLock?.({ resetSurfaces: false });
+  });
+  modal.addEventListener('click', (e) => { if (e.target === modal) { close.click(); } });
+
+  // initialize flag from stored locale on load
+  try {
+    const saved = localStorage.getItem('userLang') || localStorage.getItem('cid_i18n_locale') || null;
+    const initial = saved || 'fr';
+    if (flag) flag.textContent = flagEmojiFromCode(initial);
+    if (headerFlag) headerFlag.textContent = flagEmojiFromCode(initial);
+    if (saved) {
+      if (label) label.textContent = getDisplayName(saved);
+      if (headerBtn) {
+        headerBtn.title = `Changer de langue — ${getDisplayName(saved)}`;
+        headerBtn.setAttribute('aria-label', `Changer de langue — ${getDisplayName(saved)}`);
+      }
+    }
+  } catch (e){}
+
+  window.addEventListener('cid:language-change', (event) => {
+    const locale = event.detail?.locale
+      || localStorage.getItem('userLang')
+      || localStorage.getItem('cid_i18n_locale')
+      || 'fr';
+    const selectedFlag = flagEmojiFromCode(locale);
+    if (flag) flag.textContent = selectedFlag;
+    if (headerFlag) headerFlag.textContent = selectedFlag;
+  });
+})();
+</script>
+
+<!-- Plant du pied buttons: Matrice / Croix nationale / Boules rejetées -->
+<div class="site-plant" aria-hidden="false" role="navigation" aria-label="Plant du pied">
+  <button id="plantMatriceBtn" class="plant-btn" type="button">Matrice</button>
+  <button id="plantCroixBtn" class="plant-btn" type="button">Croix nationale</button>
+  <button id="plantRejectedBtn" class="plant-btn" type="button">Numéros rejetés</button>
+</div>
+
+<nav class="category-bar" aria-label="Barre de catégories">
+  <div class="inner">
+    <button id="categoryAccueilButton" class="category-item" type="button">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="m3 10 9-7 9 7"></path>
+        <path d="M5 9.5V21h14V9.5"></path>
+        <path d="M9.5 21v-6h5v6"></path>
+      </svg>
+      <span class="nav-label">Accueil</span>
+    </button>
+    <!-- Tableaux follows Accueil in the bottom navigation. -->
+    <button id="tableauxBtn" class="category-item" type="button" aria-pressed="false" style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:transparent;color:#fff;border:none;font-weight:800;margin-left:6px;cursor:pointer;" title="Afficher les tableaux" aria-label="Afficher les tableaux">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3.5" y="4" width="17" height="16" rx="2"></rect>
+        <path d="M3.5 10h17M3.5 15h17M9 4v16M15 4v16"></path>
+      </svg>
+      <span class="nav-label">Tableaux</span>
+    </button>
+    <button id="categoryCategoriesButton" class="category-item" type="button" aria-haspopup="menu" aria-expanded="false" style="background:transparent;border:none;color:#fff;cursor:pointer;padding:10px 14px;">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="4" y="4" width="6" height="6" rx="1"></rect>
+        <rect x="14" y="4" width="6" height="6" rx="1"></rect>
+        <rect x="4" y="14" width="6" height="6" rx="1"></rect>
+        <rect x="14" y="14" width="6" height="6" rx="1"></rect>
+      </svg>
+      <span class="nav-label">Catégories</span>
+    </button>
+
+    <button id="anticipationBtn" class="category-item" type="button" aria-pressed="false" title="Afficher les publications anticipées" aria-label="Afficher les publications anticipées">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3v5"></path>
+        <path d="M12 16v5"></path>
+        <path d="M3 12h5"></path>
+        <path d="M16 12h5"></path>
+        <path d="m5.6 5.6 3.5 3.5"></path>
+        <path d="m14.9 14.9 3.5 3.5"></path>
+        <circle cx="12" cy="12" r="3.2"></circle>
+      </svg>
+      <span class="nav-label">Anticipé</span>
+    </button>
+
+    <!-- Compte stays last in the visible bottom navigation. -->
+    <button id="profileBtn" class="category-item profile-nav-button" type="button" style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:transparent;color:#fff;border:none;font-weight:800;margin-left:6px;cursor:pointer;" title="Ouvrir mon compte" aria-label="Ouvrir mon compte">
+      <span class="nav-icon profile-squirrel-icon cid-squirrel-mark" aria-hidden="true"></span>
+      <span class="nav-label">Compte</span>
+      <span class="unread-messages-badge" data-unread-messages-badge data-account-alert-badge="all" hidden aria-label="1 élément non lu dans mon compte">1</span>
+    </button>
+    
+    <!-- Déchiffrement MT (hidden from bottom bar, available in Catégories submenu) -->
+    <button id="matrixCalcBtn" class="category-item" type="button" style="display:none;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:transparent;color:#fff;border:none;font-weight:800;margin-left:6px;cursor:pointer;" title="Déchiffrement MT" aria-label="Déchiffrement MT">
+      <span style="font-size:14px;line-height:1;">Déchiffrement MT</span>
+    </button>
+
+    <script>
+      // Ensure "Numéros rejetés" is not present in social menus or global footer/inline controls.
+      (function(){
+        try {
+          // Remove any accidental "numéros rejetés" entries inside the social menu
+          const menu = null;
+          if (menu) {
+            Array.from(menu.querySelectorAll('*')).forEach(node => {
+              try {
+                const txt = (node.textContent || '').trim().toLowerCase();
+                if (txt.includes('numéros rejetés') || txt.includes('boules rejetées') || txt === 'numéros rejetés' || txt === 'boules rejetées') {
+                  node.remove();
+                }
+              } catch(e){}
+            });
+          }
+
+          // Hide plant footer rejected button to keep it out of global chrome — Numéros rejetés only via Categories submenu
+          const plantRejected = document.getElementById('plantRejectedBtn');
+          if (plantRejected) {
+            plantRejected.style.display = 'none';
+            plantRejected.setAttribute('aria-hidden', 'true');
+            plantRejected.style.pointerEvents = 'none';
+          }
+
+          // Hide inline white-area quick button; it will be shown only by the Categories -> Numéros rejetés flow
+          const inlineBtn = document.getElementById('showRejectedInlineButton');
+          if (inlineBtn) {
+            inlineBtn.style.display = 'none';
+            inlineBtn.setAttribute('aria-hidden','true');
+            inlineBtn.style.pointerEvents = 'none';
+          }
+
+          // Defensive: remove any other social-area anchors whose href or text suggests rejected content
+          document.querySelectorAll('.category-item, a, button').forEach(el => {
+            try {
+              const t = (el.textContent || '').trim().toLowerCase();
+              const h = (el.getAttribute && el.getAttribute('href')) ? String(el.getAttribute('href')).toLowerCase() : '';
+              if (t.includes('numéros rejetés') || t.includes('boules rejetées') || h.includes('rejet') || h.includes('rejete')) {
+                // only remove if element is inside known social popup area
+                if (menu && menu.contains(el)) el.remove();
+              }
+            } catch(e){}
+          });
+
+          // Re-ensure Categories submenu still contains the "Numéros rejetés" entry (if missing, add it)
+          const submenu = document.getElementById('categoriesView');
+          if (submenu && !document.getElementById('submenuRejected')) {
+            const btn = document.createElement('button');
+            btn.id = 'submenuRejected';
+            btn.className = 'category-item';
+            btn.style.display = 'block';
+            btn.style.background = 'transparent';
+            btn.style.border = 'none';
+            btn.style.color = '#fff';
+            btn.style.padding = '8px 12px';
+            btn.style.textAlign = 'left';
+            btn.style.width = '160px';
+            btn.style.borderRadius = '6px';
+            btn.textContent = 'Numéros rejetés';
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              submenu.style.display = 'none';
+              // trigger the inline rendering path already implemented in the page
+              const inline = document.getElementById('showRejectedInlineButton');
+              if (inline && typeof inline.click === 'function') inline.click();
+              else {
+                // fallback: open the modal
+                const modal = document.getElementById('rejectedModal');
+                if (modal) {
+                  modal.classList.add('open');
+                  modal.setAttribute('aria-hidden','false');
+                  window.cidSetDocumentScrollLocked?.(true);
+                }
+              }
+            });
+            submenu.appendChild(btn);
+          }
+        } catch(e) {
+          console.warn('cleanup rejected-in-social failed', e);
+        }
+      })();
+    </script>
+  </div>
+</nav>
+
+<!-- Dedicated Categories view. This is part of the document flow, never a popup. -->
+<section id="categoriesView" class="categories-view cid-layout-surface" data-layout-freeze="v1" hidden aria-labelledby="categoriesViewTitle">
+  <div class="categories-view-inner">
+    <div class="categories-view-header">
+      <h1 id="categoriesViewTitle">Catégories</h1>
+    </div>
+
+    <div class="categories-grid" role="navigation" aria-label="Sections disponibles">
+      <button id="submenuMatrice" class="categories-option" type="button">Matrice</button>
+      <button id="submenuCroix" class="categories-option" type="button">Croix nationale</button>
+      <button id="submenuNosReseaux" class="categories-option" type="button">Nos réseaux</button>
+      <button id="submenuMatrixCalc" class="categories-option" type="button">Déchiffrement MT</button>
+      <button id="submenuRejected" class="categories-option" type="button">Numéros rejetés</button>
+      <button id="submenuOffers" class="categories-option" type="button">Offres</button>
+      <button id="submenuResultatAide" class="categories-option" type="button">Résultats</button>
+      <button id="submenuHistory" class="categories-option" type="button">Historiques</button>
+      <button id="submenuVirtual" class="categories-option" type="button">Cidmap virtuel</button>
+    </div>
+
+    <div id="categoriesOffersPanel" class="categories-offers-panel" hidden aria-live="polite"></div>
+    <div id="categoriesResultatPanel" hidden aria-live="polite"></div>
+    <div id="categoriesVirtualPanel" hidden aria-live="polite"></div>
+
+    <div id="categoriesSocialPanel" class="categories-social-panel" hidden aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- Dedicated future-publications view. It is a route, never a modal. -->
+<section id="anticipationViewContainer" class="cid-layout-surface anticipation-view-container" hidden aria-hidden="true" aria-labelledby="anticipationViewTitle">
+  <div id="anticipationViewMount"></div>
+</section>
+
+<!-- Dedicated Résultat-Aide view. -->
+<section id="resultatAideViewContainer" class="cid-layout-surface resultat-aide-view-container" hidden aria-hidden="true" aria-labelledby="resultatAideViewTitle">
+  <div id="resultatAideViewMount"></div>
+</section>
+<section id="globalStatisticsViewContainer" class="cid-layout-surface global-statistics-view-container" hidden aria-hidden="true" aria-labelledby="globalStatisticsViewTitle">
+  <div id="globalStatisticsViewMount"></div>
+</section>
+<section id="historyViewContainer" class="cid-layout-surface history-view-container" data-cid-component="history" hidden aria-hidden="true" aria-labelledby="historyViewTitle">
+  <div id="historyViewMount"></div>
+</section>
+<section id="virtualAssistantViewContainer" class="cid-layout-surface virtual-assistant-view-container" hidden aria-hidden="true" aria-labelledby="virtualAssistantViewTitle">
+  <div id="virtualAssistantViewMount"></div>
+</section>
+
+<!-- Croix remains hidden until the Croix category is chosen explicitly. -->
+<script>
+// Leave the installation UI to the browser. Chrome/Edge decide themselves
+// when to show their native "Install app" prompt; intercepting
+// beforeinstallprompt would suppress that native UI.
+(function(){
+  // Do not call preventDefault() here: the native browser prompt must remain
+  // available when the browser decides the site is installable.
+  window.addEventListener('appinstalled', () => {
+    document.documentElement.classList.add('cid-pwa-installed');
+  });
+})();
+</script>
+
+<!-- Dedicated calculator view (hidden until selected from Categories) -->
+<div id="matrixCalculatorPanel" class="cid-layout-surface matrix-calculator-panel" style="display:none; width:100%; max-width:none; margin:0; background:#ffffff; border-radius:0; box-shadow:none; padding:0; box-sizing:border-box; overflow:auto;">
+  <div class="matrix-calc-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <div style="font-weight:900;color:#0A1840;font-size:16px;">Déchiffrement MT</div>
+  </div>
+  <div class="matrix-calc-social" aria-label="Appréciation de la calculatrice">
+    <button id="matrixCalcLike" type="button" aria-pressed="false" aria-label="J’aime cette calculatrice">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20.8 8.8c0 5.2-8.8 10.1-8.8 10.1S3.2 14 3.2 8.8A4.7 4.7 0 0 1 12 6.1a4.7 4.7 0 0 1 8.8 2.7Z"></path>
+      </svg>
+      <span>J’aime</span>
+    </button>
+    <span id="matrixCalcLikeCount" class="matrix-calc-like-count">0 personne aime</span>
+    <span id="matrixCalcLikeStatus" class="matrix-calc-like-status" role="status" aria-live="polite"></span>
+  </div>
+  <div class="matrix-calc-content" style="display:grid;grid-template-columns:1fr;gap:10px;">
+    <div id="matrixCalcInitialStep" class="matrix-calc-initial-step">
+      <label style="font-weight:700;color:#444;">Collez la Matrice / Clavier / Cerveau (texte brut)</label>
+      <textarea id="matrixCalcInput" placeholder="Collez ici les lignes de la matrice, du clavier ou du cerveau (ex: 123, 456, 789, 012)" style="width:100%;min-height:120px;padding:10px;border-radius:8px;border:1px solid #eee;font-size:14px;"></textarea>
+
+      <div class="matrix-calc-input-row" aria-label="Informations du tirage">
+        <div class="matrix-calc-field">
+          <label for="matrixCalcCode" style="display:block;font-weight:700;color:#444;margin-bottom:6px;">Code</label>
+          <input id="matrixCalcCode" type="text" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="3 chiffres" aria-label="Code (3 chiffres)" />
+        </div>
+        <div class="matrix-calc-field">
+          <label for="matrixCalcEvent" style="display:block;font-weight:700;color:#444;margin-bottom:6px;">Event</label>
+          <input id="matrixCalcEvent" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="4 chiffres" aria-label="Event (4 chiffres)" />
+        </div>
+        <div class="matrix-calc-clear-wrap">
+          <span class="matrix-calc-field-label" aria-hidden="true"> </span>
+          <button id="matrixCalcClear" type="button" class="matrix-calc-clear" aria-label="Effacer tous les champs">Effacer</button>
+        </div>
+      </div>
+
+      <div class="matrix-calc-inline-actions matrix-calc-main-actions" style="display:flex;gap:8px;align-items:center;">
+        <button id="matrixCalcRun" type="button" class="copy-button matrix-calc-action" style="background:#0962D6;color:#fff;padding:10px 14px;border-radius:10px;font-weight:900;">Calculer</button>
+        <button id="matrixCalcCopy" type="button" class="copy-button matrix-calc-action" style="background:#fff;color:#0962D6;border:1px solid rgba(9,98,214,0.12);padding:10px 14px;border-radius:10px;font-weight:900;display:none;">Copier résultats</button>
+        <div id="matrixCalcStatus" style="margin-left:auto;font-weight:700;color:#0A1840;"></div>
+      </div>
+    </div>
+
+    <div id="matrixCalcOutput" style="margin-top:8px;display:none;padding:10px;border-radius:8px;background:#f7f9fc;border:1px solid #eef4ff;">
+      <div style="font-weight:900;margin-bottom:8px;color:#0A1840;">Résultat — 10 numéros</div>
+      <div id="matrixCalcList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+
+    <section id="matrixCalcPlusPanel" aria-labelledby="matrixCalcPlusTitle" style="display:none;margin-top:10px;padding:12px;border:1px solid rgba(171,103,0,0.2);border-radius:10px;background:#fffaf0;">
+      <div id="matrixCalcPlusTitle" style="font-weight:900;color:#7A4700;">Déchiffrement avancé</div>
+      <div id="matrixCalcPlusDescription" style="margin-top:4px;color:#6B4A1A;font-size:13px;">Calculez la Matrice pour préremplir les 10 numéros, ou saisissez directement vos propres numéros. Les croisements les plus forts sont classés par groupe.</div>
+      <div class="matrix-calc-plus-manual">
+        <label for="matrixCalcPlusManualNumbers">Numéros à analyser</label>
+        <input
+          id="matrixCalcPlusManualNumbers"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="269"
+          placeholder="Ex. 01 45 48 04…"
+          aria-describedby="matrixCalcPlusManualHint"
+        />
+        <button
+          id="matrixCalcPlusManualClear"
+          type="button"
+          class="matrix-calc-plus-clear"
+          aria-label="Effacer les numéros saisis"
+        >Effacer</button>
+        <small id="matrixCalcPlusManualHint">Après un calcul, les 10 numéros sont préremplis. Sans calcul, saisissez de 1 à 90 numéros distincts de 01 à 90, ou remplacez la liste préremplie.</small>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:9px;">
+        <button id="matrixCalcPlus" type="button" class="copy-button matrix-calc-action" style="background:#B66A00;color:#fff;padding:10px 14px;border-radius:10px;font-weight:900;">Déchiffrement avancé</button>
+        <span id="matrixCalcPlusStatus" role="status" aria-live="polite" style="color:#6B4A1A;font-size:13px;"></span>
+      </div>
+      <div id="matrixCalcPlusOutput" style="display:none;margin-top:10px;"></div>
+    </section>
+  </div>
+</div>
+
+<!-- Dedicated result dialog: kept outside the calculator surface so it can
+     remain centered and unclipped on every viewport, including mobile. -->
+<div
+  id="matrixCalcResultsModal"
+  class="matrix-calc-results-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="matrixCalcResultsModalTitle"
+  aria-describedby="matrixCalcResultsModalDescription"
+  aria-hidden="true"
+  hidden
+>
+  <section class="matrix-calc-results-dialog" tabindex="-1">
+    <div class="matrix-calc-results-dialog-head">
+      <div>
+        <span class="matrix-calc-results-eyebrow">Résultat du calcul</span>
+        <h2 id="matrixCalcResultsModalTitle">Vos 10 numéros</h2>
+      </div>
+      <button
+        id="matrixCalcResultsModalClose"
+        type="button"
+        class="matrix-calc-results-close"
+        aria-label="Fermer la fenêtre des résultats"
+      >×</button>
+    </div>
+    <p id="matrixCalcResultsModalDescription" class="matrix-calc-results-description">
+      Les numéros sont prêts pour Déchiffrement avancé.
+    </p>
+    <div id="matrixCalcResultsModalList" class="matrix-calc-results-grid" role="list" aria-label="Les 10 numéros calculés"></div>
+    <button id="matrixCalcResultsModalDone" type="button" class="matrix-calc-results-done">Continuer</button>
+  </section>
+</div>
+
+<h1 id="matrixPageTitle">Votre matrice d'aujourd'hui</h1>
+<div id="currentDateTime"></div>
+<div id="nextAvailableTime"></div>
+<div id="nextDay"></div>
+<div id="drawNumber"></div>
+<div id="countryButtons" class="matrix-country-buttons" style="display:none; max-width:1200px; margin:12px auto; padding:0 18px;">
+  <!-- buttons will be injected dynamically -->
+</div>
+
+<div class="cross-date-button" aria-hidden="true">
+  <!-- Historiques button removed per request -->
+</div>
+
+<!-- red/burgundy cross shown on Accueil -->
+<div id="redCross" data-cross-ready="false" aria-hidden="true" title="Croix nationale">
+  <div id="redCrossDate" aria-hidden="true"></div>
+  <input id="crossDatePicker" type="date" style="position:absolute;left:-9999px;opacity:0;" />
+  <!-- simple SVG cross icon (white) centered -->
+  <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" alt="Bannière Cidmap A">
+    <line class="cross-line" x1="33" y1="33" x2="67" y2="65" />
+    <line class="cross-line" x1="67" y1="33" x2="33" y2="65" />
+  </svg>
+
+  <!-- Numbers overlay inspired by reference: positioned to match cross layout -->
+  <div class="cross-numbers" aria-hidden="true" role="presentation">
+    <span class="num n1" data-index="1" style="left:34%; top:26%;">0</span>
+    <span class="num n2" data-index="2" style="left:50%; top:38%;">0</span>
+    <span class="num n3" data-index="3" style="left:66%; top:26%;">0</span>
+    <span class="num n4" data-index="4" style="left:64%; top:50%;">0</span>
+    <span class="num n5" data-index="5" style="left:66%; top:72%;">0</span>
+    <span class="num n6" data-index="6" style="left:50%; top:64%;">0</span>
+    <span class="num n7" data-index="7" style="left:34%; top:72%;">0</span>
+    <span class="num n8" data-index="8" style="left:36%; top:50%;">0</span>
+  </div>
+
+  <!-- Terminaison label: first line text and centered parentheses below -->
+  <div class="termination" aria-hidden="true">
+    <div class="term-title">Terminaison 0</div>
+    <div class="term-paren">(00)</div>
+  </div>
+  <!-- Right-side vertical label -->
+  <div class="right-label" aria-hidden="true">Croix nationale</div>
+
+  <!-- black button shown on Sunday at bottom center of the cross -->
+  <button id="redCrossSundayBtn" type="button" class="sunday-button" aria-hidden="true" aria-label="Bouton Nationale">NATIONALE</button>
+
+  <!-- visible date selector opener for Croix (allows visitors to pick past dates) -->
+  <button id="openCrossDateBtn" type="button" class="sunday-button" style="display:none; position:absolute;top:8px;left:8px;background:#ffffff;color:#800020;padding:6px 10px;border-radius:8px;font-weight:800;font-size:13px;z-index:1150;">Choisir une date</button>
+
+  <!-- new: black square button at bottom-center of the cross -->
+  <button id="redCrossBottomBtn" type="button" class="black-square-btn" aria-label="Télécharger la croix">
+    <svg viewBox="0 0 120 120" width="84" height="84" aria-hidden="true" focusable="false">
+      <defs>
+        <path id="circlePath" d="M60,12 a48,48 0 1,1 0,96 a48,48 0 1,1 0,-96"/>
+      </defs>
+      <g>
+        <circle cx="60" cy="60" r="40" fill="#0962D6" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>
+        <!-- center the 5/90 label -->
+        <text x="60" y="66" text-anchor="middle" font-family="Noto Sans, Arial, sans-serif" font-weight="900" font-size="22" fill="#ffffff">5/90</text>
+        <text font-family="Noto Sans, Arial, sans-serif" font-size="14" fill="#0962D6">
+          <textPath href="#circlePath" startOffset="50%" text-anchor="middle" letter-spacing="0.6" fill="#FFD700">Notre site officiel : www.cidmap.com</textPath>
+        </text>
+      </g>
+    </svg>
+  </button>
+  <div class="redCrossFooter">Notre site fonctionne. Allez sur www.cidmap.com</div>
+
+  <!-- new: copy-image button on the cross -->
+  <button id="redCrossCopyImageBtn" type="button" class="black-square-btn" aria-label="Copier l'image de la croix" title="Copier l'image de la croix" style="display:none; right: 96px;">
+    Copier
+  </button>
+</div>
+
+<script src="/src/croix/red-cross-stability.js"></script>
+
+<!-- duplicated cross placed below the first one -->
+<div id="redCrossClone" aria-hidden="true" title="Croix nationale (dupliquée)" style="margin-top:12px; display:none; align-items:center; justify-content:center;">
+  <div id="redCrossDate-clone" aria-hidden="true"></div>
+  <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" alt="Bannière Cidmap A">
+    <line class="cross-line" x1="33" y1="33" x2="67" y2="65" />
+    <line class="cross-line" x1="67" y1="33" x2="33" y2="65" />
+  </svg>
+  <div class="cross-numbers" aria-hidden="true" role="presentation">
+    <span class="num n1" style="left:34%; top:26%;">0</span>
+    <span class="num n2" style="left:50%; top:38%;">0</span>
+    <span class="num n3" style="left:66%; top:26%;">0</span>
+    <span class="num n4" style="left:64%; top:50%;">0</span>
+    <span class="num n5" style="left:66%; top:72%;">0</span>
+    <span class="num n6" style="left:50%; top:64%;">0</span>
+    <span class="num n7" style="left:34%; top:72%;">0</span>
+    <span class="num n8" style="left:36%; top:50%;">0</span>
+  </div>
+  <div class="termination" aria-hidden="true">
+    <div class="term-title">Terminaison 0</div>
+    <div class="term-paren">(00)</div>
+  </div>
+  <div class="right-label" aria-hidden="true">Croix nationale</div>
+  <button id="redCrossSundayBtn-clone" type="button" class="sunday-button" aria-hidden="true">Nationale</button>
+  <button id="redCrossBottomBtn-clone" type="button" class="black-square-btn" aria-label="Télécharger la croix">
+    <svg viewBox="0 0 120 120" width="84" height="84" aria-hidden="true" focusable="false">
+      <defs>
+        <path id="circlePath-clone" d="M60,12 a48,48 0 1,1 0,96 a48,48 0 1,1 0,-96"/>
+      </defs>
+      <g>
+        <circle cx="60" cy="60" r="40" fill="#0962D6" stroke="rgba(0,0,0,0.06)" stroke-width="1"/>
+        <!-- center the 5/90 label in the clone as well -->
+        <text x="60" y="66" text-anchor="middle" font-family="Noto Sans, Arial, sans-serif" font-weight="900" font-size="22" fill="#ffffff">5/90</text>
+        <text font-family="Noto Sans, Arial, sans-serif" font-size="14" fill="#000000">
+          <textPath href="#circlePath" startOffset="50%" text-anchor="middle" letter-spacing="0.6" fill="#000000">Notre site officiel : www.cidmap.com</textPath>
+        </text>
+      </g>
+    </svg>
+  </button>
+  <div class="redCrossFooter">Notre site fonctionne. Allez sur www.cidmap.com</div>
+</div>
+
+<!-- Replace inline archive container with modal window -->
+<div id="archiveModal" class="modal-overlay" role="region" aria-hidden="true">
+  <div class="modal-window" role="document">
+    <div class="modal-header">
+      <div class="modal-title">historique matrice</div>
+      <div>
+        <button id="archiveClose" type="button" class="modal-close" aria-label="Retour à la page précédente">‹</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="archiveContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- add modal for cross colors -->
+<div id="crossColorsModal" class="modal-overlay" role="region" aria-hidden="true">
+  <div class="modal-window" role="document" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">Couleurs de la Croix (par jour)</div>
+      <div><button id="crossColorsClose" type="button" class="modal-close" aria-label="Retour">‹</button></div>
+    </div>
+    <div class="modal-body" id="crossColorsBody" style="display:flex;flex-direction:column;gap:8px;padding:12px;">
+      <!-- populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- schedule modal -->
+<div id="scheduleModal" class="modal-overlay" role="region" aria-hidden="true">
+  <div class="modal-window" role="document">
+    <div class="modal-header">
+      <div class="modal-title">Horaires des programmes</div>
+      <div>
+        <button id="scheduleClose" type="button" class="modal-close" aria-label="Retour">‹</button>
+      </div>
+    </div>
+    <div class="modal-body" id="scheduleBody" tabindex="0">
+      <!-- populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- add Methode Croix modal -->
+<div id="methodeModal" class="modal-overlay" role="region" aria-hidden="true">
+  <div class="modal-window" role="document">
+    <div class="modal-header">
+      <div class="modal-title">Méthode de la Croix Nationale — Mode d'emploi (version actualisée)</div>
+      <div>
+        <button id="methodeClose" type="button" class="modal-close" aria-label="Retour à la page précédente">‹</button>
+      </div>
+    </div>
+    <div class="modal-body" style="white-space:pre-wrap; line-height:1.4; font-size:0.98em;">La méthode de la Croix Nationale est protégée.
+
+Les programmes affichés sont validés par le serveur officiel.
+
+<div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+  <button id="generateCleBtn" type="button" class="copy-button" style="padding:8px 12px;">Générer la clé</button>
+  <button id="copyCleBtn" type="button" class="copy-button" style="padding:8px 12px;display:none;">Copier la clé</button>
+  <div id="methodeCleOutput" style="flex:1;padding:8px;border-radius:8px;background:#f7f7f7;color:#0A1840;font-weight:700;display:none;word-break:break-all;"></div>
+</div>
+    </div>
+  </div>
+</div>
+
+<!-- Boules rejetées modal -->
+<div id="rejectedModal" class="modal-overlay" role="region" aria-hidden="true">
+  <div class="modal-window" role="document" style="max-width:720px;">
+    <div class="modal-header">
+      <div class="modal-title">Boules rejetées</div>
+      <div>
+        <button id="rejectedClose" type="button" class="modal-close" aria-label="Retour">‹</button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:12px;">
+      <div id="rejectedContent" style="overflow:auto;">
+        <!-- table injected dynamically -->
+        <table id="rejectedTable" style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #eee;">Pays</th>
+              <th style="text-align:left;padding:8px;border-bottom:1px solid #eee;">Boules rejetées</th>
+            </tr>
+          </thead>
+          <tbody id="rejectedTableBody">
+            <tr><td colspan="2" style="padding:12px;color:#666;">Aucune donnée disponible.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- First-visit modal: ask visitor to choose country and language (shown only on first visit) -->
+<div id="firstVisitModal" class="modal-overlay" role="region" aria-hidden="true" style="display:none;">
+  <div class="modal-window" role="document" style="max-width:420px;padding:16px;">
+    <div class="modal-header">
+      <div class="modal-title">Bienvenue — Choisissez votre pays et langue</div>
+      <div><button id="firstVisitClose" type="button" class="modal-close" aria-label="Retour">‹</button></div>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;padding:12px;">
+      <label for="fvCountry">Pays</label>
+      <select id="fvCountry" style="padding:8px;border-radius:8px;border:1px solid #ddd;">
+        <option value="">-- Sélectionner --</option>
+        <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+        <option value="Niger">Niger</option>
+        <option value="Ghana">Ghana</option>
+        <option value="Bénin">Bénin</option>
+        <option value="Sénégal">Sénégal</option>
+        <option value="Togo">Togo</option>
+        <option value="Autre">Autre</option>
+      </select>
+      <label for="fvLang">Langue</label>
+      <select id="fvLang" style="padding:8px;border-radius:8px;border:1px solid #ddd;">
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+        <option value="pt">Português</option>
+        <option value="es">Español</option>
+      </select>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="fvSkip" type="button" class="copy-button" style="background:#fff;color:#666;border:1px solid #eee;">Passer</button>
+        <button id="fvSave" type="button" class="copy-button" style="background:#0962D6;color:#fff;">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Disable first-visit modal: mark choices saved and ensure modal hidden to load site content immediately -->
+<script>
+  (function disableFirstVisitModal(){
+    try {
+      // Persist markers so existing scripts treat this as not-first-visit
+      try { localStorage.setItem('firstVisitCountry', 'Auto'); } catch(e){}
+      try { localStorage.setItem('firstVisitLang', localStorage.getItem('userLang') || localStorage.getItem('cid_i18n_locale') || (navigator.language||'fr').split('-')[0]); } catch(e){}
+      // also set userLang/cid_i18n_locale for translation modules if empty
+      try { if (!localStorage.getItem('userLang')) localStorage.setItem('userLang', (navigator.language||'fr').split('-')[0]); } catch(e){}
+      try { if (!localStorage.getItem('cid_i18n_locale')) localStorage.setItem('cid_i18n_locale', (navigator.language||'fr').split('-')[0]); } catch(e){}
+
+      // Hide and remove modal from DOM to avoid any accidental show
+      const modal = document.getElementById('firstVisitModal');
+      if (modal) {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden','true');
+        modal.style.display = 'none';
+        // detach event listeners by cloning (safe removal) then remove node to avoid future scripts reopening it
+        try { modal.parentNode && modal.parentNode.removeChild(modal); } catch(e){}
+      }
+      // Also ensure any logic that checks "isFirstVisit" will see values present
+      window.__firstVisitSuppressed = true;
+    } catch (err) {
+      console.warn('disableFirstVisitModal failed', err);
+    }
+  })();
+</script>
+
+<!-- Install / iOS help modal -->
+<div id="installHelpModal" class="modal-overlay" role="region" aria-hidden="true" style="display:none;">
+  <div class="modal-window" role="document" style="max-width:420px;padding:16px;">
+    <div class="modal-header">
+      <div class="modal-title">Installer l'application</div>
+      <div><button id="installHelpClose" type="button" class="modal-close" aria-label="Retour" style="font-size:20px;padding:6px;border:none;background:transparent;cursor:pointer">‹</button></div>
+    </div>
+    <div class="modal-body" style="padding:12px;line-height:1.4;">
+      <p style="margin:0 0 8px 0;">Pour installer Cidmap comme une application native :</p>
+      <ul style="margin:0 0 12px 18px;padding:0;line-height:1.5;">
+        <li>Sur Android (Chrome/Edge) : appuyez sur <strong>Installer</strong> dans la barre du navigateur ou utilisez le menu ⋮ → <em>Ajouter à l'écran d'accueil</em>.</li>
+        <li>Sur iOS (Safari) : appuyez sur le bouton de partage (⬆︎) puis choisissez <em>Sur l'écran d'accueil</em>.</li>
+      </ul>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="installHelpGotIt" type="button" class="copy-button" style="background:#0962D6;color:#fff;">J'ai compris</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Install help modal handlers
+(function(){
+  const modal = document.getElementById('installHelpModal');
+  const close = document.getElementById('installHelpClose');
+  const gotIt = document.getElementById('installHelpGotIt');
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    window.cidResetScrollLock?.({ resetSurfaces: false });
+  }
+  if (close) close.addEventListener('click', () => closeModal());
+  if (gotIt) gotIt.addEventListener('click', () => closeModal());
+  // clicking outside modal window closes it
+  document.addEventListener('click', (e) => { if (modal && e.target === modal) closeModal(); });
+})();
+</script>
+
+<script>
+// Preloader: expose as a callable function so other UI actions can trigger background updating before view changes
+window.preloadSiteAssets = (function(){
+  let inProgress = null;
+  let completed = false;
+  // new helper: cache-bust URLs so images/json are fetched fresh
+  function cacheBust(url) {
+    try {
+      const u = new URL(url, location.origin);
+      u.searchParams.set('t', String(Date.now()));
+      return u.toString();
+    } catch (e) {
+      return url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+    }
+  }
+
+  // New helper: apply cross colors & exact saved positions if available
+  function applyRedCrossSavedState() {
+    try {
+      const rc = document.getElementById('redCross');
+      if (!rc) return;
+      // adopt CSS variable if set
+      const dayColor = getComputedStyle(document.documentElement).getPropertyValue('--redCross-bg') || null;
+      if (dayColor) {
+        try { rc.style.setProperty('background', dayColor.trim(), 'important'); } catch(e){}
+      }
+      // try to load canonical positions from latest pointer
+      const latestRaw = window.cidProgrammeState?.positions?.latest
+        ? JSON.stringify(window.cidProgrammeState.positions.latest)
+        : null;
+      if (latestRaw) {
+        try {
+          const parsed = JSON.parse(latestRaw);
+          const positions = parsed.positions || null;
+          if (Array.isArray(positions) && positions.length >= 8) {
+            const nums = Array.from(rc.querySelectorAll('.cross-numbers .num')).slice(0,8);
+            positions.slice(0,8).forEach((p,i) => {
+              const el = nums[i];
+              if (!el) return;
+              // Position snapshots are geometry-only. Never restore their
+              // old digit text over the date-calculated assignment.
+              if (typeof p.left !== 'undefined') el.style.setProperty('left', String(p.left) + '%', 'important');
+              if (typeof p.top !== 'undefined') el.style.setProperty('top', String(p.top) + '%', 'important');
+              el.style.setProperty(
+                'transform',
+                el.classList.contains('n2')
+                  ? 'translate(-50%,-50%) translateY(calc(-10px * var(--cross-scale, 1)))'
+                  : 'translate(-50%,-50%)',
+                'important'
+              );
+              el.style.setProperty('pointer-events','none','important');
+              el.style.setProperty('user-select','none','important');
+            });
+            // mark positions locked
+            rc.dataset.positionsLocked = 'true';
+          }
+        } catch(e){}
+      }
+      // Do not use the legacy canonicalRedCross.numbers fallback here:
+      // redCrossService is the single source of truth for date-based digits.
+      // ensure footer & terminaison contrast based on background brightness if we have a color
+      try {
+        const bg = getComputedStyle(rc).backgroundColor || '';
+        const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(bg);
+        if (m) {
+          const r = Number(m[1]), g = Number(m[2]), b = Number(m[3]);
+          const lum = (0.2126*r + 0.7152*g + 0.0722*b) / 255;
+          const useBlack = lum > 0.65;
+          // choose text color
+          const textColor = useBlack ? '#000000' : '#ffffff';
+          rc.querySelectorAll('.cross-numbers .num, #redCrossDate, .term-title, .term-paren, .redCrossFooter, .right-label').forEach(el => {
+            try { el.style.setProperty('color', textColor, 'important'); el.style.setProperty('-webkit-text-fill-color', textColor, 'important'); } catch(e){}
+          });
+          // adjust svg cross lines for visibility
+          rc.querySelectorAll('svg .cross-line').forEach(line => {
+            try { line.style.setProperty('stroke', useBlack ? '#000' : '#fff', 'important'); } catch(e){}
+          });
+        }
+      } catch(e){}
+    } catch (err) {
+      console.warn('applyRedCrossSavedState failed', err);
+    }
+  }
+
+  return async function preloadSiteAssets({ section = '' } = {}) {
+    // Assets are loaded once per page session. View changes are in-document
+    // SPA changes and must never cover the persistent shell with the startup
+    // loader again.
+    if (completed) return { cached: true };
+    if (inProgress) return inProgress; // dedupe concurrent calls
+    inProgress = (async () => {
+      // Expand preload list to include interactive controllers, canonical images, and UI assets
+      const toLoadImages = [
+        '/src/shared/images/squirrel-croix-192.png',
+        '/src/shared/images/squirrel-croix-512.png',
+      ];
+      const shouldWarmCross = !section || section === 'accueil' || section === 'croix';
+      const updateProgress = () => {};
+      // small helper to load images with timeout
+      const loadImage = (src) => new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ src, ok: true });
+        img.onerror = () => resolve({ src, ok: false });
+        try { img.crossOrigin = 'anonymous'; } catch(e){}
+        img.src = cacheBust(src);
+        setTimeout(() => resolve({ src, ok: false, timeout: true }), 8000);
+      });
+      // small helper to import modules with timeout
+      const importWithTimeout = async (path, timeout = 9000) => {
+        try {
+          const race = Promise.race([
+            import(path).then(m => ({ ok:true, module: m })).catch(e => ({ ok:false, error: e })),
+            new Promise(res => setTimeout(() => res({ ok:false, timeout:true }), timeout))
+          ]);
+          return await race;
+        } catch (e) {
+          return { ok:false, error: e };
+        }
+      };
+
+      try {
+        const totalTasks = toLoadImages.length + (shouldWarmCross ? 1 : 0);
+        let completed = 0;
+
+        // start loading images in parallel
+        const imgPromises = toLoadImages.map(src => loadImage(src).then(res => { completed++; updateProgress(completed/totalTasks); return res; }));
+
+        // also perform a safe redCrossService fetchAndApply if available to apply canonical cross in background
+        const redCrossPromise = shouldWarmCross ? (async () => {
+          try {
+            const mod = await importWithTimeout('/src/croix/redCrossService.js?cross-geometry-scale-v2-official', 9000);
+            if (mod && mod.ok && mod.module && typeof mod.module.fetchAndApply === 'function') {
+              await Promise.race([mod.module.fetchAndApply(), new Promise(res => setTimeout(res,10000))]);
+            }
+            // After the service applied payload, also apply any saved positions/colors immediately
+            applyRedCrossSavedState();
+            return { ok:true };
+          } catch (e) { return { ok:false }; } finally { completed++; updateProgress(completed/totalTasks); }
+        })() : Promise.resolve({ ok: true, skipped: true });
+
+        // wait for all assets and modules to settle but don't block longer than a safe total timeout
+        const allAssets = Promise.allSettled([...imgPromises, redCrossPromise]);
+        await Promise.race([allAssets, new Promise(res => setTimeout(res, 12000))]);
+
+        // best-effort: apply any saved DOM positions again
+        try { applyRedCrossSavedState(); } catch(e){}
+
+        // Ensure UI interactive buttons exist and are wired (best-effort non-blocking)
+        try {
+          // query and pre-warm event listeners by dispatching passive events (no side-effects)
+          const selectors = ['.category-item', '#redCrossBottomBtn', '#methodeCroixButton', '#instructionsRejectedBtn', '#shareBtn', '#starBtn', '#plantMatriceBtn', '#plantCroixBtn', '#plantRejectedBtn'];
+          selectors.forEach(sel => {
+            Array.from(document.querySelectorAll(sel)).forEach(el => {
+              try { el.dispatchEvent(new Event('cid-preload', { bubbles: false, cancelable: false })); } catch(e){}
+            });
+          });
+        } catch(e){}
+
+        // finalize progress
+        completed = totalTasks;
+        updateProgress(1);
+
+      } catch (err) {
+        console.warn('preloadSiteAssets error', err);
+      } finally {
+        // Asset preloading is only one part of startup. Do not dismiss the
+        // shell here: bootstrap must first apply the background data, render
+        // the final view and wait for stable CSS dimensions.
+        window.__cidPreloaderDone = true;
+        completed = true;
+        try {
+          if (window.__cidRenderReady && typeof window.__cidRevealApplication === 'function') {
+            window.__cidRevealApplication();
+          }
+        } catch (e) {}
+        inProgress = null;
+      }
+    })();
+    return inProgress;
+  };
+})();
+
+// Bootstrap owns the single startup invocation. The function remains public
+// for explicit user navigation, but it is never started by two lifecycle
+// handlers at once.
+</script>
+
+<!-- New: quick access to "Boules rejetées" integrated in the white area -->
+<button id="showRejectedInlineButton" class="copy-button" style="margin-left:8px; display:none;" type="button" aria-hidden="true"
+  onclick="(async function(){ try{
+    const rejectedRouteEpoch = window.__cidRejectedInlineEpoch;
+    // Render rejected table data then inject it into the main results area (do not touch header or plant du pied)
+    if (typeof renderRejectedTable === 'function') {
+      await renderRejectedTable({
+        programmeDate: window.__cidRequestedProgrammeDate || undefined
+      });
+    }
+    if (rejectedRouteEpoch !== window.__cidRejectedInlineEpoch) return;
+    const results = document.getElementById('results');
+    if (!results) return;
+    // Keep the prepared Accueil feed mounted. Route changes may hide a
+    // surface, but they must not destroy its already measured DOM.
+    const existingFeed = results.querySelector('#cid-home-feed');
+    if (existingFeed) {
+      existingFeed.hidden = true;
+      existingFeed.setAttribute('aria-hidden', 'true');
+      existingFeed.style.display = 'none';
+    }
+    results.querySelector('#cid-home-skeleton')?.setAttribute('hidden', '');
+    results.querySelector('#rejectedInlineMain')?.remove();
+    // Create a container and copy produced rejected content from the modal's body/table into it
+    const container = document.createElement('div');
+    container.id = 'rejectedInlineMain';
+    container.style.width = '100%';
+    container.style.maxWidth = '1200px';
+    container.style.margin = '12px auto';
+    container.style.background = '#ffffff';
+    container.style.borderRadius = '12px';
+    container.style.padding = '12px';
+    container.style.boxShadow = '0 8px 30px rgba(2,6,23,0.06)';
+    // If renderRejectedTable produced a table tbody (#rejectedTableBody) move its children into the container.
+    const producedTbody = document.getElementById('rejectedTableBody');
+    if (producedTbody && producedTbody.childNodes && producedTbody.childNodes.length) {
+      // Build a visual wrapper similar to modal body
+      const title = document.createElement('div');
+      title.style.fontWeight = '900';
+      title.style.marginBottom = '8px';
+      title.textContent = 'Boules rejetées';
+      container.appendChild(title);
+      const copyControls = document.createElement('div');
+      copyControls.style.display = 'flex';
+      copyControls.style.justifyContent = 'flex-end';
+      copyControls.style.marginBottom = '8px';
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-button';
+      copyBtn.textContent = 'copier tous';
+      copyBtn.onclick = function(){ if (typeof copyAllRejected === 'function') copyAllRejected(); };
+      copyControls.appendChild(copyBtn);
+      container.appendChild(copyControls);
+      // move produced nodes into a content wrapper
+      const contentWrapper = document.createElement('div');
+      // If renderRejectedTable created an HTML table, clone its parent to show same layout
+      const table = producedTbody.closest('table');
+      if (table) {
+        const tableClone = table.cloneNode(true);
+        // remove any existing tbody children to avoid duplication, then populate with producedTbody children clone
+        const newTbody = tableClone.querySelector('tbody') || document.createElement('tbody');
+        newTbody.innerHTML = '';
+        Array.from(producedTbody.childNodes).forEach(n => newTbody.appendChild(n.cloneNode(true)));
+        if (!tableClone.querySelector('tbody')) tableClone.appendChild(newTbody);
+        contentWrapper.appendChild(tableClone);
+      } else {
+        // fallback: copy modal body if available
+        const modalBody = document.querySelector('#rejectedModal .modal-body') || producedTbody;
+        if (modalBody) contentWrapper.appendChild(modalBody.cloneNode(true));
+      }
+      container.appendChild(contentWrapper);
+    } else {
+      // fallback message when nothing was produced
+      const p = document.createElement('p');
+      p.style.color = '#666';
+      p.style.padding = '12px';
+      p.textContent = 'Aucune donnée disponible.';
+      container.appendChild(p);
+    }
+    results.appendChild(container);
+    // #results is the fixed application scroll surface; never scroll the
+    // document root while changing an in-page view.
+    try { results.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch(e){}
+    return;
+  }catch(e){
+    if (rejectedRouteEpoch !== window.__cidRejectedInlineEpoch) return;
+    // fallback to opening the modal if anything fails
+    try{ document.getElementById('rejectedModal')?.classList.add('open'); }catch(_){} } })()">
+  numéros rejetés
+</button>
+
+<section id="profileViewContainer" class="profile-native-host cid-layout-surface" data-layout-freeze="v1" hidden aria-hidden="true"></section>
+<section id="tableauxViewContainer" class="cid-layout-surface" data-cid-component="tableaux" hidden aria-hidden="true"></section>
+<section id="croixViewContainer" class="cid-layout-surface" hidden aria-hidden="true">
+  <div id="croixViewMount"></div>
+</section>
+<div id="results" class="cid-layout-surface" data-cid-component="home">
+  <div id="cid-home-skeleton" aria-hidden="true">
+    <article class="cid-home-skeleton-card cid-home-skeleton-card--cross">
+      <span class="cid-skeleton-line"></span>
+      <span class="cid-skeleton-line cid-skeleton-line--short"></span>
+      <span class="cid-skeleton-block cid-skeleton-block--cross"></span>
+      <span class="cid-skeleton-line cid-skeleton-line--short"></span>
+    </article>
+    <article class="cid-home-skeleton-card">
+      <span class="cid-skeleton-line"></span>
+      <span class="cid-skeleton-line cid-skeleton-line--short"></span>
+      <span class="cid-skeleton-block"></span>
+      <span class="cid-skeleton-line cid-skeleton-line--short"></span>
+    </article>
+  </div>
+  <div
+    id="cid-feed-loader"
+    data-mode="initial"
+    hidden
+    role="status"
+    aria-live="polite"
+    aria-label="Chargement des publications"
+  >
+    <span class="cid-feed-loader-spinner" aria-hidden="true"></span>
+    <span class="cid-feed-loader-label">Chargement des publications…</span>
+  </div>
+</div>
+
+<script src="/src/shared/first-paint-shell.js"></script>
+
+<script>
+  // Ensure clicking the bottom "numéros rejetés" button immediately shows the rejected inline view
+  (function wireRejectedCategoryImmediate() {
+    const btn = document.getElementById('categoryRejectedButton');
+    if (!btn) return;
+
+    async function showRejectedInline() {
+      try {
+        // Ensure rejected table renderer exists and runs to produce #rejectedTableBody content
+        if (typeof renderRejectedTable === 'function') {
+          try {
+            await renderRejectedTable({
+              programmeDate: window.__cidRequestedProgrammeDate || undefined
+            });
+          } catch(e){ console.warn('renderRejectedTable failed', e); }
+        }
+
+        const results = document.getElementById('results');
+        if (!results) return;
+
+        // Keep the prepared Accueil feed mounted. Route changes may hide a
+        // surface, but they must not destroy its already measured DOM.
+        const existingFeed = results.querySelector('#cid-home-feed');
+        if (existingFeed) {
+          existingFeed.hidden = true;
+          existingFeed.setAttribute('aria-hidden', 'true');
+          existingFeed.style.display = 'none';
+        }
+        results.querySelector('#cid-home-skeleton')?.setAttribute('hidden', '');
+        results.querySelector('#rejectedInlineMain')?.remove();
+
+        // Create a container and copy produced rejected content from the modal's body/table into it
+        const container = document.createElement('div');
+        container.id = 'rejectedInlineMain';
+        container.style.width = '100%';
+        container.style.maxWidth = '1200px';
+        container.style.margin = '12px auto';
+        container.style.background = '#ffffff';
+        container.style.borderRadius = '12px';
+        container.style.padding = '12px';
+        container.style.boxShadow = '0 8px 30px rgba(2,6,23,0.06)';
+
+        // If renderRejectedTable produced a table tbody (#rejectedTableBody) move its children into the container.
+        const producedTbody = document.getElementById('rejectedTableBody');
+        if (producedTbody && producedTbody.childNodes && producedTbody.childNodes.length) {
+          const title = document.createElement('div');
+          title.style.fontWeight = '900';
+          title.style.marginBottom = '8px';
+          title.textContent = 'Numéros rejetés';
+          container.appendChild(title);
+
+          const copyControls = document.createElement('div');
+          copyControls.style.display = 'flex';
+          copyControls.style.justifyContent = 'flex-end';
+          copyControls.style.marginBottom = '8px';
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-button';
+          copyBtn.textContent = 'Copier tous';
+          copyBtn.onclick = function(){ if (typeof copyAllRejected === 'function') copyAllRejected(); };
+          copyControls.appendChild(copyBtn);
+          container.appendChild(copyControls);
+
+          const contentWrapper = document.createElement('div');
+
+          const table = producedTbody.closest('table');
+          if (table) {
+            const tableClone = table.cloneNode(true);
+            const newTbody = tableClone.querySelector('tbody') || document.createElement('tbody');
+            newTbody.innerHTML = '';
+            Array.from(producedTbody.childNodes).forEach(n => newTbody.appendChild(n.cloneNode(true)));
+            if (!tableClone.querySelector('tbody')) tableClone.appendChild(newTbody);
+            contentWrapper.appendChild(tableClone);
+          } else {
+            const modalBody = document.querySelector('#rejectedModal .modal-body') || producedTbody;
+            if (modalBody) contentWrapper.appendChild(modalBody.cloneNode(true));
+          }
+          container.appendChild(contentWrapper);
+        } else {
+          const p = document.createElement('p');
+          p.style.color = '#666';
+          p.style.padding = '12px';
+          p.textContent = 'Aucune donnée disponible.';
+          container.appendChild(p);
+        }
+
+        results.appendChild(container);
+        // #results is the fixed application scroll surface; never scroll the
+        // document root while changing an in-page view.
+        try { results.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch(e){}
+      } catch (err) {
+        console.warn('showRejectedInline failed', err);
+        // fallback: open modal if inline render fails
+        try { document.getElementById('rejectedModal')?.classList.add('open'); } catch(_) {}
+      }
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showRejectedInline();
+      // Also open the modal as a fallback for users who want the modal view (optional)
+      // document.getElementById('rejectedModal')?.classList.add('open');
+    });
+  })();
+</script>
+
+<script src="/src/matrice/matrice-calculation.js?date-binding-v1"></script>
+<script src="/src/services/dechiffrement-api.js?calculator-v5-timeout-plus"></script>
+<script src="/src/calculatrice/calculatrice.js?calculator-v12-ranked-group-limits"></script>
+
+<!-- Validation guard: ensure the cross is only revealed after verifying that "digits between parentheses" are absent from the 8 cross digits.
+     If a conflict is found, try to fetch/apply canonical payloads in background (redCrossService.fetchAndApply) and re-check before revealing.
+     This ensures the universal canonical cross is shown to everyone and that removed digits never remain visible on the cross. -->
+<script>
+(function(){
+  const rc = document.getElementById('redCross');
+  if (!rc) return;
+
+  // Helper: read removed digits from trusted sources
+  function getRemovedDigits() {
+    try {
+      // Prefer explicit storage set by services
+      const stored = Array.isArray(window.cidProgrammeState?.removedDigits)
+        ? JSON.stringify(window.cidProgrammeState.removedDigits)
+        : null;
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed.map(String);
+          if (typeof parsed === 'string') return parsed.split('').map(String);
+        } catch(e){}
+      }
+      // fallback: read the term parentheses in DOM like "(25)" => ['2','5']
+      const tp = rc.querySelector('.term-paren') || document.querySelector('.term-paren') || null;
+      if (tp && tp.textContent) {
+        const digits = (String(tp.textContent).match(/\d/g) || []).slice(0,2);
+        if (digits.length) return digits.map(String);
+      }
+    } catch(e){}
+    return [];
+  }
+
+  // Helper: get current 8 cross digits as strings
+  function getCrossDigits() {
+    try {
+      return Array.from(rc.querySelectorAll('.cross-numbers .num')).slice(0,8).map(el => String((el.textContent||'').trim()));
+    } catch(e){ return []; }
+  }
+
+  // Check conflict: any removed digit still present in cross digits
+  function hasConflict(removed, digits) {
+    if (!Array.isArray(removed) || !removed.length) return false;
+    for (const r of removed) {
+      if (!r) continue;
+      // compare single characters or full tokens (handle '02' vs '2' cases)
+      const candidate = String(r).replace(/^0(?=\d$)/,''); // "02" -> "2" for matching "2"
+      for (const d of digits) {
+        if (!d) continue;
+        const dd = String(d).replace(/^0(?=\d$)/,'');
+        if (dd === candidate || d === r) return true;
+      }
+    }
+    return false;
+  }
+
+  // Attempt to reconcile conflict by asking redCrossService to fetch & apply canonical payload, then recheck.
+  async function reconcileConflict(maxAttempts = 3) {
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+      attempts++;
+      try {
+        // Ask service to fetch and apply latest canonical payload (best-effort)
+        if (window.redCrossService && typeof window.redCrossService.fetchAndApply === 'function') {
+          try { await window.redCrossService.fetchAndApply(); } catch(e){}
+        } else {
+          // dynamic import fallback
+          try {
+            const mod = await import('/src/croix/redCrossService.js?cross-geometry-scale-v2-official');
+            if (mod && typeof mod.fetchAndApply === 'function') {
+              await mod.fetchAndApply();
+            }
+          } catch(e){}
+        }
+      } catch(e){}
+      // small delay to let DOM update
+      await new Promise(r => setTimeout(r, 600 + attempts * 200));
+      const removed = getRemovedDigits();
+      const digits = getCrossDigits();
+      if (!hasConflict(removed, digits)) return true;
+    }
+    return false;
+  }
+
+  // Observer that prevents the cross from being made visible until validation passes.
+  const observer = new MutationObserver(async (mutations) => {
+    try {
+      for (const m of mutations) {
+        // Handle style or attribute changes or subtree modifications that would show the cross
+        if (m.type === 'attributes' && (m.attributeName === 'style' || m.attributeName === 'class' || m.attributeName === 'aria-hidden')) {
+          // check requested visibility
+          const visibleStyle = (rc.style && rc.style.display) ? rc.style.display : getComputedStyle(rc).display;
+          const ariaHidden = rc.getAttribute('aria-hidden');
+          const wantsVisible = (visibleStyle && visibleStyle !== 'none') && ariaHidden !== 'true';
+          if (!wantsVisible) return;
+          // perform validation
+          const removed = getRemovedDigits();
+          const digits = getCrossDigits();
+          if (!hasConflict(removed, digits)) {
+            // good: allow visibility (do nothing)
+            return;
+          }
+          // Conflict detected: hide immediately and attempt reconciliation in background
+          try { rc.style.display = 'none'; rc.setAttribute('aria-hidden','true'); } catch(e){}
+          const reconciled = await reconcileConflict(4);
+          if (reconciled) {
+            // re-check and reveal only if conflict cleared
+            const r2 = getRemovedDigits();
+            const d2 = getCrossDigits();
+            if (!hasConflict(r2, d2)) {
+              try { rc.style.display = 'flex'; rc.setAttribute('aria-hidden','false'); } catch(e){}
+            } else {
+              // give up: keep hidden and log
+              console.warn('redCross guard: canonical payload applied but conflict remains; cross kept hidden to avoid exposing removed digits.');
+            }
+          } else {
+            console.warn('redCross guard: failed to reconcile conflicting digits after background attempts; cross kept hidden.');
+          }
+        } else if (m.type === 'childList' || m.type === 'subtree') {
+          // if content changed, revalidate but do not alter visibility unless conflict found
+          const removed = getRemovedDigits();
+          const digits = getCrossDigits();
+          if (hasConflict(removed, digits)) {
+            try { rc.style.display = 'none'; rc.setAttribute('aria-hidden','true'); } catch(e){}
+            reconcileConflict(3).then(ok => {
+              if (ok) {
+                const r2 = getRemovedDigits();
+                const d2 = getCrossDigits();
+                if (!hasConflict(r2, d2)) {
+                  try { rc.style.display = 'flex'; rc.setAttribute('aria-hidden','false'); } catch(e){}
+                }
+              }
+            }).catch(()=>{});
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('redCross guard observer error', err);
+    }
+  });
+
+  // Start observing rc for attempts to show or content changes
+  observer.observe(rc, { attributes: true, childList: true, subtree: true, attributeFilter: ['style','class','aria-hidden'] });
+
+  // On initial load if cross is already visible, validate immediately
+  (async function initialValidate(){
+    try {
+      const removed = getRemovedDigits();
+      const digits = getCrossDigits();
+      if (!hasConflict(removed, digits)) return;
+      // hide now and try reconcile
+      try { rc.style.display = 'none'; rc.setAttribute('aria-hidden','true'); } catch(e){}
+      const ok = await reconcileConflict(4);
+      if (ok) {
+        const r2 = getRemovedDigits();
+        const d2 = getCrossDigits();
+        if (!hasConflict(r2, d2)) {
+          try { rc.style.display = 'flex'; rc.setAttribute('aria-hidden','false'); } catch(e){}
+        }
+      } else {
+        console.warn('redCross initial validation failed; cross remains hidden to avoid showing removed digits.');
+      }
+    } catch(e){}
+  })();
+
+})();
+</script>
+
+</body>
+</html>

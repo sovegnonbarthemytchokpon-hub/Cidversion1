@@ -1,0 +1,162 @@
+/*
+ * Stable component geometry.
+ *
+ * This file is loaded last. A block may paint a skeleton, cached result or
+ * fresh result inside its box, but the box itself is never collapsed or
+ * virtualized while the visitor scrolls.
+ */
+:where(.cid-stable-block, [data-cid-block]) {
+  min-height: var(--cid-block-min-height, 180px) !important;
+  contain: layout paint style;
+  overflow-anchor: none;
+}
+
+/*
+ * Route hosts remain real, paintable surfaces while their local controller
+ * refreshes. The host geometry is reserved once, and the request is allowed
+ * to replace only the content inside it. This prevents a late `hidden` /
+ * `display:none` toggle from exposing a white viewport between tabs.
+ */
+#results,
+#categoriesView,
+#tableauxViewContainer,
+#croixViewContainer,
+#anticipationViewContainer,
+#resultatAideViewContainer,
+#globalStatisticsViewContainer,
+#historyViewContainer,
+#virtualAssistantViewContainer,
+#profileViewContainer {
+  background: var(--cid-dedicated-bg, #f6f8fb) !important;
+  contain: layout style;
+  overflow-anchor: none;
+}
+
+#results {
+  min-height: 720px !important;
+}
+
+#categoriesView {
+  min-height: 320px !important;
+}
+
+#tableauxViewContainer,
+#croixViewContainer,
+#anticipationViewContainer,
+#resultatAideViewContainer,
+#globalStatisticsViewContainer,
+#historyViewContainer,
+#virtualAssistantViewContainer,
+#profileViewContainer {
+  min-height: 520px !important;
+}
+
+#historyViewMount,
+#anticipationViewMount,
+#resultatAideViewMount,
+#globalStatisticsViewMount,
+#virtualAssistantViewMount {
+  min-height: 100% !important;
+}
+
+#cid-home-feed {
+  min-height: 720px !important;
+  contain: layout style;
+}
+
+#cid-home-feed > .cid-fb-post {
+  min-height: 390px !important;
+  contain: layout paint style;
+}
+
+#cid-home-feed > .cid-fb-post[data-post-type="cross"] {
+  min-height: 430px !important;
+}
+
+#cid-home-feed > .cid-fb-post[data-post-type="matrix"],
+#cid-home-feed > .cid-fb-post[data-post-type="rejected"] {
+  min-height: 390px !important;
+}
+
+#cid-home-feed > .cid-fb-post[data-post-type="cross"] .cid-fb-cross-slot,
+#cid-home-feed > .cid-fb-post[data-post-type="cross"] .cid-fb-cross-live-host,
+#cid-home-feed > .cid-fb-post[data-post-type="cross"] .cid-fb-cross-history-visual {
+  min-height: 360px !important;
+}
+
+#redCross,
+#redCrossClone {
+  min-height: 320px !important;
+}
+
+#anticipationViewMount,
+#anticipationViewMount .anticipation-feed {
+  min-height: 220px !important;
+  contain: layout style;
+}
+
+#anticipationViewMount .anticipation-feed > [data-anticipation-feature] {
+  min-height: 330px !important;
+  contain: layout paint style;
+}
+
+#anticipationViewMount .anticipation-feed
+  > [data-anticipation-feature^="tableaux-"] {
+  min-height: 520px !important;
+}
+
+#anticipationViewMount .anticipation-feed
+  > [data-anticipation-feature="croix"] {
+  min-height: 390px !important;
+}
+
+#tableauxViewContainer [data-tableaux-route],
+#tableauxViewContainer #createdProgramPortfolios {
+  min-height: 520px !important;
+  contain: layout paint style;
+}
+
+#rejectedContent,
+#rejectedInlineMain,
+#rejectedInlineContainer {
+  min-height: 520px !important;
+  contain: layout paint style;
+}
+
+/*
+ * The feed's old full-surface loader made every independent request look
+ * like one blocking operation. Keep the node harmless for old callers, but
+ * never paint an opaque layer over already-ready cards.
+ */
+#cid-feed-loader {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/*
+ * Published results are reading/capture surfaces. Their colour pulse,
+ * skeleton shimmer and table transitions made static values look as if they
+ * were shaking. Loading still reserves its box; only the motion is removed.
+ */
+#cid-home-feed .cid-fb-image-media::before,
+#cid-home-feed .cid-fb-cross-slot[aria-busy="true"]::before,
+#tableauxViewContainer .intuition-satellites .satellite-number.yellow-text,
+#tableauxViewContainer .color-table td.satellite-cell,
+#tableauxViewContainer .intuition-satellites tr td,
+.cid-publication-history__track,
+.cid-publication-history__card {
+  animation: none !important;
+  transition: none !important;
+}
+
+.cid-publication-history__track {
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cid-stable-block,
+  [data-cid-block] {
+    scroll-behavior: auto !important;
+  }
+}

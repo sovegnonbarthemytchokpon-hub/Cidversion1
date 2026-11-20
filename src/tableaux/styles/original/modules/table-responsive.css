@@ -1,0 +1,320 @@
+@media (max-width: 768px) {
+  .table-container {
+    padding: 0 2px; /* Further reduced padding for maximum space */
+    margin: 2px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Maintain spacing between tables on mobile */
+  .intuition-table {
+    margin-top: 25px !important; /* Reduced from 30px */
+  }
+
+  .color-table {
+    font-size: 10px; /* Reduced from 11px */
+    min-width: 100%;
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .color-table th, 
+  .color-table td {
+    padding: 3px 1px; /* Further reduced padding */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    font-size: 9px; /* Reduced from 10px */
+    line-height: 1.1;
+    max-width: 0;
+  }
+
+  .color-table th {
+    font-size: 10px; /* Reduced from 11px */
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  /* Optimize column widths for better visibility */
+  .color-table tr td:nth-child(1),
+  .color-table tr th:nth-child(1) {
+    width: 18%; /* Reduced from 25% */
+    min-width: 50px;
+  }
+
+  .color-table tr td:nth-child(2),
+  .color-table tr th:nth-child(2) {
+    width: 38%; /* Increased from 25% */
+    min-width: 100px;
+  }
+
+  .color-table tr td:nth-child(3),
+  .color-table tr th:nth-child(3) {
+    width: 44%; /* Increased from 30% */
+    min-width: 120px;
+  }
+
+  /* Style the satellite combinations for better mobile fit */
+  .satellite-combination {
+    display: flex;
+    align-items: center;
+    gap: 2px; /* Reduced from 4px */
+    justify-content: center;
+    flex-wrap: nowrap;
+    font-size: 8px; /* Reduced from 9px */
+  }
+
+  .satellite-number {
+    font-weight: bold;
+    font-size: 12px; /* slightly larger on responsive layouts for readability */
+    padding: 2px;
+  }
+
+  .satellite-number.yellow-text {
+    color: #FFD700;
+  }
+
+  .satellite-operator {
+    color: white;
+    margin: 0 1px;
+    font-size: 8px; /* Reduced from 10px */
+  }
+
+  /* Optimize NAP cells for mobile */
+  .nap-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px; /* Reduced from 5px */
+    font-size: 8px;
+  }
+
+  .nap-label {
+    color: #FFD700;
+    font-weight: bold;
+    font-size: 7px; /* Reduced from 9px */
+    margin-bottom: 1px;
+  }
+
+  .nap-value {
+    color: white;
+    font-weight: bold;
+    font-size: 8px;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  /* Style the NAP row at the bottom of satellite table */
+  .satellite-decryption-table tr:last-child td {
+    border-top: 2px solid var(--accent-color);
+    font-weight: bold;
+    padding: 6px 2px; /* Reduced padding */
+  }
+
+  .satellite-decryption-table tr:last-child td:first-child,
+  .satellite-decryption-table tr:last-child td:nth-child(2) {
+    text-align: center;
+    width: 25%;
+  }
+
+  .satellite-decryption-table tr:last-child td:last-child {
+    text-align: center;
+    width: 50%;
+  }
+
+  /* Update margins for remaining tables */
+  .valid-numbers-table {
+    margin-top: 15px !important; /* Reduced from 20px */
+  }
+
+  .intuition-satellites {
+    margin-top: 25px !important; /* Reduced from 40px */
+  }
+
+  /* Optimize valid numbers table for mobile */
+  .valid-numbers-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .valid-numbers-table td {
+    width: 10%;
+    padding: 2px 1px;
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .valid-numbers-table th {
+    font-size: 9px;
+    padding: 4px 1px;
+    line-height: 1.2;
+  }
+
+  /* Table date optimization */
+  .table-date {
+    font-size: 9px; /* Reduced from 12px */
+    margin-bottom: 4px;
+    line-height: 1.1;
+  }
+
+  /* Ensure intuition cross satellites maintains equal columns on mobile */
+  .intuition-cross-satellites th,
+  .intuition-cross-satellites td {
+    width: 33.33% !important;
+    padding: 3px 1px !important;
+    font-size: 9px !important;
+  }
+
+  .intuition-cross-satellites tr td:nth-child(1),
+  .intuition-cross-satellites tr td:nth-child(2), 
+  .intuition-cross-satellites tr td:nth-child(3),
+  .intuition-cross-satellites tr th:nth-child(1),
+  .intuition-cross-satellites tr th:nth-child(2),
+  .intuition-cross-satellites tr th:nth-child(3) {
+    width: 33.33% !important;
+    max-width: none !important;
+  }
+}
+
+/* Very small screens optimization */
+@media (max-width: 480px) {
+  .table-container {
+    padding: 0 1px;
+  }
+
+  .color-table {
+    font-size: 9px; /* Reduced from 10px */
+  }
+
+  .color-table th, 
+  .color-table td {
+    padding: 2px 1px; /* Further reduced */
+    font-size: 8px;
+  }
+
+  .satellite-combination {
+    font-size: 7px;
+    gap: 1px;
+  }
+
+  .satellite-number,
+  .satellite-operator {
+    font-size: 7px;
+  }
+
+  .nap-cell {
+    font-size: 7px;
+  }
+
+  .nap-label {
+    font-size: 6px;
+  }
+
+  .nap-value {
+    font-size: 7px;
+  }
+
+  .valid-numbers-table td {
+    font-size: 8px;
+    padding: 1px;
+  }
+
+  .valid-numbers-table th {
+    font-size: 8px;
+    padding: 2px 1px;
+  }
+
+  .table-date {
+    font-size: 8px;
+    margin-bottom: 3px;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 900px) and (orientation: landscape) {
+  .color-table {
+    font-size: 10px;
+  }
+
+  .color-table th,
+  .color-table td {
+    padding: 3px 2px;
+    font-size: 10px;
+  }
+
+  .satellite-combination {
+    font-size: 9px;
+  }
+
+  .satellite-number,
+  .satellite-operator {
+    font-size: 9px;
+  }
+
+  .nap-cell {
+    font-size: 9px;
+  }
+
+  .nap-label {
+    font-size: 8px;
+  }
+
+  .nap-value {
+    font-size: 9px;
+  }
+
+  .valid-numbers-table td {
+    font-size: 9px;
+    padding: 2px 1px;
+  }
+
+  .table-date {
+    font-size: 9px;
+  }
+}
+
+/* Tablet optimization */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .color-table {
+    font-size: 12px;
+  }
+
+  .color-table th,
+  .color-table td {
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+
+  .satellite-combination {
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .satellite-number,
+  .satellite-operator {
+    font-size: 11px;
+  }
+
+  .nap-cell {
+    font-size: 11px;
+  }
+
+  .nap-label {
+    font-size: 10px;
+  }
+
+  .nap-value {
+    font-size: 11px;
+  }
+
+  .valid-numbers-table td {
+    font-size: 11px;
+    padding: 4px 2px;
+  }
+
+  .table-date {
+    font-size: 11px;
+  }
+}

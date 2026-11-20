@@ -1,0 +1,299 @@
+/*
+ * CLS / header-boundary contract
+ *
+ * This file is deliberately loaded last. It is the final geometry layer for
+ * the persistent shell and the home feed. Feature styles can paint inside the
+ * reserved boxes, but they cannot change the coordinate system of the page.
+ */
+
+:root {
+  --cid-header-boundary-height: calc(
+    var(--cid-layout-header-height, var(--cid-shell-header-height, 50px)) +
+    env(safe-area-inset-top, 0px)
+  );
+  --cid-header-content-clearance: var(--cid-header-boundary-height);
+  --cid-feed-media-radius: 14px;
+  --cid-loader-accent: var(--cid-header-accent, #1877f2);
+}
+
+/*
+ * Header boundary
+ *
+ * The header and every first-class surface use the same expression. This
+ * prevents a late safe-area or viewport calculation from exposing content
+ * behind the header on mobile Safari.
+ */
+body > .site-header,
+body > .site-header.hidden,
+body > .site-header.is-scrolled {
+  position: fixed !important;
+  top: var(--cid-visual-offset-top, 0px) !important;
+  inset-inline: 0 !important;
+  height: var(--cid-header-boundary-height) !important;
+  min-height: var(--cid-header-boundary-height) !important;
+  max-height: var(--cid-header-boundary-height) !important;
+  z-index: 5000 !important;
+  isolation: isolate !important;
+  contain: layout paint style !important;
+  will-change: auto !important;
+}
+
+body > .site-header > .header-inner {
+  height: var(--cid-layout-header-height, var(--cid-shell-header-height, 50px)) !important;
+  min-height: var(--cid-layout-header-height, var(--cid-shell-header-height, 50px)) !important;
+}
+
+/*
+ * Fixed surfaces occupy the visible viewport. Since #results is the scroll
+ * owner, the header boundary is reserved as padding inside the surface rather
+ * than as a competing top coordinate. The first card consequently cannot
+ * slide underneath the chrome or move when the shell is hydrated.
+ */
+body:not([data-cid-dedicated-view]) #results,
+body[data-cid-dedicated-view] #results,
+body[data-cid-dedicated-view] #categoriesView,
+body[data-cid-dedicated-view] #croixViewContainer,
+body[data-cid-dedicated-view] #tableauxViewContainer,
+body[data-cid-dedicated-view] #anticipationViewContainer,
+body[data-cid-dedicated-view] #matrixCalculatorPanel,
+body[data-cid-dedicated-view] #profileViewContainer,
+body[data-cid-dedicated-view] #notificationCenter,
+.cid-layout-surface {
+  /*
+   * The surface owns the whole visible viewport. The header clearance is
+   * padding, not a second top coordinate. This gives the scroll owner one
+   * stable geometry and makes the reserved space explicit in the layout.
+   */
+  top: var(--cid-visual-offset-top, 0px) !important;
+  inset-block-start: var(--cid-visual-offset-top, 0px) !important;
+  bottom: calc(0px - var(--cid-visual-bottom-extension, 0px)) !important;
+  padding-block-start: var(--cid-header-content-clearance) !important;
+  scroll-padding-top: 0 !important;
+}
+
+body:not([data-cid-dedicated-view]) #results {
+  isolation: isolate !important;
+  overflow-anchor: none !important;
+}
+
+/*
+ * The virtual assistant previously moved the header behind the app with a
+ * negative z-index. Keep the same boundary guarantee on every route.
+ */
+body[data-cid-dedicated-view="virtual-assistant"] .site-header {
+  z-index: 5000 !important;
+}
+
+/*
+ * Initial loader
+ *
+ * It is an absolute layer inside the scroll surface, so showing or hiding it
+ * never allocates/removes layout space. Cards are already mounted underneath
+ * it with reserved media dimensions.
+ */
+#cid-feed-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px;
+  color: #526176;
+  background: rgba(255, 255, 255, .84);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  text-align: center;
+  pointer-events: auto;
+  transition: opacity 160ms ease;
+}
+
+#cid-feed-loader[hidden] {
+  display: grid !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.cid-feed-loader-spinner {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid color-mix(in srgb, var(--cid-loader-accent) 18%, #fff);
+  border-top-color: var(--cid-loader-accent);
+  border-radius: 50%;
+  animation: cid-feed-loader-spin 720ms linear infinite;
+}
+
+#cid-feed-loader[data-mode="refresh"] {
+  position: sticky;
+  inset: 10px 12px auto auto;
+  width: max-content;
+  min-height: 34px;
+  place-content: center;
+  grid-template-columns: auto auto;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--cid-loader-accent) 18%, #fff);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .08);
+  transform: translateZ(0);
+}
+
+#cid-feed-loader[data-mode="refresh"] .cid-feed-loader-spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+@keyframes cid-feed-loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+/*
+ * Media reservation
+ *
+ * Images and the live/history Croix always own a box on the first DOM
+ * paint. The content can arrive later without pushing the copy, actions or
+ * following publications.
+ */
+#cid-home-feed .cid-fb-media {
+  min-width: 0;
+  contain: layout paint;
+}
+
+#cid-home-feed .cid-fb-post {
+  min-height: 390px;
+  contain: layout style;
+}
+
+#cid-home-feed .cid-fb-image-media {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--cid-feed-media-radius);
+}
+
+#cid-home-feed .cid-fb-image-media .cid-fb-media-image {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+#cid-home-feed .cid-fb-image-media::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      105deg,
+      #edf2f7 8%,
+      #f8fafc 18%,
+      #edf2f7 33%
+    );
+  background-size: 220% 100%;
+  animation: cid-skeleton-shimmer 1.25s linear infinite;
+}
+
+#cid-home-feed .cid-fb-image-media.cid-fb-image-empty,
+#cid-home-feed .cid-fb-daily-publication-media {
+  min-height: 188px;
+}
+
+#cid-home-feed .cid-fb-cross-media {
+  min-height: 0;
+  padding-block-start: 0;
+  padding-block-end: 4px;
+}
+
+#cid-home-feed .cid-fb-cross-slot {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(100%, 380px);
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--cid-feed-media-radius);
+  isolation: isolate;
+}
+
+#cid-home-feed .cid-fb-cross-live-host {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+#cid-home-feed .cid-fb-cross-live-host > #redCross,
+#cid-home-feed .cid-fb-cross-history-visual > #redCross {
+  display: flex !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  margin: 0 auto !important;
+  contain: layout paint;
+}
+
+/* Skeleton for the async Croix payload. The slot itself remains square. */
+#cid-home-feed .cid-fb-cross-slot[aria-busy="true"]::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  content: "";
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      105deg,
+      #edf2f7 8%,
+      #f8fafc 18%,
+      #edf2f7 33%
+    );
+  background-size: 220% 100%;
+  animation: cid-skeleton-shimmer 1.25s linear infinite;
+}
+
+@keyframes cid-skeleton-shimmer {
+  to { background-position: -220% 0; }
+}
+
+@media (max-width: 480px) {
+  #cid-home-feed .cid-fb-cross-slot {
+    width: 100%;
+  }
+
+  #cid-home-feed .cid-fb-image-media.cid-fb-image-empty,
+  #cid-home-feed .cid-fb-daily-publication-media {
+    min-height: 164px;
+  }
+
+  #cid-home-feed .cid-fb-post {
+    min-height: 360px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cid-feed-loader *,
+  #cid-home-feed .cid-fb-image-media::before,
+  #cid-home-feed .cid-fb-cross-slot[aria-busy="true"]::before {
+    animation: none !important;
+  }
+}

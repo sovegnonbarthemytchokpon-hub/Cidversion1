@@ -1,0 +1,3 @@
+# Index marker for Croix section
+# This file is a simple marker so the project has a clear root file for the "croix" feature.
+# Place related croix assets & controllers in /src/croix/

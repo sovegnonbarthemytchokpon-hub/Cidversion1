@@ -1,0 +1,39 @@
+/* Optimize animations for better performance */
+:root {
+  --animation-duration: 0.3s;
+  --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.color-table td.satellite-cell {
+  will-change: background-color;
+  transition: background-color var(--animation-duration) var(--animation-timing);
+}
+
+@keyframes highlightUpdate {
+  from { background-color: rgba(255, 215, 0, 0.3); }
+  to { background-color: transparent; }
+}
+
+.color-table td.satellite-cell.updated {
+  animation: highlightUpdate var(--animation-duration) var(--animation-timing);
+  will-change: background-color;
+}
+
+/* Add intuition specific animations */
+.intuition-satellites .satellite-number.yellow-text {
+  animation: highlight-yellow 2s infinite;
+}
+
+@keyframes highlight-yellow {
+  0% { color: #FFD700; }
+  50% { color: rgba(255, 215, 0, 0.5); }
+  100% { color: #FFD700; }
+}
+
+.intuition-satellites tr td {
+  transition: background-color 0.3s ease;
+}
+
+.intuition-satellites tr:hover td {
+  background-color: rgba(153, 50, 204, 0.1);
+}

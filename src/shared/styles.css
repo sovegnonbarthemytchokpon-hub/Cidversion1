@@ -1,0 +1,511 @@
+/* Professional redesign: neutral palette, refined spacing, readable typography, subtle shadows */
+
+/* Palette */
+:root{
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --text: #0f1724;
+  --accent: #1f6feb; /* professional blue accent */
+  --accent-strong: #1349a8;
+  --danger: #e11d48;
+  --success: #10b981;
+  --border: rgba(15,23,36,0.06);
+  --header-height: 64px;
+  --footer-height: 72px;
+  --radius: 12px;
+  --glass: rgba(255,255,255,0.6);
+  --elevation-1: 0 4px 10px rgba(15,23,36,0.04);
+  --elevation-2: 0 8px 20px rgba(15,23,36,0.06);
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --ui-animation: 180ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* Prevent native pull-to-refresh on supported browsers by containing overscroll */
+html, body, #results {
+  /* Block browser "pull-to-refresh" (overscroll navigation) */
+  /* prevent the browser from performing a native pull-to-refresh/navigation */
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fallback JavaScript hardening for browsers that still trigger refresh on overscroll:
+   When the main scrollable element is at top and a downward touch move starts, prevent default to avoid the refresh gesture.
+   (This script is small and safe; it only runs if needed.)
+*/
+@media (pointer: coarse) {
+  /* keep CSS-only for most; JS fallback appended via a small script injection elsewhere */
+}
+
+/* Page baseline */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html,body { height:100%; margin:0; font-family: "Inter", "Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:var(--text); background:var(--bg); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; -webkit-font-feature-settings: "liga" 1; }
+a { color:var(--accent); text-decoration:none; }
+button { font-family: inherit; -webkit-font-smoothing:antialiased; }
+
+/* Added: base reset, typography and #app container per user request */
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Assure que padding et border sont inclus dans la taille totale */
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+    color: #333; /* Couleur de texte sombre standard */
+}
+
+#app {
+    /* Hauteur minimale de 100% de la fenêtre */
+    min-height: 100dvh;
+
+    /* Couleur de fond claire */
+    background-color: #f4f4f4;
+
+    /* Affichage Flexbox pour centrer le contenu */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centre horizontalement le contenu */
+    justify-content: center; /* Centre verticalement le contenu (si le contenu est petit) */
+
+    /* Limiter la largeur maximale pour une bonne lecture sur les grands écrans */
+    max-width: 1200px;
+    margin: 0 auto; /* Centre le conteneur #app sur la page */
+    padding: 20px;
+    width: 100%;
+}
+
+/* Style de base pour le titre */
+#app h1 {
+    color: #007bff; /* Utilisation de la couleur de thème du manifeste (bleu) */
+    margin-bottom: 20px;
+}
+
+/* Make root an app container and enable full-height scrolling region for feed */
+#appRoot {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  margin-bottom: 0;
+}
+
+/* Header: sticky, compact, with larger tappable logo area */
+.site-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--header-height) + var(--safe-top));
+  padding-top: var(--safe-top);
+  background: rgba(255, 255, 255, 0.4);
+  border-bottom: none;
+  box-shadow: none;
+  z-index:1200;
+  will-change: transform;
+  transition: transform var(--ui-animation);
+}
+.site-header.hidden { transform: translateY(-110%); }
+
+/* Header inner stays constrained */
+.site-header .header-inner {
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 16px;
+}
+.site-header .logo {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-family: 'Archivo Black', 'Audiowide', 'Noto Sans', system-ui, sans-serif;
+  font-size:20px;
+  font-weight:900;
+  letter-spacing: -1px;
+  color:#ffffff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.28);
+  cursor: pointer;
+  user-select: none;
+}
+.site-header .logo img { width:40px; height:40px; border-radius:8px; object-fit:cover; background:linear-gradient(135deg,#f3f4f6,#fff); box-shadow:0 2px 8px rgba(2,6,23,0.06); }
+
+/* Make the search compact and fast */
+.site-header .search { margin-left: auto; display:flex; align-items:center; gap:8px; }
+.site-header .actions { display:flex; gap:12px; align-items:center; color:var(--muted); }
+
+/* Bottom nav turned into app-style bar (bigger touch targets, centered icons) */
+.category-bar {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--safe-bottom));
+  background: #0A84FF;
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 40px rgba(2,6,23,0.08);
+  border-radius: 16px;
+  padding:6px; /* slightly reduced to make bar slimmer */
+  z-index:1190;
+  display:flex;
+  justify-content:center;
+  backdrop-filter: blur(6px);
+  transition: box-shadow var(--ui-animation), transform var(--ui-animation);
+}
+.category-bar.compact { transform: translateY(8px); opacity:0.98; }
+.category-bar .inner {
+  max-width:1200px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  padding:6px 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+/* Ensure category items do not wrap and are kept on one line */
+.category-item {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.category-item { padding:8px 10px; border-radius:10px; background:transparent; color:var(--muted); font-weight:800; border:1px solid transparent; white-space:nowrap; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px; min-height:36px; min-width:60px; justify-content:center; }
+.category-item:active { transform: translateY(1px); }
+.category-item.active { 
+  background: #D62828 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(214,40,40,0.08) !important;
+}
+
+/* Layout: make results area a flexible, GPU-accelerated scrolling feed */
+body { padding:0; margin:0; }
+#results {
+  flex: 1 1 auto;
+  overflow: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  max-width:1100px;
+  /* ensure top and bottom spacing exactly reserves header and category-bar/footer space */
+  margin: calc(var(--header-height) + 16px) auto calc(var(--footer-height) + var(--safe-bottom) + 16px);
+  padding: calc(12px + 4px) 16px calc(var(--footer-height) + var(--safe-bottom) + 20px);
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  will-change: transform;
+}
+
+/* give feed a subtle inner padding and fast repaint hints */
+.feed-inner { padding-top:12px; padding-bottom:40px; }
+
+/* Card / post sizing tuned for mobile and desktop with denser layout like Facebook */
+.fb-post { background: var(--card); border-radius: 12px; box-shadow: var(--elevation-1); border: 1px solid var(--border); overflow: hidden; transition: transform var(--ui-animation), box-shadow var(--ui-animation); will-change: transform; }
+.fb-post:active { transform: translateY(1px); }
+.fb-post:hover { box-shadow: 0 16px 36px rgba(2,6,23,0.06); }
+
+/* Header and meta */
+.fb-post-header { display:flex; gap:12px; align-items:center; padding:12px 14px; border-bottom:1px solid rgba(15,23,36,0.03); }
+.fb-avatar { width:56px; height:56px; border-radius:10px; background: linear-gradient(135deg,#eef2ff,#f8fafc); flex:0 0 56px; }
+.fb-meta { display:flex; flex-direction:column; gap:4px; }
+.fb-page-name { font-weight:800; color:var(--text); font-size:15px; }
+.fb-time { color:var(--muted); font-size:13px; }
+
+/* Reduce visual noise in body and optimize tap targets */
+.fb-post-body { padding:12px 14px; }
+/* results: single column, full width cards, larger tap targets */
+.results-container { gap:14px; }
+/* ensure country cards always have inner breathing room so images/columns don't touch edges */
+.country-section {
+  /* wider cards: allow larger max-width for desktop/tablet while still fluid on small screens */
+  max-width: 480px;
+  width: 100%;
+  border-radius: 12px;
+  background-clip: padding-box;
+  box-sizing: border-box;
+  /* ensure cards are crisp white and stand out on the pale page background */
+  background-color: #ffffff !important;
+  border: 1px solid rgba(10,24,64,0.04) !important;
+  box-shadow: 0 8px 22px rgba(10,24,64,0.04) !important;
+}
+.result-date { font-weight:800; color:var(--muted); font-size:13px; margin:0 0 8px 0; }
+.country-section h3 { margin:0 0 8px 0; font-size:17px; color:var(--text); }
+
+/* Matrix layout responsive and denser like social feed cards */
+.matrix-keyboard-container { display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+.matrix, .keyboard, .cerveau { flex:1; min-width:140px; background: transparent; border-radius:8px; padding:8px; border:1px dashed rgba(15,23,36,0.03); }
+.matrix h4, .keyboard h4, .cerveau h4 { margin:0 0 6px 0; font-size:12px; color:var(--muted); font-weight:800; }
+.matrix-number-column {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  font-weight: 700;
+}
+.matrix-number-column > span {
+  display: block;
+  min-height: 1.25em;
+  white-space: nowrap;
+}
+.matrix-publication-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+/* Local Matrice states: the app shell stays mounted while data is prepared. */
+.matrice-loader,
+.matrice-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 96px;
+  margin: 12px auto;
+  padding: 18px;
+  border-radius: 12px;
+  color: #0A1840;
+  background: #fff;
+  border: 1px solid rgba(9, 98, 214, 0.1);
+  box-sizing: border-box;
+}
+
+.matrice-error {
+  flex-direction: column;
+  text-align: center;
+}
+
+.matrice-error p { margin: 0; }
+
+.matrice-loader-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #0962D6;
+  animation: matrice-loader-pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes matrice-loader-pulse {
+  from { opacity: .35; transform: scale(.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Add blue outlined frame specifically for the Matrice panel */
+.matrix {
+  /* stronger blue left border and framed look for the "Matrice" column */
+  border: 2px solid #0962D6 !important;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(9,98,214,0.03), rgba(9,98,214,0.01));
+  box-shadow: 0 6px 18px rgba(9,98,214,0.06);
+  /* keep layout stable and roomy */
+  min-width: 180px;
+  box-sizing: border-box;
+}
+/* keep keyboard and cerveau with subtle dashed border */
+.keyboard, .cerveau {
+  border: 2px solid #0962D6 !important;
+  border-radius: 8px;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(9,98,214,0.015), rgba(9,98,214,0.005));
+  box-sizing: border-box;
+}
+
+/* Footer actions: larger tappable icons and sticky affordance */
+.fb-post-actions { display:flex; gap:8px; align-items:center; padding:10px 12px; border-top:1px solid rgba(15,23,36,0.03); background:transparent; position:relative; }
+.fb-action { background:transparent; border: none; color:var(--muted); font-weight:800; padding:10px 12px; border-radius:10px; cursor:pointer; min-height:44px; min-width:64px; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.fb-action:hover { background: rgba(15,23,36,0.03); color:var(--text); }
+
+/* Prominent primary control style */
+.fb-action.primary { background: var(--accent); color: #fff; border-radius:12px; padding:10px 14px; box-shadow: 0 10px 30px rgba(31,111,235,0.12); }
+
+/* Copy buttons: full-width on small screens, prominent touch targets */
+.copy-button, #showArchiveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  border: none !important;
+  background: var(--redCross-bg, var(--accent)) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 32px;
+  /* Allow button to size to text length while keeping a comfortable tappable area */
+  width: auto !important;
+  max-width: 92%;
+  white-space: nowrap;
+  padding-inline: clamp(8px, 1ch + 6px, 16px); /* slightly reduced horizontal padding */
+  padding-block: 6px;
+  box-sizing: border-box;
+  /* ensure very short labels keep a minimum width for touch */
+  min-width: 60px;
+  font-size: 13px;
+  transition: padding 120ms ease, transform 120ms ease;
+}
+
+/* Modal: center and allow big tap targets */
+.modal-overlay { position:fixed; inset:0; background: rgba(2,6,23,0.45); display:none; align-items:center; justify-content:center; z-index:2000; padding:16px; }
+.modal-overlay.open { display:flex; }
+.modal-window { width:min(920px,96%); max-height:86vh; overflow:auto; border-radius:12px; background:var(--card); padding:0; }
+
+/* Like button styles improved (bigger, tactile) */
+.fb-action.like-toggle,
+.fb-action.cross-like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #1877F2;
+  color: #ffffff;
+  font-weight:900;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 22px rgba(24,119,242,0.12);
+  cursor: pointer;
+  transition: transform var(--ui-animation), box-shadow var(--ui-animation);
+  min-width: 96px;
+  justify-content: center;
+}
+
+/* pressed / toggled state */
+.fb-action.like-toggle[aria-pressed="true"],
+.fb-action.cross-like-button[aria-pressed="true"],
+.fb-action.like-toggle.active,
+.fb-action.cross-like-button.active {
+  background: linear-gradient(180deg, #165fc1, #144fb0);
+  box-shadow: 0 12px 34px rgba(20,79,176,0.22);
+  transform: translateY(-2px);
+}
+
+/* responsive feed tweaks */
+@media (max-width:900px){
+  .category-bar { left:8px; right:8px; bottom:12px; padding:6px; }
+  .site-header .header-inner { padding:8px 12px; gap:8px; }
+  #results { margin: calc(var(--header-height) + 14px) 8px 120px; padding: 0 8px 120px; }
+  .fb-avatar { width:48px; height:48px; }
+  .fb-post-header { padding:10px; }
+  .fb-post-body { padding:10px; }
+  .matrix-keyboard-container { gap:8px; }
+  /* on narrower viewports keep cross reasonably big but not overflowing */
+  #redCross { width:92vw; height:92vw; }
+  #redCross .cross-numbers .num { font-size: clamp(12px, 8vw, 22px); }
+}
+
+/* small screen adjustments */
+@media (max-width:480px){
+  .fb-action.like-toggle,
+  .fb-action.cross-like-button {
+    padding: 12px 14px;
+    min-width: 88px;
+    gap: 6px;
+    font-size: 14px;
+  }
+  .category-item { padding:10px 12px; min-width:64px; font-size:13px; }
+  #results { margin: calc(var(--header-height) + 10px) 6px 110px; padding: 0 8px 110px; }
+  /* keep cross smaller on very small screens but larger than before for legibility */
+  #redCross { width:92vw; height:92vw; }
+  #redCross .cross-numbers .num { font-size: clamp(12px, 8vw, 22px); }
+}
+
+/* Smooth entrance animations for new feed items (lightweight) */
+@keyframes feedFadeUp {
+  from { opacity:0; transform: translateY(8px); }
+  to { opacity:1; transform: translateY(0); }
+}
+.fb-post { animation: feedFadeUp 320ms ease both; }
+
+/* prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+  .banner-carousel { transition: none !important; }
+}
+
+/* Utility classes */
+.hidden { display:none !important; }
+.center { display:flex; align-items:center; justify-content:center; }
+
+/* Inline category buttons inside the main white area: blue background, white text, individual pill buttons */
+#inlineCategoryBar .category-item,
+#inlineCategoryBar button,
+#inlineCategoryBar .category-item.button {
+  background: #0962D6 !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 8px 20px rgba(9,98,214,0.12);
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  min-width: 96px !important;
+  text-align: center !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+/* Slight hover/active affordance */
+#inlineCategoryBar .category-item:hover,
+#inlineCategoryBar button:hover {
+  transform: translateY(-2px);
+  transition: transform 160ms ease;
+  box-shadow: 0 12px 28px rgba(9,98,214,0.16);
+}
+
+/* Performance: limit repaint heavy properties on scroll */
+#results, .category-bar, .site-header { will-change: transform; }
+
+/* country filter button */
+.country-filter-btn {
+  display:inline-block;
+  margin:6px 6px 0 0;
+  min-height:44px;
+  padding:6px 8px;
+  border-radius:6px;
+  background:#f2f2f2;
+  color:#111;
+  border:1px solid #e0e0e0;
+  cursor:pointer;
+  font-weight:600;
+  font-size:14px;
+  box-sizing: border-box;
+}
+
+/* show archive button */
+#showArchiveButton {
+  display: inline-block;
+}
+
+/* responsive adjustments for small screens */
+@media (max-width: 768px) {
+  .country-filter-btn { padding:8px 10px; font-size:13px; }
+  .copy-button, #showArchiveButton { width: 100%; padding:12px 14px; font-size:15px; border-radius:10px; }
+}
+
+/* Unified header action buttons: force identical shape/size even if inline styles exist */
+.top-action-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;padding:6px 8px!important;border-radius:10px!important;min-height:32px!important;height:32px!important;font-weight:700!important;border:1px solid rgba(255,255,255,0.12)!important;background:transparent!important;color:inherit!important;font-size:14px}
+
+/* Ensure any leftover Croix history/calendar/date controls are hidden */
+#redCrossHistBtn,
+#redCrossHistoryOpen,
+#redCrossCalendarOpen,
+#redCrossDateIcon {
+  display: none !important;
+}
+
+#topBanner {
+  display:none;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden; /* ensure horizontal overflow hidden for carousel */
+  width: 100%;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  position: relative;
+  padding: 12px 0;
+  background: transparent; /* now transparent, yellow applied to .banner-inner */
+  margin-top: 8px; /* reduced gap so banner sits closer to header but not touching */
+}

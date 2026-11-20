@@ -1,0 +1,208 @@
+/*
+ * Global button contract.
+ *
+ * Buttons are content-sized controls throughout the app. A component can
+ * explicitly opt into a fluid control with data-fluid="true", but the
+ * default is always text width + comfortable internal spacing.
+ */
+
+:root {
+  --cid-button-blue: #1769e0;
+  --cid-button-blue-dark: #0d4db7;
+  --cid-button-ink: #162033;
+  --cid-button-line: #dbe5f2;
+  --cid-button-soft: #f2f6fc;
+  --cid-button-radius: 11px;
+}
+
+button:not([data-fluid="true"]):not(.top-action-btn):not(.notification-bell-button):not(.modal-close):not(.cid-comment-reaction):not(.cid-fb-action):not(.black-square-btn):not(.sunday-button):not(.matrix-calc-number),
+a.cid-button,
+.categories-option,
+.categories-social-panel a {
+  width: max-content !important;
+  max-width: 100%;
+  min-width: 0 !important;
+  flex: 0 0 auto;
+}
+
+button:not([data-fluid="true"]):not(.black-square-btn):not(.sunday-button):not(.matrix-calc-number):not(.cid-comment-reaction):not(.cid-fb-action):not(.modal-close):not(.top-action-btn):not(.notification-bell-button),
+a.cid-button,
+.categories-social-panel a {
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid var(--cid-button-line);
+  border-radius: var(--cid-button-radius);
+  color: var(--cid-button-ink);
+  background: #fff;
+  font: 800 13px/1.2 "Noto Sans", system-ui, sans-serif;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease,
+    background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+button:not([data-fluid="true"]):not(:disabled):not(.black-square-btn):not(.sunday-button):not(.matrix-calc-number):not(.cid-comment-reaction):not(.cid-fb-action):not(.modal-close):not(.top-action-btn):not(.notification-bell-button):hover,
+button:not([data-fluid="true"]):not(:disabled):not(.black-square-btn):not(.sunday-button):not(.matrix-calc-number):not(.cid-comment-reaction):not(.cid-fb-action):not(.modal-close):not(.top-action-btn):not(.notification-bell-button):focus-visible,
+a.cid-button:hover,
+a.cid-button:focus-visible,
+.categories-social-panel a:hover,
+.categories-social-panel a:focus-visible {
+  border-color: rgba(23, 105, 224, .36);
+  background: var(--cid-button-soft);
+  box-shadow: 0 6px 16px rgba(13, 77, 183, .1);
+}
+
+button:not([data-fluid="true"]):not(:disabled):active,
+a.cid-button:active,
+.categories-social-panel a:active {
+  transform: translateY(1px);
+}
+
+button:not([data-fluid="true"]):disabled {
+  cursor: wait;
+  opacity: .58;
+}
+
+/* A validated access is a stable status, not a pending action. */
+button.is-access-active:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.category-bar .inner .category-item {
+  width: max-content !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  padding-inline: 12px !important;
+}
+
+.categories-grid {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.categories-option {
+  text-align: left;
+}
+
+/* The only intentionally fluid control: a component may opt in explicitly. */
+button[data-fluid="true"] {
+  width: 100%;
+}
+
+/* Shared purchase affordance: the action says only “Achat”; the price stays
+ * visually separate so the label remains short and unambiguous. */
+.cid-buy-button,
+.cid-buy-button:hover,
+.cid-buy-button:focus-visible {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 8px 11px;
+  color: #fff !important;
+  background: var(--cid-button-blue) !important;
+  border-color: var(--cid-button-blue) !important;
+  box-shadow: 0 7px 16px rgba(23, 105, 224, .18) !important;
+  font-size: clamp(11px, 2.7vw, 13px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  text-align: center;
+}
+
+.cid-buy-button:hover,
+.cid-buy-button:focus-visible {
+  background: var(--cid-button-blue-dark) !important;
+  border-color: var(--cid-button-blue-dark) !important;
+}
+
+.cid-token-icon {
+  display: inline-grid;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: currentColor;
+  font: 900 10px/1 Arial, sans-serif;
+}
+
+.cid-token-icon::before {
+  content: "✦";
+}
+
+.cid-purchase-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: max-content;
+  max-width: 100%;
+  color: #63748c;
+  font: 800 11px/1.2 "Noto Sans", system-ui, sans-serif;
+}
+
+.cid-purchase-cost .cid-token-icon {
+  width: 14px;
+  height: 14px;
+  flex-basis: 14px;
+  font-size: 8px;
+  color: #1769e0;
+}
+
+.cid-purchase-cost[data-free="true"] {
+  color: #16834b;
+}
+
+.cid-inline-cost {
+  display: inline-grid;
+  min-width: 17px;
+  max-width: 100%;
+  height: 17px;
+  padding-inline: 4px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 999px;
+  color: inherit;
+  font-size: 10px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  text-align: center;
+}
+
+/*
+ * Route-specific controls are sometimes rendered after this stylesheet by a
+ * view module. Keep their interactive area stable even when that module
+ * supplies its own visual sizing.
+ */
+.categories-option,
+.country-filter-btn,
+.matrix-calc-action,
+.matrix-calc-clear,
+.matrix-calc-number,
+.matrix-calc-plus-clear,
+#matrixCalcLike,
+.rejected-copy-btn,
+.cid-publication-history__unlock,
+.global-statistics-back {
+  min-height: 44px !important;
+}
+
+@media (max-width: 520px) {
+  button:not([data-fluid="true"]):not(.black-square-btn):not(.sunday-button):not(.matrix-calc-number):not(.cid-comment-reaction):not(.cid-fb-action):not(.modal-close):not(.top-action-btn):not(.notification-bell-button),
+  a.cid-button,
+  .categories-social-panel a {
+    min-height: 44px;
+    padding-inline: 13px;
+  }
+}

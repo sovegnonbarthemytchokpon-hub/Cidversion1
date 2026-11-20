@@ -1,0 +1,100 @@
+/*
+ * Cidmap / Chatsquirrel startup mark.
+ * The color is supplied by splash-squirrel.js from the canonical Croix color.
+ */
+
+:root {
+  --cid-squirrel-color: #e30613;
+  --cid-squirrel-ink: #8b0d16;
+  --cid-squirrel-hue: 0deg;
+}
+
+#cidSplash {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: none;
+  place-items: center;
+  overflow: hidden;
+  background: #fff;
+  color: var(--cid-squirrel-ink);
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 260ms ease, visibility 260ms ease;
+}
+
+html.cid-booting #cidSplash {
+  display: grid;
+  visibility: visible !important;
+}
+
+html:not(.cid-booting) #cidSplash {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.cid-splash-content {
+  display: grid;
+  justify-items: center;
+  gap: 13px;
+  transform: translateY(0);
+  animation: cid-splash-arrive 620ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.cid-splash-squirrel {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: clamp(116px, 34vw, 168px);
+  aspect-ratio: 1;
+  height: auto;
+  overflow: visible;
+  background: url('/src/shared/images/squirrel-croix-512.png?icon-details-v2')
+    center / contain no-repeat !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  filter: drop-shadow(0 14px 20px color-mix(in srgb, var(--cid-squirrel-color) 22%, transparent));
+}
+
+.cid-splash-squirrel::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+  background: var(--cid-squirrel-color);
+  -webkit-mask: url('/src/shared/images/squirrel-red-mask.png?icon-details-v4')
+    center / contain no-repeat;
+  mask: url('/src/shared/images/squirrel-red-mask.png?icon-details-v4')
+    center / contain no-repeat;
+  pointer-events: none;
+}
+
+.cid-splash-squirrel .squirrel-wave {
+  transform-box: fill-box;
+  transform-origin: 92% 74%;
+  animation: cid-squirrel-wave 760ms ease-in-out 2;
+}
+
+.cid-splash-wordmark {
+  color: var(--cid-squirrel-color);
+  font: 900 18px/1 "Noto Sans", system-ui, sans-serif;
+  letter-spacing: .02em;
+}
+
+@keyframes cid-splash-arrive {
+  from { opacity: 0; transform: translateY(12px) scale(.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cid-squirrel-wave {
+  0%, 100% { transform: rotate(0deg); }
+  35% { transform: rotate(18deg); }
+  68% { transform: rotate(-8deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cid-splash-content,
+  .cid-splash-squirrel .squirrel-wave {
+    animation: none;
+  }
+}

@@ -1,0 +1,232 @@
+/*
+ * Cidmap surface palette.
+ *
+ * The page canvas is pure white. Content cards use one quiet blue tint so
+ * they separate from the canvas without competing with the publication art.
+ * This file is loaded last because older screens still contain legacy white
+ * and grey surface declarations.
+ */
+
+:root {
+  --cid-canvas-white: #ffffff;
+  --cid-card-blue: #f4f7fc;
+  --cid-card-border: #e2e8f0;
+  --cid-card-radius: 14px;
+}
+
+html,
+body,
+#app,
+#appRoot,
+main,
+.content-container,
+.main-wrapper,
+.main-content,
+#results,
+#cid-home-feed,
+#categoriesView,
+#croixViewContainer,
+#tableauxViewContainer,
+#profileViewContainer,
+#matrixCalculatorPanel,
+#countryButtons {
+  background-color: #f0f2f5 !important;
+  background-image: none !important;
+}
+
+/*
+ * The page canvas continues behind the floating navigation. The capsule
+ * below is the only footer surface; the scroll area itself must not leave a
+ * white strip underneath it.
+ */
+html,
+body {
+  background-color: #f0f2f5 !important;
+}
+
+#app,
+#appRoot,
+main,
+.content-container,
+.main-wrapper,
+.main-content,
+#results,
+#cid-home-feed,
+#categoriesView,
+#croixViewContainer,
+#tableauxViewContainer,
+#profileViewContainer,
+#matrixCalculatorPanel,
+#countryButtons {
+  background-color: transparent !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#results {
+  bottom: 0 !important;
+}
+
+.category-bar {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --cid-shell-header-height: 50px;
+    --cid-header-height: 50px;
+  }
+
+  .site-header {
+    height: calc(50px + env(safe-area-inset-top, 0px)) !important;
+    min-height: calc(50px + env(safe-area-inset-top, 0px)) !important;
+  }
+
+  .site-header .header-inner {
+    height: 50px !important;
+    min-height: 50px !important;
+  }
+}
+
+/*
+ * Publication and module cards share the same calm surface. Keep the
+ * selectors explicit so artwork nodes such as #redCross are not recolored.
+ */
+.cid-fb-post,
+.fb-post,
+.country-section,
+#archiveContent .country-section,
+.categories-option,
+.profile-native-shell,
+.profile-native-shell .auth-card,
+.auth-card,
+.cid-croix-current-card,
+.rejected-country-card,
+.rejected-balls-container,
+.tableaux-integrated-methods,
+.centralized-satellite-card,
+.matrice-loader,
+.matrice-error {
+  background-color: var(--cid-card-blue) !important;
+  border: 1px solid var(--cid-card-border) !important;
+  border-radius: var(--cid-card-radius) !important;
+  box-shadow: none !important;
+}
+
+/*
+ * Publication cards use a pure white surface. The page is white as well, so
+ * the very fine border and quiet shadow provide just enough separation
+ * without bringing back the previous blue tint.
+ */
+.cid-fb-post {
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  margin: 0 8px 16px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #f1f5f9 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+.cid-fb-post.is-pinned {
+  border-top: 1px solid var(--cid-card-border) !important;
+}
+
+/* Keep publication regions transparent so the white card surface continues
+ * cleanly through the header, copy, media and interaction areas. */
+.cid-fb-post-header,
+.cid-fb-post-copy,
+.cid-fb-media,
+.cid-fb-cross-media,
+.cid-fb-image-media,
+.cid-fb-summary,
+.cid-fb-actions,
+.cid-fb-share-panel {
+  background-color: transparent !important;
+}
+
+.cid-fb-post-copy {
+  margin-bottom: 4px !important;
+  padding-bottom: 0 !important;
+}
+
+.cid-fb-more-button {
+  margin-bottom: 4px !important;
+}
+
+.cid-fb-media,
+.cid-fb-cross-media {
+  background-color: #ffffff !important;
+}
+
+.cid-fb-image-media {
+  /*
+   * Do not reserve a forced square. The source image determines the height,
+   * which removes the blank area created by object-fit inside a 1:1 box.
+   */
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.cid-fb-image-media .cid-fb-media-image {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  object-fit: contain;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: #ffffff !important;
+}
+
+.cid-fb-cross-media {
+  width: calc(100% - 24px) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.cid-fb-summary,
+.cid-fb-actions {
+  margin-top: 0 !important;
+}
+
+.cid-fb-summary {
+  padding: 6px 12px !important;
+}
+
+.cid-fb-actions {
+  padding: 6px 12px !important;
+}
+
+.cid-fb-media-image {
+  background-color: #ffffff !important;
+}
+
+/* Dedicated content hosts stay crisp white while their inner cards are tinted. */
+body[data-cid-dedicated-view] #categoriesView,
+body[data-cid-dedicated-view] #croixViewContainer,
+body[data-cid-dedicated-view] #tableauxViewContainer,
+body[data-cid-dedicated-view] #profileViewContainer,
+body.tableaux-active #tableauxViewContainer,
+body.croix-active #croixViewContainer {
+  background-color: var(--cid-canvas-white) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cid-fb-post,
+  .fb-post {
+    animation: none !important;
+  }
+}

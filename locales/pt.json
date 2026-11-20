@@ -1,0 +1,420 @@
+{
+  "Accueil": "Início",
+  "Catégories": "Categorias",
+  "Tableaux": "Tabelas",
+  "Matrice": "Matriz",
+  "Croix": "Cruz",
+  "Compte": "Conta",
+  "Connexion": "Entrar",
+  "Se connecter": "Entrar",
+  "Déconnexion": "Sair",
+  "Partager": "Compartilhar",
+  "Solde": "Saldo",
+  "Notifications": "Notificações",
+  "Changer de langue": "Mudar idioma",
+  "Recherche": "Pesquisar",
+  "Retour": "Voltar",
+  "Fermer": "Fechar",
+  "Annuler": "Cancelar",
+  "Continuer": "Continuar",
+  "Copier": "Copiar",
+  "Aide": "Ajuda",
+  "Langue": "Idioma",
+  "Choisir": "Escolher",
+  "Actualiser": "Atualizar",
+  "Envoyer": "Enviar",
+  "étoiles": "estrelas",
+  "jetons": "tokens",
+  "assistant.name": "Cidmap virtual",
+  "assistant.verified": "Conta verificada",
+  "assistant.online": "Assistente oficial · Online",
+  "assistant.back": "Voltar às categorias",
+  "assistant.attach": "Adicionar anexo",
+  "assistant.document": "Documento",
+  "assistant.photo": "Foto",
+  "assistant.messagePlaceholder": "Escreva uma mensagem…",
+  "assistant.messageLabel": "Escreva uma mensagem",
+  "assistant.helpDefault": "Olá, preciso de ajuda.",
+  "assistant.dictate": "Ditar uma mensagem",
+  "assistant.send": "Enviar mensagem",
+  "assistant.greeting": "Olá, sou o Cidmap virtual. Posso apresentar o site, as ofertas e os métodos. Como posso ajudar?",
+  "assistant.greetingResponse": "Olá! O que você gostaria de fazer ou saber?",
+  "assistant.askCountry": "Para qual país? Informe o código (por exemplo BJ, CI, GH, NE, SN ou TG).",
+  "assistant.recognizedCountry": "País reconhecido",
+  "assistant.latestMemorizedResult": "Último resultado memorizado",
+  "assistant.groupOne": "Grupo 1",
+  "assistant.groupTwo": "Grupo 2",
+  "assistant.drawNumber": "Número do sorteio",
+  "assistant.bonus": "Bônus",
+  "assistant.missingSchedule": "Horário(s) ausente(s) na memória: {{slots}}.",
+  "assistant.analysisPeriodPrompt": "Deseja comparar os últimos 3 dias ou toda a última semana?",
+  "assistant.askDate": "Qual é a data do sorteio? Use AAAA-MM-DD ou DD/MM/AAAA.",
+  "assistant.askTime": "A que horas chegou o sorteio? Exemplo: 08:00.",
+  "assistant.askTimeOptions": "Qual horário deseja registrar? Escolha entre: {{times}}.",
+  "assistant.askFirstNumbers": "Envie os 5 primeiros números do sorteio.",
+  "assistant.askMachineNumbers": "Envie os 5 números da máquina.",
+  "assistant.askBonusNumbers": "Há números bónus? Escreva-os ou responda «nenhum».",
+  "assistant.askConfirm": "Responda «sim» para confirmar ou «editar» para começar novamente.",
+  "assistant.summaryCountry": "País: {{country}}",
+  "assistant.summaryDate": "Data: {{date}}",
+  "assistant.summaryTime": "Hora: {{time}}",
+  "assistant.summaryFirstNumbers": "Primeiros números: {{numbers}}",
+  "assistant.summaryMachineNumbers": "Máquina: {{numbers}}",
+  "assistant.summaryBonusNumbers": "Bónus: {{numbers}}",
+  "assistant.submitIntro": "Está bem. Tudo acontece aqui no Cidmap virtual. {{notice}} O resultado ficará pendente de confirmação e não será público até ser confirmado por um assinante do mesmo país ou pela administração.",
+  "assistant.countryUnknown": "Não reconheci esse país.",
+  "assistant.invalidDate": "A data não é válida.",
+  "assistant.invalidTime": "A hora não é válida.",
+  "assistant.scheduleUnavailable": "Esse horário não faz parte dos sorteios configurados para este país.",
+  "assistant.duplicateResult": "O resultado das {{time}} já está registado para esta data. Escolha outro horário.",
+  "assistant.invalidNumbers": "Preciso de 5 números distintos entre 1 e 90.",
+  "assistant.invalidBonus": "Não reconheci os bónus. Escreva-os ou responda «nenhum».",
+  "assistant.restart": "Está bem, vamos começar novamente.",
+  "assistant.resultNotFound": "Atualmente não há nenhum resultado publicado para {{country}}. Se você tiver uma conta conectada, diga «quero enviar um resultado» para abrir o formulário no Cidmap virtual. O resultado ficará pendente de confirmação antes de se tornar público.",
+  "assistant.latestResult": "Último resultado publicado disponível para {{country}}:",
+  "assistant.dateTime": "Data: {{date}} · Hora: {{time}}",
+  "assistant.firstNumbers": "Primeiros números: {{numbers}}",
+  "assistant.machineNumbers": "Máquina: {{numbers}}",
+  "assistant.bonusNumbers": "Bónus: {{numbers}}",
+  "share.singular": "compartilhamento",
+  "share.plural": "compartilhamentos",
+  "partage": "compartilhamento",
+  "partages": "compartilhamentos",
+  "assistant.loading": "Conectando ao Cidmap virtual…",
+  "assistant.typing": "escrevendo",
+  "assistant.selectedAttachment": "Anexo selecionado: {{name}}",
+  "assistant.dictationUnavailable": "O ditado não está disponível neste navegador.",
+  "assistant.sessionLimit": "O limite de perguntas desta sessão foi atingido.",
+  "assistant.unavailable": "O Cidmap virtual está temporariamente indisponível.",
+  "assistant.presentationUnavailable": "A apresentação virtual está temporariamente indisponível.",
+  "assistant.accountRequired": "É necessária uma conta para conversar com o Cidmap virtual.",
+  "assistant.accountVerificationUnavailable": "A verificação da conta está temporariamente indisponível.",
+  "assistant.accountVerification": "Verificando a conta…",
+  "assistant.openAccount": "Abra sua conta para continuar",
+  "assistant.publicResultsOnly": "Visitantes podem consultar resultados publicados. A conversa com o Cidmap virtual é reservada a contas criadas ou conectadas.",
+  "assistant.loginOrCreate": "Criar uma conta ou entrar",
+  "assistant.accessRecognized": "Acesso {{scope}} reconhecido: {{programs}}.",
+  "assistant.noTable": "nenhuma tabela",
+  "assistant.planRecognized": "Plano reconhecido: {{name}}.",
+  "assistant.connectedPublic": "Conta conectada: resultados publicados e informações públicas estão disponíveis.",
+  "assistant.individualAccess": "Acesso individual reconhecido: {{programs}}.",
+  "assistant.submitResult": "Enviar um resultado",
+  "assistant.submitResultTitle": "Enviar um resultado",
+  "assistant.submitResultHelp": "Preencha os dados do sorteio. Os horários disponíveis são sincronizados com a configuração atual.",
+  "assistant.closeForm": "Fechar formulário",
+  "assistant.resultCountry": "País",
+  "assistant.resultDate": "Data do sorteio",
+  "assistant.resultTime": "Hora do sorteio",
+  "assistant.firstGroup": "Primeiro grupo",
+  "assistant.numberCount": "Quantidade",
+  "assistant.numbers": "Números",
+  "assistant.numbersHint": "Separe os números com espaços ou vírgulas. Cada número deve ser diferente e estar entre 1 e 90.",
+  "assistant.hasSecondGroup": "Adicionar um segundo grupo",
+  "assistant.secondGroup": "Segundo grupo",
+  "assistant.hasBonus": "Adicionar um grupo bónus",
+  "assistant.bonusGroup": "Grupo bónus",
+  "assistant.prepareResult": "Verificar e enviar",
+  "assistant.formOpened": "O formulário de envio está aberto. Os campos estão organizados por grupo e os horários são sincronizados com a configuração atual.",
+  "assistant.syncedAt": "Dados sincronizados em {{date}}.",
+  "assistant.none": "nenhum",
+  "balance.back": "Voltar",
+  "balance.wallet": "Carteira",
+  "balance.walletPurchase": "Carteira e compra",
+  "balance.intro": "Gira o seu saldo e escolha um pacote de tokens.",
+  "balance.stars": "Estrelas",
+  "balance.tokens": "Tokens",
+  "balance.yourBalance": "O seu saldo",
+  "balance.myWallet": "A minha carteira",
+  "balance.myBalance": "O meu saldo",
+  "balance.updated": "Atualizado",
+  "balance.availableBalances": "Saldos disponíveis",
+  "balance.buyTokens": "Comprar tokens",
+  "balance.tokensPurpose": "Para as suas ofertas virtuais",
+  "balance.tokenSingular": "token",
+  "balance.tokenPlural": "tokens",
+  "balance.starSingular": "estrela",
+  "balance.starPlural": "estrelas",
+  "balance.noPack": "Nenhum pacote disponível",
+  "balance.priceUnavailable": "Preço indisponível para este país",
+  "balance.validatePurchase": "Validar compra",
+  "balance.buyStars": "Comprar estrelas",
+  "balance.requiredBalance": "Cálculo do saldo necessário",
+  "balance.currentBalance": "Saldo atual",
+  "balance.formulaCost": "Custo da fórmula",
+  "balance.missingTokens": "Tokens em falta",
+  "balance.sufficientBalance": "Saldo suficiente",
+  "balance.tokenPack": "Pacote de tokens",
+  "balance.orderConfiguration": "Configuração da encomenda",
+  "balance.choosePack": "Escolha o seu pacote e verifique o total antes de confirmar.",
+  "balance.universalPrices": "Preços universais atualizados pela administração",
+  "balance.yourCountry": "O seu país",
+  "balance.adminUpdatedPrice": "preço atualizado pela administração",
+  "balance.askAdminPrice": "Peça à administração para configurar este preço.",
+  "balance.quantityOf": "Quantidade de {{unit}}",
+  "balance.totalXof": "Total (XOF)",
+  "balance.choosePackValidate": "Escolha um pacote, verifique o total e confirme a encomenda.",
+  "balance.loginToView": "Entre para ver o seu saldo",
+  "balance.openAccount": "Abrir a minha conta",
+  "balance.paymentUnavailable": "A configuração do pagamento está temporariamente indisponível.",
+  "balance.retry": "Tentar novamente",
+  "balance.loadingPayment": "A carregar a configuração do pagamento…",
+  "balance.paystackTokensOnly": "O Paystack está reservado aos pacotes de tokens.",
+  "balance.selectTokenPack": "Selecione um pacote de tokens.",
+  "balance.minimumPurchase": "Indique pelo menos 1 {{unit}} para comprar.",
+  "balance.redirectPaystack": "A redirecionar para o Paystack…",
+  "balance.paymentStartFailed": "Não foi possível iniciar o pagamento.",
+  "anticipation.cost": "Custo {{value}}",
+  "anticipation.free": "Acesso livre",
+  "anticipation.daysLabel": "Número de dias a antecipar",
+  "anticipation.dayOption": "{{days}} dia(s) · {{tokens}} token(s)",
+  "anticipation.button": "Antecipar {{days}} dia(s)",
+  "anticipation.buttonCost": "Antecipar {{days}} dia(s) — custo {{amount}}",
+  "anticipation.openingConfirmation": "A abrir a confirmação…",
+  "anticipation.loginToConfirm": "Entre para confirmar esta antecipação.",
+  "anticipation.cancelled": "Antecipação cancelada.",
+  "anticipation.unavailable": "Antecipação indisponível.",
+  "anticipation.chooseFromFirstDate": "Escolha o pacote a partir da primeira data futura.",
+  "anticipation.accessExpiresBeforeDate": "O seu acesso expira antes desta data.",
+  "anticipation.loadingPublication": "A carregar a publicação validada…",
+  "anticipation.loadingAccess": "A ler os acessos configurados…",
+  "anticipation.noneConfigured": "Não existe atualmente nenhuma publicação antecipada configurada.",
+  "anticipation.noneAvailable": "Não existe nenhuma publicação futura disponível para antecipação.",
+  "pageTitle": "Bem-vindo ao meu site",
+  "heading": "A nossa missão",
+  "welcomeMessage": "É um prazer dar-lhe as boas-vindas.",
+  "assistant.adminAccess": "Acesso de administração reconhecido. Os dados autorizados estão disponíveis.",
+  "assistant.opening": "Olá! Posso explicar os métodos do Cidmap, mostrar resultados publicados ou ajudar a enviar um resultado. O que deseja fazer?",
+  "assistant.previewResult": "Ver o resumo",
+  "assistant.resultSummary": "Resumo do resultado",
+  "assistant.resultSummaryHelp": "Verifique os grupos de números antes de publicar.",
+  "assistant.editResult": "Editar os dados",
+  "assistant.publishResult": "Publicar o resultado",
+  "promo.discover": "A descobrir",
+  "promo.publicCatalog": "Catálogo público",
+  "promo.availableOffers": "Ofertas disponíveis",
+  "promo.days": "dias",
+  "promo.noOffers": "Não existem ofertas disponíveis neste momento.",
+  "promo.offerAvailableToday": "Oferta disponível hoje",
+  "promo.viewOffers": "Ver ofertas",
+  "schedule.title": "Horários dos programas — aplica-se a todas as categorias, incluindo a Cruz Nacional",
+  "schedule.sunday": "Domingo → Gerado no sábado às 16:00 com a data de domingo",
+  "schedule.monday": "Segunda-feira → Gerado no domingo às 16:00 com a data de segunda-feira",
+  "schedule.tuesday": "Terça-feira → Gerado na segunda-feira às 16:00 com a data de terça-feira",
+  "schedule.wednesday": "Quarta-feira → Gerado na terça-feira às 16:00 com a data de quarta-feira",
+  "schedule.thursday": "Quinta-feira → Gerado na quarta-feira às 16:00 com a data de quinta-feira",
+  "schedule.friday": "Sexta-feira → Gerado na quinta-feira às 16:00 com a data de sexta-feira",
+  "schedule.saturday": "Sábado → Gerado na sexta-feira às 16:00 com a data de sábado",
+  "schedule.nextGeneration": "Próxima geração para este dia: {{date}}"
+  ,"account.quickVirtualTitle": "Cidmap virtual"
+  ,"account.quickVirtualDescription": "Falar com a IA"
+  ,"account.quickSubscriptionTitle": "Subscrição"
+  ,"account.quickSubscriptionDescription": "Gerir as minhas ofertas"
+  ,"account.quickHistoryTitle": "Saldo e histórico"
+  ,"account.quickPrivacyTitle": "Privacidade e segurança"
+  ,"account.quickPrivacyDescription": "Segurança e dados"
+  ,"offers.active": "Ativo"
+  ,"offers.purchase": "Compra"
+  ,"offers.includedTables": "quadros incluídos"
+  ,"offers.promotion": "Promoção"
+  ,"offers.activeSubscription": "Subscrição ativa"
+  ,"offers.exactEnd": "Fim exato:"
+  ,"offers.includedTablesTitle": "Quadros incluídos"
+  ,"history.configuredPrice": "preço configurado nas ofertas"
+  ,"ui.results": "Resultados"
+  ,"ui.result": "Resultado"
+  ,"ui.resultsDescription": "Os resultados dos países são agrupados por país e hora."
+  ,"ui.publishedResults": "Resultados publicados"
+  ,"ui.selectCountry": "Selecione um país para mostrar os seus resultados."
+  ,"ui.searchCountry": "Pesquisar um país"
+  ,"ui.refreshResults": "Atualizar resultados"
+  ,"ui.chooseCountry": "Escolher um país"
+  ,"ui.loading": "A carregar…"
+  ,"ui.noPublishedDraws": "Ainda não existem sorteios publicados."
+  ,"ui.publishedResult": "Resultado publicado"
+  ,"ui.noDrawNumbers": "Os números deste sorteio não estão disponíveis."
+  ,"ui.winners": "Vencedores:"
+  ,"ui.machine": "Máquina:"
+  ,"ui.bonus": "Bónus:"
+  ,"ui.draw": "Sorteio:"
+  ,"ui.drawSingular": "sorteio"
+  ,"ui.draws": "sorteios"
+  ,"ui.weeklyDraws": "Sorteios avaliados"
+  ,"ui.weeklyDrawsDetail": "Observações históricas retidas"
+  ,"ui.averageScore": "Pontuação média observada"
+  ,"ui.averageScoreDetail": "Média ponderada das pontuações calculadas"
+  ,"ui.followedCountries": "Países acompanhados"
+  ,"ui.followedCountriesDetail": "Âmbito geográfico registado"
+  ,"ui.comparedPrograms": "Programas comparados"
+  ,"ui.comparedProgramsDetail": "Intuição, LNB e programas disponíveis"
+  ,"ui.week": "Semana {{value}}"
+  ,"ui.marker": "Referência {{value}}"
+  ,"ui.observedProgram": "Programa observado"
+  ,"ui.calculatedScore": "Pontuação calculada"
+  ,"ui.noWeeklyObservations": "Não existem observações semanais publicadas para o período selecionado."
+  ,"ui.dailyAnalysis": "Análise diária"
+  ,"ui.weeklyAnalysis": "Análise semanal"
+  ,"ui.summary": "Síntese"
+  ,"ui.observationScope": "Âmbito das observações"
+  ,"ui.refresh": "Atualizar"
+  ,"ui.historicalSearch": "Terminal de pesquisa histórica"
+  ,"ui.globalStatistics": "Estatísticas globais"
+  ,"ui.globalStatisticsSubtitle": "Leitura estruturada dos arquivos registados para comparar frequências e desempenho observado por país, semana e dia."
+  ,"ui.recordedArchives": "Arquivos registados"
+  ,"ui.statisticsDisclaimer": "Estas tendências estatísticas baseiam-se exclusivamente em arquivos históricos registados. São um apoio à pesquisa e nunca garantem resultados futuros."
+  ,"ui.weeklyScores": "Semanas e pontuações calculadas"
+  ,"ui.weeklyComparison": "Comparação dos programas a partir dos sorteios avaliados."
+  ,"ui.dailyGrid": "Grelha comparativa por dia"
+  ,"ui.dailyDescription": "Uma leitura descritiva das tendências registadas."
+  ,"ui.noDailyTrends": "Ainda não foi publicada nenhuma tendência diária."
+  ,"ui.noStatistics": "As estatísticas não estão disponíveis."
+  ,"ui.noPublishedResults": "Os sorteios publicados não estão disponíveis."
+  ,"ui.backToResults": "Voltar aos resultados"
+  ,"rejected.dailyProgram": "Programa do dia"
+  ,"rejected.title": "Bolas rejeitadas"
+  ,"rejected.titleForDay": "Bolas rejeitadas de {{day}}"
+  ,"rejected.dailyKey": "A sua chave do dia"
+  ,"rejected.copy": "Copiar {{title}}"
+  ,"rejected.copied": "Copiado"
+  ,"rejected.copyFailed": "Não foi possível copiar"
+  ,"rejected.loading": "A ler as bolas rejeitadas…"
+  ,"rejected.unavailable": "As bolas rejeitadas estão temporariamente indisponíveis."
+  ,"rejected.allCopied": "Todas as bolas rejeitadas foram copiadas."
+  ,"rejected.allCopyFailed": "Não foi possível copiar as bolas rejeitadas."
+  ,"rejected.special": "Especial {{country}}"
+  ,"rejected.ivorianSelection": "Seleção marfinense"
+  ,"rejected.beninSelection": "Seleção beninense"
+  ,"rejected.countrySelection": "Seleção do país"
+  ,"rejected.daySelection": "Seleção do dia"
+  ,"rejected.keepNearby": "Para manter por perto"
+  ,"rejected.keyOfDay": "Chave do dia"
+  ,"rejected.beninFestival": "Celebração do Benim"
+  ,"matrix.dayProgram": "Programa do dia"
+  ,"matrix.dailyKey": "A sua chave do dia"
+  ,"matrix.titleForDay": "Matriz de {{day}}"
+  ,"matrix.today": "Matriz do dia"
+  ,"matrix.back": "Voltar"
+  ,"matrix.copyCountry": "Copiar todos os resultados deste país"
+  ,"matrix.availableSlots": "Horários disponíveis"
+  ,"matrix.noProgramForCountry": "Não existe nenhum programa disponível para este país."
+  ,"matrix.viewProgram": "Ver o programa"
+  ,"matrix.copyResults": "Copiar todos os resultados"
+  ,"matrix.copy": "Copiar"
+  ,"matrix.name": "Nome"
+  ,"matrix.date": "Data"
+  ,"matrix.event": "Evento"
+  ,"matrix.special": "Especial {{country}}"
+  ,"matrix.ivorianKey": "Chave marfinense do dia"
+  ,"matrix.beninKey": "Chave beninense do dia"
+  ,"matrix.custom": "A sua matriz personalizada"
+  ,"matrix.keyOfDay": "Chave do dia"
+  ,"matrix.personalized": "A matriz que combina consigo"
+  ,"matrix.edition": "Edição personalizada"
+  ,"croix.official": "Publicação oficial"
+  ,"croix.title": "Cruz nacional"
+  ,"croix.selectedTitle": "Cruz nacional de {{date}}"
+  ,"croix.todayTitle": "Cruz nacional do dia"
+  ,"croix.historyLabel": "Cruzes dos últimos nove dias"
+  ,"croix.historyLoading": "A carregar os últimos nove dias…"
+  ,"croix.sectionLabel": "Cruz nacional e histórico"
+  ,"croix.historyLoadingShort": "A carregar o histórico…"
+  ,"Récompenses": "Recompensas"
+  ,"Achats": "Compras"
+  ,"0 personne aime": "0 pessoas gostam disto"
+  ,"J’aime cette calculatrice": "Gosto desta calculadora"
+  ,"NATIONALE": "NACIONAL"
+  ,"numéros rejetés": "números rejeitados"
+  ,"Chargement des publications…": "A carregar publicações…"
+  ,"Français": "Francês"
+  ,"English": "Inglês"
+  ,"Português": "Português"
+  ,"Español": "Espanhol"
+  ,"Cidmap": "Cidmap"
+  ,"Croix nationale": "Cruz nacional"
+  ,"Numéros rejetés": "Números rejeitados"
+  ,"Anticipé": "Antecipado"
+  ,"Déchiffrement MT": "Descodificação MT"
+  ,"Nos réseaux": "As nossas redes sociais"
+  ,"Offres": "Ofertas"
+  ,"Résultats": "Resultados"
+  ,"Historiques": "Históricos"
+  ,"Cidmap virtuel": "Cidmap virtual"
+  ,"J’aime": "Gosto"
+  ,"Code": "Código"
+  ,"Event": "Evento"
+  ,"Copier résultats": "Copiar resultados"
+  ,"Résultat — 10 numéros": "Resultado — 10 números"
+  ,"Déchiffrement avancé": "Descodificação avançada"
+  ,"Utilisez les 10 numéros proposés ou saisissez-les directement.": "Os 10 números calculados são preenchidos por predefinição; substitua-os por quantos números distintos quiser."
+  ,"10 numéros à analyser (facultatif)": "Números para analisar (opcional)"
+  ,"Les résultats sont insérés automatiquement; modifiez-les ou effacez-les si nécessaire.": "Os 10 números são usados por predefinição; substitua-os pela sua seleção manual se preferir."
+  ,"Résultat du calcul": "Resultado do cálculo"
+  ,"Vos 10 numéros": "Os seus 10 números"
+  ,"Les numéros sont prêts pour Déchiffrement avancé.": "Os números estão prontos para a descodificação avançada."
+  ,"Votre matrice d'aujourd'hui": "A sua matriz de hoje"
+  ,"Choisir une date": "Escolher uma data"
+  ,"historique matrice": "histórico da matriz"
+  ,"Couleurs de la Croix (par jour)": "Cores da Cruz (por dia)"
+  ,"Horaires des programmes": "Horários dos programas"
+  ,"Générer la clé": "Gerar a chave"
+  ,"Copier la clé": "Copiar a chave"
+  ,"Aucune donnée disponible.": "Não existem dados disponíveis."
+  ,"Bienvenue — Choisissez votre pays et langue": "Bem-vindo — escolha o seu país e idioma"
+  ,"-- Sélectionner --": "-- Selecionar --"
+  ,"Passer": "Ignorar"
+  ,"Enregistrer": "Guardar"
+  ,"Installer l'application": "Instalar a aplicação"
+  ,"J'ai compris": "Entendi"
+  ,"assistant.customCountry": "Nome ou código do país (ex. Angola ou AO)"
+  ,"assistant.optionalDrawNumber": "Facultativo — ex. 2710"
+  ,"assistant.firstNumbersPlaceholder": "Ex. 04 18 27 36 72"
+  ,"assistant.secondNumbersPlaceholder": "Ex. 03 11 22 48 69"
+  ,"assistant.bonusNumbersPlaceholder": "Ex. 09"
+  ,"assistant.chooseCountry": "Escolher um país"
+  ,"assistant.confirming": "A guardar a sua confirmação…"
+  ,"assistant.confirmationFailed": "Não foi possível guardar a confirmação."
+  ,"assistant.rightsVerificationFailed": "A verificação dos direitos está temporariamente indisponível. Tente novamente."
+  ,"notifications.closeDetail": "Fechar detalhes"
+  ,"notifications.accountDetail": "Detalhes da conta"
+  ,"notifications.detail": "Detalhes da notificação"
+  ,"notifications.defaultTitle": "Notificação"
+  ,"notifications.noDetail": "Não existem detalhes adicionais."
+  ,"notifications.close": "Fechar"
+  ,"notifications.viewAccount": "Ver a minha conta"
+  ,"notifications.viewPublication": "Ver publicação"
+  ,"notifications.unknownDate": "Data desconhecida"
+  ,"notifications.type": "Tipo"
+  ,"notifications.receivedAt": "Recebida em"
+  ,"notifications.duration": "Duração"
+  ,"notifications.validUntil": "Acesso válido até"
+  ,"notifications.amount": "Montante"
+  ,"notifications.balanceAfter": "Saldo após a operação"
+  ,"notifications.information": "Informação"
+  ,"notifications.unreadCount": "{{count}} notificação{{plural}} não lida{{plural}}"
+  ,"notifications.openUnread": "Abrir notificações, {{count}} não lidas"
+  ,"social.heading": "Encontre o Cidmap nas redes e contacte a equipa."
+  ,"social.empty": "Os links públicos serão adicionados pela administração."
+  ,"social.contact": "Contactar a equipa"
+  ,"offers.unavailable": "As ofertas estão temporariamente indisponíveis."
+  ,"smart.customCountry": "País do programa personalizado"
+  ,"smart.customCountryHelp": "Esta escolha serve apenas para pré-selecionar os seus programas."
+  ,"smart.profileHelp": "As vistas Matriz e Bolas rejeitadas usarão este país por defeito."
+  ,"smart.customProgram": "Programa personalizado: {{country}}"
+  ,"smart.matrixFiltered": "A matriz está filtrada pelo seu país."
+  ,"smart.globalProgram": "Programa global"
+  ,"smart.allCountries": "Todos os países estão disponíveis."
+  ,"smart.otherCountries": "Ver programas de outros países"
+  ,"smart.otherRejected": "Ver bolas rejeitadas de outros países"
+  ,"smart.otherSchedules": "Ver horários de outros países"
+  ,"smart.backToProgram": "Voltar ao programa de {{country}}"
+  ,"smart.backToRejected": "Voltar às bolas rejeitadas de {{country}}"
+  ,"smart.customRejected": "Bolas rejeitadas personalizadas: {{country}}"
+  ,"smart.existingMethod": "O método existente é mantido; apenas a vista é filtrada."
+  ,"smart.globalRejected": "Bolas rejeitadas globais"
+  ,"smart.allDisplayed": "Todos os países são apresentados."
+  ,"smart.customSchedule": "Horários personalizados: {{country}}"
+  ,"smart.existingSchedules": "Os horários existentes permanecem inalterados e abrangem todos os programas."
+  ,"smart.globalView": "Vista global ativada para todos os países."
+  ,"Boules rejetées": "Bolas rejeitadas"
+  ,"Ajouter à l'écran d'accueil": "Adicionar ao ecrã inicial"
+  ,"Sur l'écran d'accueil": "No ecrã inicial"
+}

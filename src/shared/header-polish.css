@@ -1,0 +1,270 @@
+/*
+ * Adaptive Cidmap header
+ *
+ * This file is intentionally loaded after the legacy and responsive chrome
+ * layers. It owns only the top header's glass surface and action icons.
+ */
+
+:root {
+  /*
+   * Keep a readable translucent surface above every route. The final shell
+   * contract reinforces the same values after this stylesheet.
+  */
+  --cid-header-rest-bg: rgba(255, 255, 255, .96);
+  --cid-header-scroll-bg: rgba(255, 255, 255, .96);
+  /*
+   * The top action icons share the official Croix nationale colour of the
+   * current programme day. `--cid-national-color` is populated by the daily
+   * illustration/theme controller, while `--redCross-bg` keeps this shell
+   * aligned during the short period before that controller has mounted.
+   */
+  --cid-header-accent: #e30613;
+  --cid-header-ink: #8b0d16;
+  --cid-header-icon: var(--cid-national-color, var(--redCross-bg, var(--cid-header-ink)));
+  --cid-header-blue: var(--cid-header-accent);
+}
+
+.site-header {
+  background: var(--cid-header-rest-bg) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .58) !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, .08) !important;
+  transition: background-color 180ms ease !important;
+}
+
+.site-header.is-scrolled {
+  background: var(--cid-header-scroll-bg) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.site-header .header-inner {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.site-header .logo {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 7px;
+  color: var(--cid-header-icon) !important;
+  /*
+   * Keep the Cidmap wordmark as visually strong as the Facebook-style
+   * navigation labels without changing the header geometry.
+   */
+  font-family: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 19px !important;
+  font-weight: 850 !important;
+  letter-spacing: -.35px !important;
+}
+
+.site-header .cid-header-squirrel {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  flex: 0 0 auto;
+  width: 27px;
+  height: 27px;
+  background: url('/src/shared/images/squirrel-croix-192.png?icon-details-v2')
+    center / contain no-repeat !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+.site-header .cid-header-squirrel::after,
+.category-bar .inner .category-item.profile-nav-button .profile-squirrel-icon::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+  background: var(--cid-national-color, var(--cid-header-accent));
+  -webkit-mask: url('/src/shared/images/squirrel-red-mask.png?icon-details-v4')
+    center / contain no-repeat;
+  mask: url('/src/shared/images/squirrel-red-mask.png?icon-details-v4')
+    center / contain no-repeat;
+  pointer-events: none;
+}
+
+.category-bar .inner .category-item.profile-nav-button .profile-squirrel-icon {
+  position: relative;
+  isolation: isolate;
+  display: block !important;
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
+  background: url('/src/shared/images/squirrel-croix-192.png?icon-details-v2')
+    center / contain no-repeat !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  overflow: visible;
+}
+
+/*
+ * Brand avatars are raster images, so their SVG-like fills cannot be
+ * overridden directly. Use the exact daily colour as a mask fill instead of
+ * hue rotation, which would keep Saturday's squirrel too close to Friday's
+ * vivid red.
+ */
+.cid-fb-avatar {
+  position: relative;
+  isolation: isolate;
+  border: 2px solid var(--cid-national-color, var(--redCross-bg, #e30613));
+  background: #fff;
+  background: color-mix(in srgb, var(--cid-national-color, #e30613) 10%, #fff);
+}
+
+.cid-fb-avatar:has(> [data-cid-brand-avatar])::before,
+.cid-comment-sheet-avatar:has(> [data-cid-brand-avatar])::before {
+  position: absolute;
+  inset: 3px;
+  z-index: 1;
+  content: "";
+  background: var(--cid-national-color, var(--redCross-bg, #e30613)) !important;
+  -webkit-mask: url('/src/shared/images/squirrel-red-mask.png?icon-details-v4')
+    center / contain no-repeat;
+  mask: url('/src/shared/images/squirrel-red-mask.png?icon-details-v4')
+    center / contain no-repeat;
+  pointer-events: none;
+}
+
+.cid-fb-avatar > [data-cid-brand-avatar],
+.cid-comment-sheet-avatar > [data-cid-brand-avatar] {
+  position: relative;
+  z-index: 0;
+  opacity: 1;
+}
+
+.cid-comment-sheet-avatar:has(> [data-cid-brand-avatar]) {
+  position: relative;
+  isolation: isolate;
+  border: 2px solid var(--cid-national-color, var(--redCross-bg, #e30613));
+  background: #fff;
+  background: color-mix(in srgb, var(--cid-national-color, #e30613) 10%, #fff);
+}
+
+.site-header .actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-left: auto !important;
+}
+
+.site-header .actions .top-action-btn,
+.site-header .actions .notification-bell-button {
+  position: relative;
+  display: inline-flex !important;
+  flex: 0 0 44px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cid-header-icon) !important;
+  box-shadow: none !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  transition: color 160ms ease, opacity 160ms ease, transform 160ms ease !important;
+}
+
+.site-header .actions .top-action-btn:hover,
+.site-header .actions .top-action-btn:focus-visible,
+  .site-header .actions .notification-bell-button:hover,
+.site-header .actions .notification-bell-button:focus-visible {
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--cid-header-accent) !important;
+  box-shadow: none !important;
+}
+
+.site-header .actions .top-action-btn:active,
+.site-header .actions .notification-bell-button:active {
+  transform: scale(.92) !important;
+}
+
+.site-header .top-action-label,
+.site-header .top-action-count {
+  display: none !important;
+}
+
+.site-header .top-action-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+  font-size: 0;
+}
+
+.site-header .header-action-svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.site-header .header-action-svg--star {
+  width: 21px;
+  height: 21px;
+}
+
+.site-header .header-action-svg--wallet {
+  width: 23px;
+  height: 23px;
+}
+
+.site-header .header-action-svg--bell {
+  width: 22px;
+  height: 22px;
+}
+
+.site-header .language-header-flag {
+  display: block;
+  width: 24px;
+  height: 24px;
+  font-size: 22px;
+  line-height: 24px;
+  text-align: center;
+  filter: saturate(1.08);
+}
+
+.site-header .notification-badge {
+  top: 1px !important;
+  right: 1px !important;
+  border: 2px solid rgba(255, 255, 255, .9) !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 480px) {
+  .site-header .actions {
+    gap: 16px !important;
+  }
+
+  .site-header .actions .top-action-btn,
+  .site-header .actions .notification-bell-button {
+    flex-basis: 44px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition: none !important;
+  }
+}

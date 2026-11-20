@@ -1,0 +1,1386 @@
+/* Facebook-style home feed.
+   The cid-home-feed namespace keeps this view isolated from the legacy
+   Matrice/Croix screens mounted elsewhere in the application. */
+
+#cid-home-feed {
+  --fb-blue: #1877f2;
+  --fb-text: #1c1e21;
+  --fb-muted: #65676b;
+  --fb-border: #e4e6eb;
+  --fb-bg: #f0f2f5;
+  /* The shell already owns the horizontal gutter. Never compensate with a
+   * wider feed: that creates a real overflow when the comments sheet opens
+   * on compact viewports. */
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 0 calc(112px + env(safe-area-inset-bottom, 0px));
+  color: var(--fb-text);
+  font-family: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#cid-home-feed,
+#cid-home-feed * {
+  box-sizing: border-box;
+}
+
+.cid-feed-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 12px;
+  padding: 0 2px;
+}
+
+.cid-feed-page-heading h1 {
+  display: block !important;
+  margin: 0;
+  color: var(--fb-text);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-align: left;
+}
+
+.cid-feed-today {
+  color: var(--fb-text);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.cid-fb-post {
+  overflow: visible;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  margin: 0 12px 16px;
+  border: 1px solid var(--fb-border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(28, 30, 33, 0.08);
+}
+
+.cid-fb-post.is-pinned {
+  border-top: 3px solid var(--fb-blue);
+}
+
+.cid-fb-post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px 8px;
+}
+
+.cid-fb-avatar {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #e7f3ff;
+}
+
+.cid-fb-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cid-fb-author {
+  min-width: 0;
+  flex: 1;
+}
+
+.cid-fb-author-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  line-height: 1.2;
+}
+
+.cid-fb-page-name {
+  color: var(--fb-text);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.cid-fb-verified {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin-left: 4px;
+}
+
+.cid-fb-time {
+  margin-top: 3px;
+  color: var(--fb-muted);
+  font-size: 11px;
+}
+
+.cid-fb-post-copy {
+  margin-bottom: 6px;
+  padding: 0 14px;
+}
+
+.cid-fb-post-copy p {
+  margin: 0;
+  color: var(--fb-text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.cid-fb-post-copy strong {
+  font-weight: 900;
+}
+
+.cid-fb-more-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  margin-top: 10px;
+  padding: 7px 12px;
+  border: 1px solid #cfe1f8;
+  border-radius: 8px;
+  background: #f3f8ff;
+  color: #1769c2;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cid-fb-more-button:hover,
+.cid-fb-more-button:focus-visible {
+  border-color: #96bff1;
+  background: #e7f3ff;
+  outline: 0;
+}
+
+.cid-fb-media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  margin: 0;
+  padding: 8px 12px 4px;
+  border-radius: 14px;
+  background: #fff;
+}
+
+/* Keep the artwork attached to the copy, including posts with “Voir plus”. */
+.cid-fb-post-copy + .cid-fb-media {
+  margin-top: 0;
+}
+
+.cid-fb-media-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.cid-fb-image-media {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cid-fb-image-media .cid-fb-media-image {
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+}
+
+.cid-fb-cross-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The Croix owns its geometry; this wrapper owns the publication rhythm. */
+  padding: 0 12px 4px;
+  background: #fff;
+}
+
+.cid-fb-cross-media .cid-fb-cross-slot {
+  min-height: 0;
+}
+
+.cid-fb-cross-media #redCross {
+  margin: 0 auto !important;
+}
+
+.cid-fb-cross-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: visible;
+}
+
+.cid-fb-cross-history-visual {
+  display: none;
+  width: 100%;
+}
+
+.cid-fb-post.is-historical .cid-fb-cross-history-visual {
+  display: block;
+  flex: 1 1 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+/*
+ * A historical post uses the archived copy as its only Croix visual. The
+ * empty live host must not remain as a second flex column, otherwise the
+ * archived Croix is pushed into the right half of the white media area.
+ */
+.cid-fb-post.is-historical .cid-fb-cross-live-host {
+  display: none !important;
+}
+
+.cid-fb-cross-history-visual #redCross.cid-fb-home-history-cross {
+  width: min(100%, 380px) !important;
+  height: min(100%, 380px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 380px !important;
+  max-height: 380px !important;
+  aspect-ratio: 1 / 1 !important;
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
+  transform: none !important;
+}
+
+.cid-fb-cross-history-visual.is-hidden {
+  display: none !important;
+}
+
+.cid-fb-cross-live-host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .cid-fb-cross-history-visual #redCross.cid-fb-home-history-cross {
+    /*
+     * Fit the archived copy to its media slot rather than to the viewport.
+     * The old 92vw rule made the card content wider than its slot after the
+     * feed gutters and media padding were applied.
+     */
+    width: min(100%, 380px) !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: none !important;
+  }
+}
+
+.cid-fb-schedule-preview {
+  display: grid;
+  min-height: 132px;
+  place-content: center;
+  gap: 4px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f3f8ff, #e7f3ff);
+  color: #1769c2;
+  text-align: center;
+}
+
+.cid-fb-schedule-preview span {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.cid-fb-schedule-preview strong {
+  font-size: 16px;
+}
+
+.cid-fb-schedule-preview small {
+  color: var(--fb-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cid-fb-summary {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--fb-border);
+  color: var(--fb-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cid-fb-summary-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cid-fb-comments-summary {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.cid-fb-comments-summary:hover,
+.cid-fb-comments-summary:focus-visible {
+  color: var(--fb-blue);
+  text-decoration: underline;
+  outline: 0;
+}
+
+.cid-fb-reactions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cid-fb-reaction-icon {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--fb-blue);
+  color: #fff;
+}
+
+.cid-fb-reaction-icon svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+  fill: #fff;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.cid-fb-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+  border-top: 1px solid var(--fb-border);
+  margin-top: 0;
+  padding: 4px 12px 5px;
+}
+
+.cid-fb-post.is-comments-off .cid-fb-actions {
+  gap: 18px;
+}
+
+.cid-fb-post.is-comments-off .cid-fb-comments-summary,
+.cid-fb-post.is-comments-off [data-comments-separator],
+.cid-fb-post.is-comments-off .cid-fb-comment-toggle,
+.cid-fb-post.is-comments-off .cid-fb-comments,
+.cid-fb-post.is-comments-off .cid-fb-comment-form,
+.cid-fb-post.is-comments-off .cid-croix-comment-count-toggle,
+.cid-fb-post.is-comments-off [data-croix-comment-view],
+.cid-fb-post.is-comments-off [data-croix-comment-toggle] {
+  display: none !important;
+}
+
+.cid-fb-post [hidden] {
+  display: none !important;
+}
+
+.cid-fb-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: max-content !important;
+  min-width: 0 !important;
+  min-height: 30px;
+  padding: 3px 2px;
+  border: 0 !important;
+  border-radius: 6px;
+  background: transparent !important;
+  color: var(--fb-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.cid-fb-action:hover,
+.cid-fb-action:focus-visible {
+  background: #f2f3f5 !important;
+  color: var(--fb-text);
+  outline: 0;
+}
+
+.cid-fb-action.is-liked {
+  background: transparent !important;
+  color: var(--fb-blue);
+}
+
+.cid-fb-action-label {
+  display: none;
+}
+
+.cid-fb-action-count {
+  color: currentColor;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.cid-fb-action-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.cid-fb-action:active {
+  transform: scale(.97);
+}
+
+/* Comments are paused by product choice; keep the surface clean even if an
+ * older cached publication still carries a comment affordance. */
+.cid-fb-comment-toggle,
+.cid-fb-comments-summary,
+.cid-croix-comment-count-toggle,
+[data-croix-comment-view],
+[data-croix-comment-toggle],
+[data-comments-separator],
+.cid-fb-comments,
+.cid-croix-comment-panel {
+  display: none !important;
+}
+
+.cid-fb-share-panel {
+  display: none;
+  gap: 7px;
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--fb-border);
+  background: #fafbfc;
+}
+
+.cid-fb-post[data-share-open="true"] .cid-fb-share-panel {
+  display: grid;
+}
+
+.cid-fb-share-title {
+  margin: 0 0 2px;
+  color: var(--fb-text);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cid-fb-share-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.cid-fb-share-option {
+  min-height: 34px;
+  padding: 6px;
+  border: 1px solid var(--fb-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--fb-text);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cid-fb-share-option:hover,
+.cid-fb-share-option:focus-visible {
+  border-color: #9fc5f3;
+  background: #e7f3ff;
+}
+
+.cid-fb-status {
+  min-height: 0;
+  padding: 0 14px 10px;
+  color: var(--fb-blue);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Native-style comments bottom sheet */
+.cid-comments-sheet-root {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100dvh;
+  overflow: hidden;
+  z-index: 4100;
+  visibility: hidden;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.cid-comments-sheet-root[hidden] {
+  display: block;
+}
+
+.cid-comments-sheet-root.is-open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.cid-comments-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 15, 28, .48);
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.cid-comments-sheet-root.is-open .cid-comments-sheet-backdrop {
+  opacity: 1;
+}
+
+.cid-comments-sheet {
+  position: absolute;
+  top: auto;
+  right: 0;
+  bottom: var(--cid-comments-keyboard-inset, 0px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  height: min(760px, calc(var(--cid-comments-viewport-height, 100dvh) - 18px));
+  max-height: calc(var(--cid-comments-viewport-height, 100dvh) - 18px);
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-radius: 20px 20px 0 0;
+  background: #fff;
+  color: #1c1e21;
+  box-shadow: 0 -12px 38px rgba(17, 24, 39, .22);
+  transform: translateY(100%);
+  transition: transform 280ms cubic-bezier(.22, .8, .25, 1);
+}
+
+/* The writing flow is intentionally a composer-only surface. Keeping the
+ * sheet compact means the publication remains visible above it while the
+ * keyboard is open. The reading flow keeps the full list and an unfocused
+ * composer. */
+.cid-comments-sheet-root.is-write-mode .cid-comments-sheet-header,
+.cid-comments-sheet-root.is-write-mode .cid-comments-sheet-list,
+.cid-comments-sheet-root.is-write-mode .cid-comments-sheet-status {
+  display: none;
+}
+
+.cid-comments-sheet-root.is-open .cid-comments-sheet {
+  transform: translateY(0);
+}
+
+.cid-comments-sheet-handle {
+  width: 42px;
+  height: 4px;
+  flex: 0 0 4px;
+  margin: 9px auto 2px;
+  border-radius: 999px;
+  background: #d1d5db;
+}
+
+.cid-comments-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 16px 13px;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.cid-comments-sheet-header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+}
+
+.cid-comments-sheet-count {
+  display: block;
+  margin-top: 2px;
+  color: #65676b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cid-comments-sheet-close {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f2f5;
+  color: #4b5563;
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cid-comments-sheet-close:hover,
+.cid-comments-sheet-close:focus-visible {
+  background: #e4e6eb;
+  outline: 0;
+}
+
+.cid-comments-sheet-list {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 15px 16px 24px;
+  scrollbar-width: thin;
+}
+
+.cid-comments-load-sentinel {
+  min-height: 28px;
+  padding: 8px 0 4px;
+  color: #8a8d91;
+  font-size: 11px;
+  text-align: center;
+}
+
+.cid-comment-sheet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-left: calc(var(--cid-comment-depth, 0) * 22px);
+  padding: 4px 0 8px;
+}
+
+.cid-comment-sheet-avatar,
+.cid-comments-composer-avatar {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #e7f3ff;
+  color: #1769c2;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.cid-comment-sheet-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cid-comment-sheet-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.cid-comment-sheet-author-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 17px;
+}
+
+.cid-comment-sheet-author {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #050505;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cid-comment-sheet-author:hover,
+.cid-comment-sheet-author:focus-visible {
+  color: #1877f2;
+}
+
+.cid-comment-verified {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+
+.cid-comment-sheet-bubble {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 1px;
+  padding: 1px 0;
+  border-radius: 0;
+  background: transparent;
+  color: #1c1e21;
+  font-size: 14px;
+  line-height: 1.3;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cid-comment-sheet-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 13px;
+  padding: 2px 3px 0;
+}
+
+.cid-comment-time {
+  color: #65676b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cid-comment-sheet-actions .cid-fb-comment-reply,
+.cid-comment-replies-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #65676b;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cid-comment-reaction-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.cid-comment-like-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  color: #65676b;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cid-comment-like-badge span {
+  font-size: 12px;
+}
+
+.cid-comment-reaction {
+  display: grid;
+  width: 26px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8a8d91;
+  cursor: pointer;
+}
+
+.cid-comment-reaction svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.cid-comment-reaction:hover,
+.cid-comment-reaction:focus-visible,
+.cid-comment-reaction.is-active {
+  background: #e7f3ff;
+  color: #1877f2;
+  outline: 0;
+}
+
+.cid-comment-reaction.is-dislike.is-active {
+  background: #fff1f2;
+  color: #d6293e;
+}
+
+.cid-comment-replies-toggle:hover,
+.cid-comment-replies-toggle:focus-visible,
+.cid-comment-sheet-actions .cid-fb-comment-reply:hover,
+.cid-comment-sheet-actions .cid-fb-comment-reply:focus-visible {
+  color: #1877f2;
+  outline: 0;
+}
+
+.cid-comment-sheet-replies {
+  margin-top: 2px;
+}
+
+.cid-fb-comment-status {
+  display: inline-block;
+  margin-left: 5px;
+  color: #b06b00;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.cid-comments-sheet-loading,
+.cid-comments-sheet-empty {
+  display: grid;
+  min-height: 180px;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  color: #65676b;
+  text-align: center;
+}
+
+.cid-comments-sheet-loading strong,
+.cid-comments-sheet-empty strong {
+  color: #1c1e21;
+  font-size: 13px;
+}
+
+.cid-comments-sheet-loading span {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #dbeafe;
+  border-top-color: #1877f2;
+  border-radius: 50%;
+  animation: cid-comments-spin 700ms linear infinite;
+}
+
+.cid-comments-sheet-empty-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e7f3ff;
+  font-size: 22px;
+}
+
+.cid-comments-sheet-status {
+  min-height: 0;
+  padding: 0 16px 7px;
+  color: #1769c2;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cid-comments-closed {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px calc(11px + env(safe-area-inset-bottom));
+  border-top: 1px solid #edf0f4;
+  background: rgba(255, 247, 237, .9);
+  color: #8a5a12;
+  font-size: 13px;
+}
+.cid-comments-closed[hidden] { display: none; }
+.cid-comments-closed-icon { font-size: 16px; }
+.cid-comments-closed strong { font-weight: 700; }
+
+.cid-comments-composer {
+  flex: 0 0 auto;
+  padding: 7px 12px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid #edf0f4;
+  background: rgba(255, 255, 255, .98);
+}
+
+/* Guests may read the list, but the composer appears only after the
+   authenticated session has been confirmed. */
+.cid-comments-sheet-root.is-guest .cid-comments-composer {
+  display: none !important;
+}
+
+.cid-comments-reply-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 3px 6px 45px;
+  color: #65676b;
+  font-size: 11px;
+}
+
+.cid-comments-reply-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.cid-comments-reply-context strong {
+  color: #1877f2;
+}
+
+.cid-comments-reply-quote {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: #8a8d91;
+  font-size: 10px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cid-comments-reply-clear {
+  flex: 0 0 auto;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #65676b;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cid-comments-reply-clear:hover,
+.cid-comments-reply-clear:focus-visible {
+  color: #1877f2;
+  outline: 0;
+}
+
+.cid-comments-composer-row {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  gap: 8px;
+}
+
+.cid-comments-composer-input {
+  display: block;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
+  min-height: 40px;
+  max-height: 110px;
+  overflow-y: auto;
+  resize: none;
+  padding: 10px 13px;
+  border: 1px solid #d7dce3;
+  border-radius: 21px;
+  outline: 0;
+  background: #f0f2f5;
+  color: #1c1e21;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  cursor: text;
+  resize: none;
+  -webkit-appearance: none;
+}
+
+.cid-comments-composer-input::placeholder {
+  color: #8a8d91;
+  opacity: 1;
+}
+
+.cid-comment-mention {
+  color: #1877f2;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cid-comments-composer-input:focus {
+  border-color: #96bff1;
+  background: #fff;
+  box-shadow: 0 0 0 2px #e7f3ff;
+}
+
+.cid-comments-composer-submit {
+  display: grid;
+  width: auto;
+  min-width: 78px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 20px;
+  background: #1877f2;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+.cid-comments-composer-submit[hidden],
+.cid-comments-composer-emoji[hidden] {
+  display: none !important;
+}
+
+.cid-comments-composer-submit:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.cid-comments-composer-submit:not(:disabled):active {
+  transform: scale(.92);
+}
+
+.cid-comments-composer-emoji {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f2f5;
+  color: #1877f2;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 150ms ease, background 150ms ease;
+}
+
+.cid-comments-composer-emoji:hover,
+.cid-comments-composer-emoji:focus-visible {
+  background: #e7f3ff;
+  outline: none;
+}
+
+.cid-comments-composer-emoji:active {
+  transform: scale(.92);
+}
+
+.cid-comments-emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 7px 0 0 45px;
+  padding: 7px;
+  border: 1px solid #e1e6ee;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, .10);
+}
+
+.cid-comments-emoji-picker[hidden] {
+  display: none !important;
+}
+
+.cid-comments-emoji-picker button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.cid-comments-emoji-picker button:hover,
+.cid-comments-emoji-picker button:focus-visible {
+  background: #f0f2f5;
+  outline: none;
+}
+
+/* Mobile keyboard lock: keep the composer above the bottom navigation and
+   inside the visible viewport without changing the desktop comment sheet. */
+@media (max-width: 720px) {
+  body.cid-comments-sheet-active {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body.cid-comments-sheet-active .cid-comments-sheet-root,
+  body.cid-comments-sheet-active .cid-comments-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body.cid-comments-sheet-active .cid-comments-composer {
+    position: sticky !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 5300 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  body.cid-comments-sheet-active .cid-comments-sheet-list {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding-bottom: calc(150px + var(--cid-safe-bottom, 0px)) !important;
+  }
+
+  body.cid-comments-sheet-active .cid-comments-composer-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  body.cid-comments-sheet-active .cid-comments-composer-input {
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .cid-comments-composer-input::placeholder {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
+@keyframes cid-comments-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cid-public-profile-dialog {
+  width: min(360px, calc(100% - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: #1c1e21;
+  box-shadow: 0 18px 55px rgba(28, 30, 33, .25);
+}
+
+.cid-public-profile-dialog::backdrop {
+  background: rgba(28, 30, 33, .42);
+}
+
+.cid-public-profile-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 28px 24px 24px;
+  background: #fff;
+  text-align: center;
+}
+
+.cid-public-profile-close {
+  position: absolute;
+  top: 9px;
+  right: 11px;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f2f5;
+  color: var(--fb-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cid-public-profile-avatar {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1877f2, #63a4ff);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.cid-public-profile-kicker {
+  color: var(--fb-blue);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.cid-public-profile-card h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.cid-public-profile-card p {
+  margin: 0;
+  color: #65676b;
+  font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  #cid-home-feed {
+    padding-top: 2px;
+  }
+
+  .cid-comments-sheet {
+    width: 100%;
+    max-width: 100%;
+    height: min(760px, calc(var(--cid-comments-viewport-height, 92dvh) - 12px));
+    max-height: calc(var(--cid-comments-viewport-height, 92dvh) - 12px);
+    border-radius: 18px 18px 0 0;
+  }
+
+  .cid-comments-sheet-header {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .cid-comments-sheet-list {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .cid-comments-composer {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .cid-comment-sheet-item {
+    margin-left: calc(var(--cid-comment-depth, 0) * 16px);
+  }
+
+  .cid-feed-page-heading,
+  .cid-fb-post-copy,
+  .cid-fb-post-header,
+  .cid-fb-summary,
+  .cid-fb-share-panel {
+    padding-right: 11px;
+    padding-left: 11px;
+  }
+
+  .cid-fb-share-options {
+    grid-template-columns: 1fr;
+  }
+
+  .cid-fb-cross-media {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .cid-fb-summary {
+    padding-right: 11px;
+    padding-left: 11px;
+  }
+
+  .cid-fb-actions {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  .cid-fb-action {
+    gap: 4px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cid-home-feed *,
+  #cid-home-feed *::before,
+  #cid-home-feed *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* The legacy Accueil presentation yields the content area to the feed only. */
+body.cid-facebook-feed-active #redCrossClone,
+body.cid-facebook-feed-active #matrixPageTitle,
+body.cid-facebook-feed-active #currentDateTime,
+body.cid-facebook-feed-active #nextAvailableTime,
+body.cid-facebook-feed-active #nextDay,
+body.cid-facebook-feed-active #drawNumber,
+body.cid-facebook-feed-active #countryButtons,
+body.cid-facebook-feed-active #inlineCategoryBar {
+  display: none !important;
+}
+
+body.cid-facebook-feed-active #results {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Keep the white publication frame edge-to-edge whenever the feed is
+   mounted, including the short transition before the body state class lands. */
+#results:has(#cid-home-feed) {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body.cid-facebook-feed-active #cid-home-feed {
+  padding-top: 0 !important;
+}
+
+/* Older days use the same publication cards as today. A modest separator
+ * keeps the day-to-day order visible without introducing a separate archive
+ * panel or label into the feed. */
+.cid-fb-post.is-history-start {
+  margin-top: 30px;
+  border-top: 3px solid #dfe4ec;
+}
+
+.cid-fb-post.is-historical {
+  box-shadow: 0 2px 7px rgba(28, 30, 33, .06);
+}
+
+.cid-fb-post.is-historical .cid-fb-post-copy p {
+  font-weight: 800;
+}
+
+.cid-fb-post.is-historical .cid-fb-post-copy {
+  padding-bottom: 2px;
+}

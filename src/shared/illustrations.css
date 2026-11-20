@@ -1,0 +1,222 @@
+:root {
+  --daily-illustration-color: #0962D6;
+  --daily-matrix-color: #0962D6;
+  --daily-rejected-color: #0962D6;
+}
+
+.daily-illustration {
+  display: block;
+  width: min(100%, 680px);
+  height: auto;
+  margin: 0 auto;
+  border-radius: 14px;
+  object-fit: contain;
+  background: var(--daily-illustration-color);
+  box-shadow: 0 10px 28px rgba(10, 24, 64, .12);
+}
+
+.daily-illustration-frame {
+  width: min(100%, 680px);
+  margin: 0 auto 20px;
+  padding: 7px;
+  box-sizing: border-box;
+  border: 3px solid var(--daily-illustration-color);
+  border-radius: 17px;
+  background: var(--daily-illustration-color);
+}
+
+.matrix-daily-illustration {
+  margin: 0 auto 24px;
+}
+
+.daily-publication-visual {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  min-height: 188px;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  overflow: hidden;
+  padding: 15px 12px 13px;
+  border: 2px solid color-mix(
+    in srgb,
+    var(--daily-publication-color, var(--daily-matrix-color)) 72%,
+    #10233f 28%
+  );
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(
+        in srgb,
+        var(--daily-publication-color, var(--daily-matrix-color)) 92%,
+        #ffffff 8%
+      ),
+      var(--daily-publication-color, var(--daily-matrix-color))
+    );
+  color: var(--daily-publication-ink, #ffffff);
+  box-shadow: 0 10px 24px rgba(10, 24, 64, .14);
+  text-align: center;
+}
+
+.daily-publication-visual::before,
+.daily-publication-visual::after {
+  position: absolute;
+  content: '';
+  border: 2px solid currentColor;
+  opacity: .24;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.daily-publication-visual::before {
+  width: 102px;
+  height: 102px;
+  top: -59px;
+  left: -26px;
+}
+
+.daily-publication-visual::after {
+  width: 118px;
+  height: 118px;
+  right: -33px;
+  bottom: -75px;
+  border-width: 3px;
+}
+
+.daily-banner-copy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.daily-banner-copy strong,
+.daily-banner-copy > span,
+.daily-banner-copy small {
+  position: relative;
+  z-index: 1;
+}
+
+.daily-banner-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.daily-banner-brand-mark {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+.daily-publication-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.daily-banner-copy strong {
+  font-size: clamp(19px, 4vw, 31px);
+  line-height: 1.12;
+}
+
+.daily-banner-context {
+  max-width: 100%;
+  font-size: clamp(13px, 2.5vw, 17px);
+  font-weight: 700;
+}
+
+.daily-banner-copy small {
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: .92;
+}
+
+.daily-banner-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.rejected-daily-illustration-row td {
+  padding: 4px 4px 18px;
+  border: 0;
+  background: transparent;
+}
+
+.rejected-daily-illustration {
+  width: min(100%, 660px);
+  border: 4px solid var(--daily-rejected-color);
+}
+
+#redCross:not(.cid-fb-home-history-cross):not(.cid-croix-history-component) .daily-cross-illustration {
+  position: absolute;
+  inset: 0;
+  z-index: 1200;
+  display: block;
+  width: 100%;
+  height: 100%;
+  /*
+   * Publication artwork can contain a complete subject (for example a
+   * statue or a person). Cover cropped the edges on square Croix slots and
+   * made the subject appear to jump when the slot was resized.
+   */
+  object-fit: contain;
+  object-position: center;
+  border-radius: inherit;
+  background: var(--daily-illustration-color, #0962D6);
+  pointer-events: none;
+}
+
+#redCross:not(.cid-fb-home-history-cross):not(.cid-croix-history-component).has-daily-cross-illustration
+  > :not(.daily-cross-illustration) {
+  visibility: hidden !important;
+}
+
+@media (max-width: 520px) {
+  .daily-illustration-frame {
+    margin-bottom: 16px;
+    padding: 4px;
+    border-width: 2px;
+  }
+
+  .daily-publication-visual {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 164px;
+    padding: 11px 7px 10px;
+  }
+
+  .daily-banner-copy {
+    gap: 4px;
+  }
+
+  .daily-banner-brand,
+  .daily-banner-contact,
+  .daily-banner-copy small {
+    font-size: 9px;
+  }
+
+  .daily-publication-eyebrow {
+    font-size: 9px;
+  }
+}

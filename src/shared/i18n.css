@@ -1,0 +1,52 @@
+/*
+ * Directional rules shared by every locale.
+ * The Arabic catalog is the first RTL-ready locale; other RTL languages can
+ * reuse the same document-level switch without changing component markup.
+ */
+html[dir="rtl"] body,
+body.cid-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] .site-header .actions,
+html[dir="rtl"] .category-bar,
+html[dir="rtl"] .modal-actions,
+html[dir="rtl"] .top-actions {
+  direction: rtl;
+}
+
+html[dir="rtl"] [data-i18n],
+html[dir="rtl"] .modal-title,
+html[dir="rtl"] .modal-body {
+  text-align: right;
+}
+
+html[dir="rtl"] .cid-virtual-chat,
+html[dir="rtl"] .cid-virtual-chat .support-chat-thread,
+html[dir="rtl"] .cid-virtual-chat .support-chat-compose,
+html[dir="rtl"] .cid-virtual-chat .cid-virtual-attachment-tray {
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] .cid-virtual-chat .support-chat-message,
+html[dir="rtl"] .cid-virtual-chat .cid-pending-confirmation {
+  text-align: right;
+}
+
+html[dir="rtl"] .cid-virtual-chat .is-user {
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+}
+
+html[dir="rtl"] .cid-virtual-chat .cid-virtual-chat-back svg {
+  transform: scaleX(-1);
+}

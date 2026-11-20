@@ -1,0 +1,397 @@
+/*
+ * Cidmap native-like visual shell.
+ *
+ * This file owns only the application frame: viewport sizing, fixed chrome,
+ * safe areas and the main scroll surface. It deliberately does not style or
+ * reposition the Croix, Matrice, Boules rejetées, Tableaux or their internals.
+ * Keep this file last in the stylesheet order so older responsive rules cannot
+ * make the shell jump between viewport and document coordinates.
+ */
+
+:root {
+  --cid-shell-header-height: 50px;
+  --cid-shell-footer-height: 56px;
+  --cid-shell-side-padding: 14px;
+  --cid-shell-bg: #f0f2f5;
+  --cid-shell-blue: #0962d6;
+  --cid-viewport-height: 100dvh;
+}
+
+html {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  overflow: hidden;
+  background: var(--cid-shell-bg);
+}
+
+body {
+  width: 100%;
+  min-width: 0;
+  height: var(--cid-viewport-height, 100dvh);
+  min-height: var(--cid-viewport-height, 100dvh);
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  background: var(--cid-shell-bg) !important;
+}
+
+/*
+ * Keep the shell compatible with the existing view controllers while letting
+ * the active surface own ordinary vertical scrolling.
+ */
+#results {
+  position: fixed !important;
+  inset: calc(var(--cid-shell-header-height) + env(safe-area-inset-top, 0px))
+         0
+         calc(var(--cid-shell-footer-height) + env(safe-area-inset-bottom, 0px))
+         0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 16px var(--cid-shell-side-padding)
+           calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto;
+  isolation: isolate;
+}
+
+body.accueil-active #results,
+body.cid-facebook-feed-active #results,
+body.croix-active #results,
+body.tableaux-active #results {
+  margin: 0 !important;
+}
+
+.site-header {
+  position: fixed !important;
+  inset: 0 0 auto 0 !important;
+  width: 100% !important;
+  height: calc(var(--cid-shell-header-height) + env(safe-area-inset-top, 0px)) !important;
+  min-height: calc(var(--cid-shell-header-height) + env(safe-area-inset-top, 0px)) !important;
+  padding: env(safe-area-inset-top, 0px) 0 0 !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  transform: none !important;
+  transition: background-color 180ms ease;
+  z-index: 5000 !important;
+}
+
+.site-header .header-inner {
+  width: 100%;
+  max-width: 1240px;
+  height: var(--cid-shell-header-height) !important;
+  min-height: var(--cid-shell-header-height) !important;
+  margin: 0 auto;
+  padding: 0 var(--cid-shell-side-padding) !important;
+}
+
+.site-header .logo {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #1877F2 !important;
+  font-family: 'Noto Sans', system-ui, -apple-system, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: -.35px !important;
+  text-shadow: none !important;
+}
+
+.site-header .actions {
+  min-width: 0;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 6px !important;
+}
+
+.site-header .actions .top-action-btn,
+.site-header .actions .notification-bell-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  height: 32px !important;
+  min-width: 34px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(24, 119, 242, .14) !important;
+  border-radius: 999px !important;
+  background: rgba(24, 119, 242, .08) !important;
+  color: #1877F2 !important;
+  box-shadow: none !important;
+  line-height: 1 !important;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease, border-color 160ms ease;
+}
+
+.site-header .actions .top-action-btn:hover,
+.site-header .actions .top-action-btn:focus-visible,
+.site-header .actions .notification-bell-button:hover,
+.site-header .actions .notification-bell-button:focus-visible {
+  background: rgba(24, 119, 242, .15) !important;
+  border-color: rgba(24, 119, 242, .25) !important;
+}
+
+.site-header .actions .top-action-btn:active,
+.site-header .actions .notification-bell-button:active {
+  transform: translateY(1px) scale(.96);
+}
+
+.site-header .top-action-label,
+.site-header .top-action-count {
+  display: none !important;
+}
+
+.site-header .top-action-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.site-header .actions #notificationsBtn .top-action-icon {
+  font-size: 15px;
+}
+
+.site-header .notification-badge {
+  border-color: rgba(255, 255, 255, .95) !important;
+}
+
+@media (max-width: 420px) {
+  .site-header .header-inner {
+    padding-inline: 10px !important;
+  }
+
+  .site-header .actions .top-action-btn,
+  .site-header .actions .notification-bell-button {
+    flex-basis: 32px !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+}
+
+.category-bar {
+  position: fixed !important;
+  inset: auto 12px calc(8px + env(safe-area-inset-bottom, 0px)) auto !important;
+  left: 50% !important;
+  right: auto !important;
+  width: min(calc(100% - 24px), 560px) !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  border: 1px solid rgba(229, 231, 235, .95) !important;
+  border-radius: 34px !important;
+  background: rgba(255, 255, 255, .86) !important;
+  border-top: 1px solid #e5e7eb !important;
+  box-shadow: 0 -6px 20px rgba(15, 23, 42, .08) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: translateX(-50%) !important;
+  z-index: 99999 !important;
+}
+
+.category-bar .inner {
+  width: min(100%, 860px);
+  height: 54px !important;
+  min-height: 54px !important;
+  margin: 0 auto;
+  padding: 2px 4px !important;
+  gap: 4px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  justify-content: space-around !important;
+}
+
+.category-bar .inner .category-item {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  height: 48px !important;
+  padding: 4px 8px !important;
+  border: 1px solid transparent !important;
+  border-radius: 26px !important;
+  color: var(--cid-header-ink, #64748b) !important;
+  background: transparent !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.1;
+  white-space: nowrap;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.category-bar .inner .category-item:active {
+  transform: scale(.97);
+}
+
+.category-bar .inner .category-item.active {
+  color: var(--cid-header-accent, var(--cid-shell-blue)) !important;
+  background: color-mix(in srgb, var(--cid-header-accent, var(--cid-shell-blue)) 12%, transparent) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+body.cid-comments-sheet-active .category-bar,
+body.cid-keyboard-input-active .category-bar {
+  transform: translate(-50%, 130%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: transform 180ms ease, opacity 140ms ease !important;
+}
+
+/*
+ * The shell is intentionally above the page content, but dialogs must remain
+ * above the shell when a view opens an account, language or notification
+ * overlay.
+ */
+.modal-overlay,
+.notification-center,
+#authModal,
+#cidViewTransition {
+  z-index: 6000 !important;
+}
+
+/* Prevent a late empty-state paint from collapsing the stable viewport. */
+#results:empty {
+  min-height: 100% !important;
+}
+
+body.accueil-active #results,
+body.cid-facebook-feed-active #results {
+  top: calc(
+    var(--cid-shell-header-height) +
+    env(safe-area-inset-top, 0px)
+  ) !important;
+}
+
+@media (min-width: 760px) {
+  :root {
+    --cid-shell-side-padding: 24px;
+    --cid-shell-header-height: 50px;
+    --cid-shell-footer-height: 56px;
+  }
+
+  #results {
+    padding-top: 24px !important;
+  }
+
+  body.accueil-active #results,
+  body.cid-facebook-feed-active #results {
+    top: calc(
+      var(--cid-shell-header-height) +
+      env(safe-area-inset-top, 0px)
+    ) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --cid-shell-side-padding: 10px;
+  }
+
+  .site-header .header-inner {
+    gap: 6px !important;
+  }
+
+  .site-header .logo {
+    font-size: 18px !important;
+  }
+
+  .category-bar .inner .category-item {
+    padding-inline: 9px !important;
+    font-size: 12px !important;
+  }
+}
+
+/*
+ * Tableaux is mounted beside #results in the document. The native shell
+ * keeps the body locked to avoid a second competing scroll surface, so the
+ * active Tableaux view gets its own full-height scroll surface here.
+ */
+body.tableaux-active #tableauxViewContainer {
+  position: fixed !important;
+  inset: calc(var(--cid-shell-header-height) + env(safe-area-inset-top, 0px))
+         0
+         calc(var(--cid-shell-footer-height) + env(safe-area-inset-bottom, 0px))
+         0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 16px var(--cid-shell-side-padding)
+           calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  scroll-behavior: auto;
+  visibility: visible !important;
+  z-index: 20 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .tableaux-integrated-methods {
+  margin-top: 0 !important;
+}
+
+body.croix-active #croixViewContainer {
+  position: fixed !important;
+  inset: calc(var(--cid-shell-header-height) + env(safe-area-inset-top, 0px))
+         0
+         calc(var(--cid-shell-footer-height) + env(safe-area-inset-bottom, 0px))
+         0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 16px var(--cid-shell-side-padding)
+           calc(32px + env(safe-area-inset-bottom, 0px)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  scroll-behavior: auto;
+  visibility: visible !important;
+  z-index: 20 !important;
+}
+
+body.croix-active #results {
+  display: none !important;
+}
+
+body.croix-active #redCross {
+  position: relative !important;
+  inset: auto !important;
+  width: min(100%, 380px) !important;
+  height: min(calc(100vw - 28px), 380px) !important;
+  max-width: 380px !important;
+  max-height: 380px !important;
+  margin: 0 auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #results,
+  .category-bar .inner .category-item {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}

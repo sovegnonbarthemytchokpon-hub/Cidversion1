@@ -1,0 +1,35 @@
+/*
+ * Keep the diagonal strokes in the same coordinate system as the numbers.
+ *
+ * On narrow portrait phones the legacy 100%-sized SVG already matches the
+ * reference composition. Wider/landscape viewports used to shrink the SVG
+ * to 60%, which pulled both stroke endpoints toward the center while the
+ * numbers stayed at their canonical percentages.
+ */
+#redCross,
+#redCrossClone {
+  /*
+   * The cross is one protected coordinate plane. Keeping its aspect ratio
+   * explicit prevents a future viewport rule from stretching one axis.
+   */
+  aspect-ratio: 1 / 1 !important;
+}
+
+@media (min-width: 481px) {
+  #redCross > svg,
+  #redCrossClone > svg {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    aspect-ratio: 1 / 1 !important;
+    flex: 0 0 100%;
+    display: block;
+  }
+
+  #redCross > svg .cross-line,
+  #redCrossClone > svg .cross-line {
+    /* 0.6 preserves the visible stroke weight of the old 60%-sized SVG. */
+    stroke-width: 0.6 !important;
+  }
+}

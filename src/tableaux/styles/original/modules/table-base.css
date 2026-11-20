@@ -1,0 +1,42 @@
+:root {
+  --table-transition-duration: 0.3s;
+  --table-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+  --table-font-size: clamp(11px, 1vw, 14px);
+  --table-header-font-size: clamp(13px, 1.2vw, 16px);
+  --table-cell-padding: clamp(6px 3px, 2vw, 12px 10px);
+  --table-border-width: 2px;
+  --table-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  /* Reuse colors */
+  --table-bg: var(--secondary-bg, #4a0000);
+  --table-text: var(--text-color, white);
+  --table-accent: var(--accent-color, #FFD700);
+}
+
+/* Use will-change for smoother animations */
+.color-table {
+  will-change: auto; /* avoid forcing heavy paint layers for all tables */
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  width: 100%;
+  min-width: 100%; /* Ensure full width usage */
+  font-size: var(--table-font-size);
+  border-collapse: collapse;
+  background-color: var(--table-bg);
+  color: var(--table-text);
+  box-shadow: var(--table-shadow);
+  table-layout: fixed; /* Fixed layout for better column control */
+}
+
+/* Optimize table cell layout */
+.color-table th, 
+.color-table td {
+  contain: layout style;
+  text-rendering: optimizeLegibility;
+  border: var(--table-border-width) solid var(--table-border-color);
+  padding: var(--table-cell-padding);
+  text-align: center;
+  font-weight: bold;
+  overflow: hidden; /* Prevent content overflow */
+  text-overflow: ellipsis; /* Add ellipsis for long content */
+}

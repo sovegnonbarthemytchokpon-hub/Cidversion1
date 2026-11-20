@@ -1,0 +1,63 @@
+:root {
+  --table-font-size: 14px;
+  --table-header-font-size: 16px;
+  --table-font-weight: bold;
+  --table-line-height: 1.4;
+}
+
+/* Base table typography */
+.color-table {
+  font-size: var(--table-font-size);
+  line-height: var(--table-line-height);
+}
+
+.color-table th {
+  font-size: var(--table-header-font-size);
+  font-weight: var(--table-font-weight);
+}
+
+/* Increase numeric prominence inside tables for improved readability (applies across all table types) */
+.color-table td,
+.color-table td .satellite-number,
+.color-table td .nap-value,
+.satellite-decryption-table .satellite-number,
+.valid-numbers-table td,
+.universal-satellites .satellite-number,
+.intuition-cross-satellites .satellite-number,
+.manual-satellites .satellite-number,
+.lnb-satellites .satellite-number,
+.oracle-satellites .satellite-number {
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.5px !important;
+  padding: 6px 8px !important;
+}
+
+/* Ensure combination operators remain visually balanced */
+.satellite-operator {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+}
+
+/* Responsive: scale back on very small screens to avoid layout break */
+@media (max-width: 480px) {
+  .color-table td,
+  .color-table td .satellite-number,
+  .color-table td .nap-value,
+  .satellite-decryption-table .satellite-number,
+  .valid-numbers-table td,
+  .universal-satellites .satellite-number,
+  .intuition-cross-satellites .satellite-number,
+  .manual-satellites .satellite-number,
+  .lnb-satellites .satellite-number,
+  .oracle-satellites .satellite-number {
+    font-size: 14px !important;
+    padding: 4px 6px !important;
+  }
+
+  .satellite-operator {
+    font-size: 12px !important;
+  }
+}
+

@@ -1,0 +1,2369 @@
+/*
+ * Integration bridge only.
+ *
+ * The original Tableaux styles stay untouched. This small layer restores the
+ * existing Cidmap header after the legacy standalone stylesheet hides it.
+ */
+body.tableaux-active .site-header {
+  display: block !important;
+}
+
+body.tableaux-active {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  background: #ffffff !important;
+}
+
+body.tableaux-active #tableauxViewContainer {
+  display: block;
+  visibility: visible !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  margin: 0 !important;
+  padding: 0 0 32px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: #ffffff !important;
+}
+
+/*
+ * The legacy stylesheet is intentionally loaded at runtime, but the
+ * autonomous component shell is already painted before it arrives. Never
+ * hide the whole Tableaux route while one programme is hydrating; each card
+ * owns its own masked values and local loader.
+ */
+body.tableaux-active #tableauxViewContainer[data-tableaux-mount-state="loading"] {
+  visibility: visible !important;
+}
+
+body.tableaux-active #tableauxViewContainer[data-tableaux-mount-state="ready"] {
+  visibility: visible !important;
+}
+
+body.tableaux-active #tableauxViewContainer .tableaux-loading-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  color: #0A1840;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Every section remains discoverable. Private sections show a clear preview
+ * and open the Débloquer page when the visitor tries to use them. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+body.tableaux-active #tableauxViewContainer .portfolio-manual,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb,
+body.tableaux-active #tableauxViewContainer .portfolio-standby,
+body.tableaux-active #tableauxViewContainer #createdProgramPortfolios {
+  position: relative;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-badge {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  left: 12px;
+  z-index: 4;
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(26, 124, 81, .2);
+  border-radius: 10px;
+  background: #effaf4;
+  color: #157347;
+  font: 800 11px/1.25 Arial, sans-serif;
+  text-align: left;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+body.tableaux-active #tableauxViewContainer .portfolio-manual,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb,
+body.tableaux-active #tableauxViewContainer .portfolio-standby,
+body.tableaux-active #tableauxViewContainer #createdProgramPortfolios {
+  padding-top: 52px !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-badge.is-locked {
+  border-color: rgba(173, 104, 0, .22);
+  background: #fff8e9;
+  color: #956000;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-source {
+  display: block;
+  margin-top: 3px;
+  color: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  opacity: .82;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 8px;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-mode {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid rgba(21, 115, 71, .18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .58);
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-mode strong {
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-mode small {
+  color: inherit;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-mode .tableaux-button {
+  width: 100%;
+  min-height: 30px;
+  margin-top: 4px;
+  padding: 6px 7px;
+  font-size: 10px;
+}
+
+/*
+ * The access status is a section banner, not an overlay. Keep it in normal
+ * flow so it cannot cover the date or the Clé/Croix title on the first cards.
+ * The final declarations also win over the compact mobile grid rules below.
+ */
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-badge {
+  position: static !important;
+  inset: auto !important;
+  grid-column: 1 / -1 !important;
+  grid-row: auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 0 0 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-locked > :not(.tableaux-access-badge) {
+  filter: none;
+  backdrop-filter: none !important;
+  opacity: 1;
+  user-select: none;
+}
+
+/* Locked programme results are readable placeholders, never blurred images. */
+body.tableaux-active #tableauxViewContainer .cid-tableaux-masked-value {
+  filter: none !important;
+  backdrop-filter: none !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-locked,
+body.tableaux-active #tableauxViewContainer
+  .tableaux-access-locked * {
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  [data-tableaux-access][aria-disabled="true"]::after {
+  content: '  🔒';
+  font-size: .9em;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+body.tableaux-active #tableauxViewContainer .portfolio-manual,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Remove the old portfolio-wide separator bands above Intuition, Oracle,
+ * LNB and Balsa sections; card borders provide the visual separation now. */
+body.tableaux-active #tableauxViewContainer .portfolio-intuition::before,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle::before,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb::before,
+body.tableaux-active #tableauxViewContainer .portfolio-manual::before {
+  display: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal {
+  border-bottom: 0 !important;
+}
+
+/* The Tableaux page itself stays white; programme-specific gradients belong
+ * nowhere in the surrounding canvas. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+body.tableaux-active #tableauxViewContainer .portfolio-manual,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+  background: #ffffff !important;
+  background-image: none !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+/* Equal dimensions for the Balsa Plus key and cross cards. */
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(1),
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  align-self: stretch !important;
+}
+
+/* The LNB key and cross use the same two-card layout. Stretch both grid
+ * items to the height of the taller key card so the programme colour block
+ * does not stop early beside it. */
+body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+  align-items: stretch !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(1),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) {
+  height: 100% !important;
+  min-height: 100% !important;
+  align-self: stretch !important;
+}
+
+/* Keep the key/cross pair in every programme on the same grid rhythm. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2),
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2),
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2),
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) {
+  align-self: stretch !important;
+}
+
+/*
+ * Keep every programme's result sequence identical to the Universal one:
+ * key, cross, satellite table, then the valid-number grid. Intuition
+ * historically had its valid-number grid before the satellites. The
+ * portfolios are vertical flex layouts, so ordering the table cards here
+ * changes only their presentation.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .intuition-satellites-container {
+  order: 3;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .intuition-valid-numbers-container {
+  order: 4;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .manual-satellites-container {
+  order: 4;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .manual-results-container-wrapper {
+  order: 6;
+}
+
+/* Light professional framing for every key/cross card. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container {
+  border: 2px solid #ffd700 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 5px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* White separators under Clé and Ordre. */
+body.tableaux-active #tableauxViewContainer .key-container::after,
+body.tableaux-active #tableauxViewContainer .order-container::after {
+  height: 1px !important;
+  background: #ffffff !important;
+  opacity: 0.48 !important;
+}
+
+/* White cross strokes, with the number colours kept independent. */
+body.tableaux-active #tableauxViewContainer .cross-line {
+  background-color: #ffffff !important;
+}
+
+/* Centre the key/cross names inside their full card width so both side
+ * margins remain equal, including on the compact two-column layout. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .title-text {
+  display: block !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+}
+
+/* Fallback selector for the mounted template: center each card title across
+ * the actual card content box, just like the site URL below the cross. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .title-text {
+  display: block !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Balsa Plus uses a yellow surface: keep its written content black for
+ * contrast, while preserving the white cross strokes and the two highlighted
+ * cross positions (top/right) used by the common cross logic. */
+body.tableaux-active #tableauxViewContainer .portfolio-manual .container.manual,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .container.manual * {
+  color: #000000 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .key-container::after,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .order-container::after {
+  background: #000000 !important;
+  opacity: 0.24 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-line {
+  background-color: #ffffff !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-1,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-3 {
+  color: #ffffff !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-2,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-6 {
+  color: #000000 !important;
+}
+
+/* Balsa Plus satellite table: force every written element to black,
+ * including headers, dates, combinations and NAP values. */
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites *,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites .table-date,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites .satellite-number,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites .satellite-operator,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites .nap-label,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites .nap-value {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  fill: #000000 !important;
+}
+
+/* Balsa cross colour exception: top 0 and right 2 keep the two highlighted
+ * positions used by the common cross logic. */
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-1,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-3 {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Use the exact same numeral treatment as the other key/order cards. */
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .key-container .numbers,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .order-container .numbers {
+  display: inline-block !important;
+  font-family: "Arial Black", "Helvetica Black", "Helvetica Bold", Arial, sans-serif !important;
+  font-size: clamp(24px, 5vw, 42px) !important;
+  font-weight: 900 !important;
+  letter-spacing: normal !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  text-align: left !important;
+  color: #000000 !important;
+  -webkit-text-stroke: 0.75px #000000 !important;
+  text-stroke: 0.75px #000000 !important;
+  text-shadow: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number {
+  font-family: "Arial Black", "Helvetica Black", "Helvetica Bold", Arial, sans-serif !important;
+  font-weight: 900 !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: geometricPrecision !important;
+}
+
+/* Final Balsa Plus contrast rule: no coloured text or numeral exceptions. */
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual *,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-1,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-2,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-3,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross-number-6 {
+  color: #000000 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-portfolios {
+  width: min(100%, 1120px);
+  margin: 18px auto 0;
+  padding: 16px 10px;
+  box-sizing: border-box;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-portfolios > h2 {
+  margin: 0 0 14px;
+  padding: 14px;
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  background: #0f3b29;
+  color: #ffd700;
+  font-size: clamp(19px, 2.8vw, 27px);
+  text-align: center;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-card {
+  padding: 14px;
+  border: 2px solid var(--created-program-accent, #ffd700);
+  border-radius: 13px;
+  background: var(--created-program-bg, #0f3b29);
+  color: #ffffff;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-heading h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.2em;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-heading span,
+body.tableaux-active #tableauxViewContainer .created-program-meta,
+body.tableaux-active #tableauxViewContainer .created-program-date {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.82em;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-date {
+  margin: 6px 0 12px;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.78em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-key {
+  display: block;
+  margin: 2px 0 12px;
+  color: #ffffff;
+  font-size: clamp(24px, 5vw, 36px);
+  letter-spacing: 0.08em;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-cross {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-cross span {
+  display: grid;
+  gap: 2px;
+  padding: 7px 4px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.16);
+  text-align: center;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-cross small {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.68em;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-cross b {
+  color: #ffffff;
+  font-size: 1.2em;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-satellites {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: #ffffff;
+  font-size: .82em;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-satellites strong {
+  color: var(--created-program-accent, #ffd700);
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-satellites .satellite-number {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .18);
+  font-weight: 800;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-valid-numbers {
+  width: 100%;
+  margin-top: 12px;
+  color: #ffffff;
+  background: transparent;
+  font-size: .76em;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-valid-numbers th {
+  padding: 6px;
+  color: var(--created-program-accent, #ffd700);
+  background: rgba(0, 0, 0, .2);
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-valid-numbers td {
+  padding: 4px 2px;
+  color: #ffffff;
+  background: rgba(0, 0, 0, .12);
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-valid-numbers td.lucky-number {
+  color: var(--created-program-accent, #ffd700);
+  background: color-mix(in srgb, var(--created-program-accent, #ffd700) 20%, transparent);
+  font-weight: 900;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-meta {
+  margin: 10px 0 0;
+}
+
+/*
+ * Custom programmes inherit the exact two-card/table layout of the selected
+ * built-in visual template. Their administrator-selected palette remains the
+ * only visual override, so duplicating Universelle/Oracle/etc. cannot fall
+ * back to the old generic blue card.
+ */
+body.tableaux-active #tableauxViewContainer .created-program-template {
+  background: var(--created-program-bg, #3b0000) !important;
+  background-image: none !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  color: var(--created-program-text, #fff);
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template::before {
+  display: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template > .container {
+  background: var(--created-program-bg, #3b0000) !important;
+  color: var(--created-program-text, #fff) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template > .container * {
+  color: inherit;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template
+  .created-program-key,
+body.tableaux-active #tableauxViewContainer .created-program-template
+  .created-program-order,
+body.tableaux-active #tableauxViewContainer .created-program-template
+  .key-info strong,
+body.tableaux-active #tableauxViewContainer .created-program-template
+  .cross-number,
+body.tableaux-active #tableauxViewContainer .created-program-template
+  .site-url {
+  color: var(--created-program-text, #fff) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template
+  .table-container {
+  background: var(--created-program-bg, #3b0000) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template
+  table {
+  background: var(--created-program-bg, #3b0000) !important;
+  color: var(--created-program-text, #fff) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template
+  table th,
+body.tableaux-active #tableauxViewContainer .created-program-template
+  table td,
+body.tableaux-active #tableauxViewContainer .created-program-template
+  table tr:nth-child(even) td {
+  background: var(--created-program-bg, #3b0000) !important;
+  color: var(--created-program-text, #fff) !important;
+  border-color: var(--created-program-accent, #ffd700) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .created-program-template
+  table th {
+  color: var(--created-program-accent, #ffd700) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .tableaux-remote-status {
+  width: min(calc(100% - 24px), 980px);
+  margin: 10px auto;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  color: #0d438c;
+  background: #eef6ff;
+  border: 1px solid #c7dcf8;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+body.tableaux-active #tableauxViewContainer .tableaux-remote-status[data-state="error"] {
+  color: #9e2b22;
+  background: #fff2f0;
+  border-color: #f1b8b1;
+}
+
+/*
+ * Unified key/order presentation.
+ *
+ * The original stylesheet has programme-specific and responsive overrides
+ * for .numbers. Keep the key and its order visually identical everywhere:
+ * one line, white ink, same font, size and weight.
+ */
+body.tableaux-active #tableauxViewContainer .key-container .numbers,
+body.tableaux-active #tableauxViewContainer .order-container .numbers {
+  display: inline-block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  color: #ffffff !important;
+  font-family: "Arial Black", "Helvetica Black", "Helvetica Bold", Arial, sans-serif !important;
+  font-size: clamp(24px, 5vw, 42px) !important;
+  font-weight: 900 !important;
+  letter-spacing: normal !important;
+  line-height: 1 !important;
+  -webkit-text-stroke: 0.75px #ffffff !important;
+  text-stroke: 0.75px #ffffff !important;
+  text-shadow: none !important;
+}
+
+/*
+ * Key labels and metadata follow the same white, uncluttered treatment.
+ * Remove the dark label chips so the words sit directly on the card surface.
+ */
+body.tableaux-active #tableauxViewContainer .key-label,
+body.tableaux-active #tableauxViewContainer .order-label {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  font-family: "Arial Black", "Helvetica Black", "Helvetica Bold", Arial, sans-serif !important;
+  font-size: clamp(20px, 3.5vw, 32px) !important;
+  font-weight: 900 !important;
+  letter-spacing: normal !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+body.tableaux-active #tableauxViewContainer .key-info,
+body.tableaux-active #tableauxViewContainer .key-info * {
+  color: #ffffff !important;
+}
+
+/* Keep the key and order rows together as a centered block inside each card. */
+body.tableaux-active #tableauxViewContainer .key-container,
+body.tableaux-active #tableauxViewContainer .order-container {
+  justify-content: center !important;
+  gap: 4px !important;
+}
+
+body.tableaux-active #tableauxViewContainer .key-container .numbers,
+body.tableaux-active #tableauxViewContainer .order-container .numbers {
+  flex: 0 0 auto !important;
+  text-align: center !important;
+}
+
+/* All programme/card names use the same white heading treatment. */
+body.tableaux-active #tableauxViewContainer .title-text {
+  color: #ffffff !important;
+}
+
+/*
+ * Compact two-column programme cards.
+ *
+ * Every portfolio starts with its key card and its cross card. Keep those
+ * two primary surfaces side by side on larger screens, while tables below
+ * span the full portfolio width.
+ */
+@media (min-width: 561px) {
+  body.tableaux-active #tableauxViewContainer .portfolio-universal,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: start !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 0 12px !important;
+    gap: 12px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(1) {
+    grid-column: 1 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) {
+    grid-column: 2 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .title-text {
+    text-align: center !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .table-container {
+    grid-column: 1 / -1 !important;
+    justify-self: center !important;
+    width: 100% !important;
+    max-width: 800px !important;
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /*
+   * The first table follows the same rhythm as the gap between the key and
+   * the cross. Its legacy 25px top margin was being added to the grid gap,
+   * creating the large blank band visible above SATELLITES CROIX.
+   */
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .satellites-table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .satellites-table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .satellites-table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .satellites-table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .satellites-table-container {
+    margin-top: 0 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) .cross {
+    margin-top: 42px !important;
+  }
+
+  /* Final desktop override: the common two-column rule above starts every
+   * portfolio with align-items:start. LNB must stretch its cross card to the
+   * same row height as its key card. */
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+    align-items: stretch !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) {
+    height: 100% !important;
+    min-height: 100% !important;
+    align-self: stretch !important;
+  }
+}
+
+@media (max-width: 560px) {
+  body.tableaux-active #tableauxViewContainer .portfolio-universal,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: start !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    gap: 12px !important;
+    padding: 0 12px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+    align-items: stretch !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) {
+    height: 100% !important;
+    min-height: 100% !important;
+    align-self: stretch !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 10px 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(1),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(1) {
+    grid-column: 1 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) {
+    grid-column: 2 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .table-container {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .title-text,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .title-text {
+    margin: 5px 0 10px !important;
+    font-size: 16px !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .date,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .date,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .date,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .date,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .date {
+    margin: 2px 0 6px !important;
+    font-size: 10px !important;
+    white-space: nowrap !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .key-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .order-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .key-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .order-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .key-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .order-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .key-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .order-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .key-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .order-container {
+    height: auto !important;
+    min-height: 30px !important;
+    margin: 5px 0 !important;
+    padding: 0 !important;
+    gap: 2px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .key-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .order-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .key-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .order-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .key-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .order-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .key-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .order-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .key-label,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .order-label {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    font-size: 13px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .numbers,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .numbers,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .numbers,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .numbers,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .numbers {
+    font-size: 20px !important;
+    letter-spacing: 0 !important;
+    line-height: 1 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(-n + 2) .key-info,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(-n + 2) .key-info,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(-n + 2) .key-info,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(-n + 2) .key-info,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(-n + 2) .key-info {
+    margin-top: 8px !important;
+    font-size: 8px !important;
+    white-space: nowrap !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) .cross,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) .cross {
+    width: 90px !important;
+    height: 90px !important;
+    margin: 28px auto 20px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2) .cross-number,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2) .cross-number,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2) .cross-number,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) .cross-number,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) .cross-number {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 28px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2) .cross-number-1,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2) .cross-number-1,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2) .cross-number-1,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) .cross-number-1,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) .cross-number-1 {
+    top: -28px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2) .cross-number-2,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2) .cross-number-2,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2) .cross-number-2,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) .cross-number-2,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) .cross-number-2 {
+    bottom: -28px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2) .cross-number-6,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2) .cross-number-6,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2) .cross-number-6,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) .cross-number-6,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) .cross-number-6 {
+    left: -28px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2) .cross-number-3,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2) .cross-number-3,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2) .cross-number-3,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2) .cross-number-3,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) .cross-number-3 {
+    right: -28px !important;
+  }
+}
+
+/* Final title alignment: keep this rule after every responsive override. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .title-text {
+  display: block !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+/*
+ * Universal absolute cross geometry.
+ *
+ * Keep the original white cross proportions untouched. Only the four
+ * numbers are positioned from the ends of the existing 75% cross lines:
+ * 4px vertically and 6px horizontally.
+ */
+body.tableaux-active #tableauxViewContainer .cross {
+  display: block !important;
+  position: relative !important;
+  overflow: visible !important;
+  --cross-number-box: 56px;
+  --cross-vertical-top: 12.5%;
+  --cross-vertical-height: 75%;
+  --cross-horizontal-left: 12.5%;
+  --cross-horizontal-width: 75%;
+  --tableaux-cross-vertical-gap: 2px;
+  --tableaux-cross-horizontal-gap: 4px;
+}
+
+body.tableaux-active #tableauxViewContainer .cross-line {
+  position: absolute !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer .cross-number {
+  position: absolute !important;
+  inset: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 1 !important;
+  transform: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal .container .cross .cross-number-1,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .container .cross .cross-number-1,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .container .cross .cross-number-1,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .container .cross .cross-number-1,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .container .cross .cross-number-1 {
+  top: calc(var(--cross-vertical-top) - var(--cross-number-box) - var(--tableaux-cross-vertical-gap)) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal .container .cross .cross-number-2,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .container .cross .cross-number-2,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .container .cross .cross-number-2,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .container .cross .cross-number-2,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .container .cross .cross-number-2 {
+  bottom: calc(100% - var(--cross-vertical-top) - var(--cross-vertical-height) - var(--cross-number-box) - var(--tableaux-cross-vertical-gap)) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal .container .cross .cross-number-6,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .container .cross .cross-number-6,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .container .cross .cross-number-6,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .container .cross .cross-number-6,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .container .cross .cross-number-6 {
+  left: calc(var(--cross-horizontal-left) - var(--cross-number-box) - var(--tableaux-cross-horizontal-gap)) !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal .container .cross .cross-number-3,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .container .cross .cross-number-3,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .container .cross .cross-number-3,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .container .cross .cross-number-3,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .container .cross .cross-number-3 {
+  right: calc(100% - var(--cross-horizontal-left) - var(--cross-horizontal-width) - var(--cross-number-box) - var(--tableaux-cross-horizontal-gap)) !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+@media (max-width: 768px) {
+  body.tableaux-active #tableauxViewContainer .cross {
+    --cross-number-box: 32px;
+    --cross-vertical-height: 77.7778%;
+    --cross-horizontal-left: 11.1111%;
+    --cross-horizontal-width: 77.7778%;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition .cross {
+    --cross-vertical-top: 8%;
+    --cross-vertical-height: 85%;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle .cross {
+    --cross-vertical-top: 15%;
+    --cross-vertical-height: 70%;
+  }
+}
+
+@media (max-width: 560px) {
+  body.tableaux-active #tableauxViewContainer .cross {
+    --cross-number-box: 30px;
+  }
+}
+
+/* Readable administrator view for the centralized satellite protocol. */
+body.tableaux-active #tableauxViewContainer .centralized-satellite-details {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 2px solid rgba(9, 98, 214, 0.14);
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-details h3 {
+  margin: 0 0 8px;
+  color: #0a1840;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-intro {
+  max-width: 780px;
+  margin: 0 0 18px;
+  color: #475569;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-magic,
+body.tableaux-active #tableauxViewContainer .centralized-satellite-standard {
+  max-width: 900px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 9px;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-magic {
+  border: 1px solid rgba(234, 179, 8, 0.55);
+  background: #fffbeb;
+  color: #713f12;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-magic strong {
+  color: #a16207;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-magic p {
+  margin: 6px 0 0;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-calls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 9px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-calls li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: rgba(234, 179, 8, 0.12);
+  font-size: 0.94em;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-calls li span {
+  color: #92400e;
+  font-size: 0.88em;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-live {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(9, 98, 214, 0.18);
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #334155;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-context {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-left: 4px solid #0962d6;
+  border-radius: 7px;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-context em {
+  color: #475569;
+  font-size: 0.9em;
+  font-style: normal;
+}
+
+body.tableaux-active #tableauxViewContainer .programme-server-details {
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 2px solid rgba(9, 98, 214, 0.2);
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+body.tableaux-active #tableauxViewContainer .programme-server-details > h3 {
+  margin: 0 0 7px;
+  color: #0a1840;
+}
+
+body.tableaux-active #tableauxViewContainer .programme-server-details > p {
+  margin: 6px 0;
+  color: #475569;
+}
+
+body.tableaux-active #tableauxViewContainer .programme-server-details .server-method-facts {
+  margin-bottom: 0;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-heading {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #dbeafe;
+  color: #0a1840;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-heading span {
+  color: #475569;
+  font-size: 0.92em;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-flow {
+  display: grid;
+  gap: 12px;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-flow > section {
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-flow h3 {
+  margin: 0 0 7px;
+  color: #0a1840;
+  font-size: 1.04em;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-flow p {
+  margin: 6px 0;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-flow details {
+  margin-top: 10px;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-flow summary {
+  cursor: pointer;
+  color: #0962d6;
+  font-weight: 800;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-calculations,
+body.tableaux-active #tableauxViewContainer .universal-server-satellites {
+  display: grid;
+  gap: 5px;
+  margin: 9px 0 0;
+  padding-left: 20px;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-calculations li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #475569;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-calculations li b {
+  color: #94a3b8;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-calculations li strong {
+  color: #0a1840;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-satellites li {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 4px 8px;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-satellites li strong {
+  color: #0a1840;
+}
+
+body.tableaux-active #tableauxViewContainer .universal-server-satellites li span {
+  grid-column: 2;
+  color: #64748b;
+  font-size: 0.9em;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-live p:last-child {
+  margin-bottom: 0;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-facts > div {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-facts dt {
+  color: #64748b;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+body.tableaux-active #tableauxViewContainer .server-method-facts dd {
+  margin: 3px 0 0;
+  color: #0a1840;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-standard {
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-card {
+  padding: 14px;
+  border: 1px solid rgba(9, 98, 214, 0.2);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 3px 12px rgba(15, 59, 41, 0.06);
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-card h4 {
+  margin: 0 0 12px;
+  color: #0962d6;
+  font-size: 17px;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-facts {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-facts dt {
+  color: #64748b;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-facts dd {
+  margin: 0;
+  color: #0a1840;
+  font-weight: 800;
+  text-align: right;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-subtitle {
+  margin: 0 0 7px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-results {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-results li {
+  display: grid;
+  grid-template-columns: 42px 1fr 1fr;
+  gap: 7px;
+  align-items: center;
+  padding: 7px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-results li strong {
+  color: #0962d6;
+  font-size: 14px;
+}
+
+body.tableaux-active #tableauxViewContainer .centralized-satellite-results
+  .centralized-satellite-empty {
+  display: block;
+  color: #64748b;
+  font-style: italic;
+}
+
+@media (max-width: 560px) {
+  body.tableaux-active #tableauxViewContainer .centralized-satellite-results li {
+    grid-template-columns: 36px 1fr;
+  }
+
+  body.tableaux-active #tableauxViewContainer .centralized-satellite-results li span:last-child {
+    grid-column: 2;
+  }
+}
+
+/* Absolute final override: card names always use equal left/right space. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-manual .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .title-text {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+  text-indent: 0 !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+}
+
+/*
+ * Final visual polish — no palette changes.
+ *
+ * Keep every programme's existing background, text and border colors. The
+ * finish below improves raster/text clarity and separation through rendering
+ * hints, restrained depth and consistent numeric typography only.
+ */
+body.tableaux-active #tableauxViewContainer {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-kerning: normal;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container {
+  box-shadow:
+    0 5px 14px rgba(15, 23, 42, 0.13),
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container .title-text {
+  text-rendering: geometricPrecision;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.24);
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container .numbers,
+body.tableaux-active #tableauxViewContainer .cross-number {
+  font-variant-numeric: tabular-nums;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .table-container {
+  filter: drop-shadow(0 5px 12px rgba(15, 23, 42, 0.11));
+}
+
+body.tableaux-active #tableauxViewContainer .color-table {
+  font-variant-numeric: tabular-nums;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+body.tableaux-active #tableauxViewContainer .color-table th {
+  text-rendering: geometricPrecision;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+  letter-spacing: 0.02em;
+}
+
+body.tableaux-active #tableauxViewContainer .color-table td {
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+}
+
+body.tableaux-active #tableauxViewContainer .satellite-combination {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.tableaux-active #tableauxViewContainer .satellite-number,
+body.tableaux-active #tableauxViewContainer .satellite-operator,
+body.tableaux-active #tableauxViewContainer .nap-value {
+  font-variant-numeric: tabular-nums;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+/*
+ * Permanent four-branch cross contract. Legacy base overlays are not
+ * branches and must never be able to duplicate locked zeros.
+ */
+body.tableaux-active #tableauxViewContainer .cross-base-numbers,
+body.tableaux-active #tableauxViewContainer .cross-base-number {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer .cross-number {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 560px) {
+  body.tableaux-active #tableauxViewContainer .satellite-combination {
+    gap: 4px;
+  }
+}
+
+/*
+ * Rounded satellite tables and high-contrast Balsa Plus exception.
+ *
+ * The standard programmes keep their own existing surfaces and typography;
+ * only the outer frame is unified in the site's accent yellow. Balsa Plus
+ * remains a yellow surface, so its frames and internal programme content use
+ * black for clean contrast.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .satellites-table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .satellites-table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .satellites-table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .satellites-table-container,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .satellites-table-container {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.universal-satellites,
+body.tableaux-active #tableauxViewContainer
+  table.intuition-cross-satellites,
+body.tableaux-active #tableauxViewContainer
+  table.oracle-satellites,
+body.tableaux-active #tableauxViewContainer
+  table.lnb-satellites,
+body.tableaux-active #tableauxViewContainer
+  table.manual-satellites {
+  border: 2px solid #ffd700 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .satellites-table-container {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual {
+  border-color: #000000 !important;
+  color: #000000 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .date,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .title-text,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .key-label,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .order-label,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .numbers,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .key-info,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .key-info *,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .site-url,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .cross-number {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .cross-line {
+  background-color: #000000 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .key-container::after,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual > .container.manual .order-container::after {
+  background-color: #000000 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites {
+  border: 2px solid #000000 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites th,
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual table.manual-satellites td {
+  border-color: #000000 !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/*
+ * Card frames only:
+ * standard programme cards use the yellow accent; the already-yellow Balsa
+ * Plus cards use black so their outline remains clearly visible.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container {
+  border-color: #ffd700 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container.manual {
+  border-color: #000000 !important;
+}
+
+/*
+ * Keep the first satellite table as close to the two-card row as Balsa Plus:
+ * the portfolio grid gap is the only spacing between the cards and the table.
+ * This removes legacy per-table top margins without changing table content.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .satellites-table-container > table,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .satellites-table-container > table,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .satellites-table-container > table,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .satellites-table-container > table,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .satellites-table-container > table {
+  margin-top: 0 !important;
+}
+
+/*
+ * Balsa Plus cross digit emphasis only:
+ * the 5 and 8 are white on the cross, while the key, order, and tables keep
+ * the regular black-on-yellow treatment.
+ */
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross .balsa-white-digit {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-text-stroke-color: #ffffff !important;
+}
+
+/*
+ * Final Balsa Plus cross rule:
+ * the actual digits 4 and 6 are white wherever they are positioned on the
+ * cross; all other Balsa cross digits remain black on the yellow surface.
+ * This comes after the legacy all-black rule so it remains authoritative.
+ */
+body.tableaux-active #tableauxViewContainer
+  .portfolio-manual .container.manual .cross .cross-number.balsa-white-digit {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-text-stroke: 0 transparent !important;
+  text-shadow: none !important;
+}
+
+/*
+ * Balsa Plus keeps the shared date-number grid, but its yellow surface needs
+ * a violet highlight so the valid numbers remain visible and distinct.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .balsa-valid-numbers-container {
+  order: 5 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.balsa-valid-numbers {
+  background: #ffd700 !important;
+  border: 2px solid #6d28d9 !important;
+  color: #111827 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.balsa-valid-numbers th,
+body.tableaux-active #tableauxViewContainer
+  table.balsa-valid-numbers td {
+  background: #ffd700 !important;
+  border-color: #6d28d9 !important;
+  color: #111827 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.balsa-valid-numbers th {
+  color: #5b21b6 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.balsa-valid-numbers td.lucky-number {
+  color: #6d28d9 !important;
+  background: rgba(109, 40, 217, 0.14) !important;
+  font-weight: 900 !important;
+}
+
+/*
+ * The access banner is a sibling of the key and cross cards. Since it is an
+ * aside (rather than a card div), these type-based anchors remain stable even
+ * when the banner is present. This is the final placement authority for the
+ * two primary cards.
+ */
+@media (min-width: 561px) {
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:first-of-type,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:first-of-type,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:first-of-type,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:first-of-type,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:first-of-type {
+    grid-column: 1 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-of-type(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-of-type(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-of-type(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-of-type(2),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-of-type(2) {
+    grid-column: 2 !important;
+  }
+}
+
+/*
+ * Restore the Universal palette that the generic white heading rule above
+ * accidentally flattened. Its title, key/order labels and metadata accents
+ * are yellow; the numerical values and cross's non-highlighted digits stay
+ * white.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-universal .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-universal .key-label,
+body.tableaux-active #tableauxViewContainer .portfolio-universal .order-label,
+body.tableaux-active #tableauxViewContainer .portfolio-universal .key-info .yellow-text {
+  color: #ffd700 !important;
+  -webkit-text-fill-color: #ffd700 !important;
+}
+
+/* Keep both Universal card dates readable on their dark cards. Some of the
+ * legacy/tableau-wide rules set `.date` to black, so this final scoped rule
+ * must also set the WebKit text fill used by mobile browsers. */
+body.tableaux-active #tableauxViewContainer
+  .portfolio-universal > .container .date {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/*
+ * Final locked layout: the key and cross cards remain side by side at every
+ * viewport size, then the satellite/valid-number tables span both columns.
+ * This matches the approved reference composition.
+ */
+@media (max-width: 560px) {
+  body.tableaux-active #tableauxViewContainer .portfolio-universal,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    padding: 0 12px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    grid-column: auto !important;
+  }
+
+  /* The access aside makes the key the second child and the cross the third. */
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(2),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(2) {
+    grid-column: 1 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-child(3),
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-child(3),
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-child(3),
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-child(3),
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-child(3) {
+    grid-column: 2 !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer .portfolio-universal > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-intuition > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-oracle > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-manual > .table-container,
+  body.tableaux-active #tableauxViewContainer .portfolio-lnb > .table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-column: 1 / -1 !important;
+  }
+}
+
+
+/*
+ * Stand-by table: show only the useful output.
+ *
+ * The legacy stylesheet assigned `display: table-row` to the last footer
+ * cell. That overrides its colspan and compresses the complete sentence into
+ * the first column on mobile. Keep the three result columns fixed and make
+ * both footer messages real, readable cells.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-standby {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 12px 18px !important;
+  margin: 22px 0 0 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-standby > .table-container {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 940px !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 940px !important;
+  table-layout: fixed !important;
+  overflow: hidden !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table .standby-country-column {
+  width: 31% !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table .standby-nap-column {
+  width: 27% !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table .standby-permutation-column {
+  width: 42% !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table th,
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table td {
+  box-sizing: border-box !important;
+  max-width: none !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  vertical-align: middle !important;
+  text-align: center !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table #standbyRows > tr
+  td {
+  font-size: clamp(14px, 2.15vw, 24px) !important;
+  line-height: 1.12 !important;
+  font-weight: 800 !important;
+  padding: 13px 8px !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table tr#standbyNextRow td,
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table tr#standbyBottomRow td {
+  display: table-cell !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 15px 12px !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  color: #000000 !important;
+  font-size: clamp(13px, 2.25vw, 20px) !important;
+  line-height: 1.25 !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table tr#standbyNextRow td span,
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table tr#standbyBottomRow td span {
+  display: inline !important;
+  white-space: normal !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table tr#standbyBottomRow td {
+  border-top: 2px solid #000000 !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table tr:first-child th {
+  padding: 14px 10px !important;
+  font-size: clamp(18px, 4vw, 30px) !important;
+  line-height: 1.2 !important;
+  white-space: normal !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  table.standby-week-table tr:nth-child(2) th {
+  padding: 12px 8px !important;
+  font-size: clamp(15px, 2.8vw, 25px) !important;
+  line-height: 1.15 !important;
+}
+
+@media (max-width: 560px) {
+  body.tableaux-active #tableauxViewContainer .portfolio-standby {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer
+    table.standby-week-table .standby-country-column {
+    width: 32% !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer
+    table.standby-week-table .standby-nap-column {
+    width: 27% !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer
+    table.standby-week-table .standby-permutation-column {
+    width: 41% !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer
+    table.standby-week-table > tbody > tr:not(#standbyNextRow):not(#standbyBottomRow)
+    td {
+    padding: 12px 5px !important;
+    font-size: clamp(13px, 3.8vw, 18px) !important;
+  }
+
+  body.tableaux-active #tableauxViewContainer
+    table.standby-week-table tr#standbyNextRow td,
+  body.tableaux-active #tableauxViewContainer
+    table.standby-week-table tr#standbyBottomRow td {
+    padding: 13px 8px !important;
+    font-size: clamp(12px, 3.55vw, 17px) !important;
+  }
+}
+
+/* Final spacing rule: the section banner must have its own row everywhere. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+body.tableaux-active #tableauxViewContainer .portfolio-manual,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb,
+body.tableaux-active #tableauxViewContainer .portfolio-standby {
+  padding-top: 0 !important;
+}
+
+/*
+ * Tableau surface theme.
+ *
+ * The portfolio is the light modal-like surface behind the key, cross and
+ * satellite cards. Only this outer surface is tinted; the inner cards and
+ * their established colours remain untouched. The variables are assigned by
+ * tableaux-view.js from the exact Tableau palette and are cloned by Anticipé
+ * with the official portfolio DOM.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-universal,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle,
+body.tableaux-active #tableauxViewContainer .portfolio-manual,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb,
+body.tableaux-active #tableauxViewContainer .portfolio-standby,
+body.tableaux-active #tableauxViewContainer #createdProgramPortfolios {
+  background:
+    linear-gradient(
+      var(--tableaux-panel-tint, rgba(255, 255, 255, .08)),
+      var(--tableaux-panel-tint, rgba(255, 255, 255, .08))
+    ),
+    #ffffff !important;
+  background-image:
+    linear-gradient(
+      var(--tableaux-panel-tint, rgba(255, 255, 255, .08)),
+      var(--tableaux-panel-tint, rgba(255, 255, 255, .08))
+    ) !important;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--tableaux-panel-color, #dce6f2) 24%,
+    transparent
+  ) !important;
+  border-radius: 18px !important;
+  box-shadow:
+    0 12px 30px color-mix(
+      in srgb,
+      var(--tableaux-panel-color, #10233f) 12%,
+      transparent
+    ),
+    inset 0 1px 0 rgba(255, 255, 255, .7) !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-schema-unlock,
+body.tableaux-active #tableauxViewContainer
+  .tableaux-subscription-button {
+  border-color: var(--tableaux-action-color, #1464d2) !important;
+  background: var(--tableaux-action-color, #1464d2) !important;
+  color: var(--tableaux-action-contrast, #ffffff) !important;
+}
+
+body.tableaux-active #tableauxViewContainer
+  .tableaux-schema-unlock:hover:not(:disabled),
+body.tableaux-active #tableauxViewContainer
+  .tableaux-subscription-button:hover:not(:disabled) {
+  border-color: var(--tableaux-action-color-strong, #0d4fae) !important;
+  background: var(--tableaux-action-color-strong, #0d4fae) !important;
+}
+
+/*
+ * Signatures and final value contrast.
+ *
+ * Each Tableau is a single visual publication: the key, the cross and the
+ * result table must carry the same Cidmap signature. Keep the signature
+ * close to the content that it identifies instead of pushing it to the
+ * bottom of the legacy card.
+ */
+body.tableaux-active #tableauxViewContainer .site-url {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 8px auto 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: .02em !important;
+  opacity: 1 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .cross .site-url {
+  margin-top: 6px !important;
+}
+
+body.tableaux-active #tableauxViewContainer .key-signature {
+  margin-top: 10px !important;
+}
+
+body.tableaux-active #tableauxViewContainer .table-signature {
+  margin: 6px auto 0 !important;
+  padding-bottom: 2px !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-universal .site-url {
+  color: #ffd700 !important;
+  -webkit-text-fill-color: #ffd700 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-intuition .site-url,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle .site-url {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-lnb .site-url {
+  color: #ffd700 !important;
+  -webkit-text-fill-color: #ffd700 !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-manual .site-url,
+body.tableaux-active #tableauxViewContainer .portfolio-standby .site-url {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/*
+ * Legacy LNB preview rule. The final Oracle-matching contract below
+ * deliberately supersedes this earlier yellow-value treatment.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .key-container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .order-container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .key-info strong,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .lnb-satellites .satellite-number,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .lnb-satellites .nap-value,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .cross-number,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .lnb-valid-numbers td,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .cid-tableaux-masked-value {
+  color: #ffd700 !important;
+  -webkit-text-fill-color: #ffd700 !important;
+  text-shadow: none !important;
+}
+
+/*
+ * Balsa Plus and Stand-by already use yellow surfaces. Their numeric ink
+ * stays black so the stronger yellow panel wash never erases the values.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-manual
+  .table-signature,
+body.tableaux-active #tableauxViewContainer .portfolio-standby
+  .table-signature {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/*
+ * LNB / Oracle visual contract.
+ *
+ * LNB keeps its blue surfaces. The Oracle match applies to the values:
+ * same numeric character, white value ink, and the same cross-value logic.
+ * Keep this as the final scoped rule because the legacy LNB stylesheet and
+ * earlier locked preview rules otherwise repaint values inconsistently.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .key-container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .order-container .numbers,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .key-info strong,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .cross-number,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .lnb-satellites .satellite-number,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .lnb-satellites .nap-value,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .lnb-valid-numbers td {
+  font-family: "Arial Black", "Helvetica Black", "Helvetica Bold", Arial, sans-serif !important;
+  font-variant-numeric: tabular-nums !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+/* Oracle keeps only the data values at the top and right of the cross yellow. */
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .cross-number-1,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .cross-number-3 {
+  color: #ffd700 !important;
+  -webkit-text-fill-color: #ffd700 !important;
+}
+
+/* Database values marked by the calculation as highlighted stay yellow. */
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .satellite-number.yellow-text,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  .lnb-valid-numbers td.lucky-number {
+  color: #ffd700 !important;
+  -webkit-text-fill-color: #ffd700 !important;
+}
+
+/*
+ * The LNB cross title is one line, so its URL otherwise sits visibly
+ * higher than Oracle's two-line cross card. Pin the signature to the card
+ * bottom and leave the same breathing room below the cross content.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .container:nth-of-type(2) {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .container:nth-of-type(2) .cross {
+  flex: 0 0 auto !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .container:nth-of-type(2) .site-url {
+  margin-top: auto !important;
+  padding-top: 14px !important;
+  padding-bottom: 2px !important;
+}
+
+/*
+ * Final LNB colour correction:
+ * - every written element inside the satellite table is white;
+ * - the satellite-table signature is blue;
+ * - the key and cross card signatures are white.
+ * These selectors intentionally come last so they override the legacy
+ * yellow-text and LNB signature rules above.
+ */
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .satellites-table-container table.lnb-satellites,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .satellites-table-container table.lnb-satellites * {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .satellites-table-container .site-url {
+  color: #0066cc !important;
+  -webkit-text-fill-color: #0066cc !important;
+}
+
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .container:nth-of-type(1) .site-url,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb
+  > .container:nth-of-type(2) .site-url {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}

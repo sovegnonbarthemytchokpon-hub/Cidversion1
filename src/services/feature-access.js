@@ -30,6 +30,34 @@
   let pendingEpoch = 0;
   let authEpoch = 0;
 
+  /*
+   * Offline entitlement ledger. The last access state confirmed by the
+   * server is kept per account in localStorage. It is read only when the
+   * browser is offline, so already unlocked programmes can be re-opened from
+   * their local copies. Expiry dates are still checked on every read; online,
+   * the server answer always wins.
+   */
+  const OFFLINE_ACCESS_NAME = 'feature-access-offline';
+  const isOffline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
+  function offlineIdentity() {
+    return String(
+      window.cidAuthCurrentUserId
+      || window.__cidInitialSessionHint?.user?.id
+      || ''
+    ).trim();
+  }
+  function rememberOfflineAccess(value) {
+    const identity = offlineIdentity();
+    if (!identity || !value) return;
+    window.cidPersistentCache?.write?.(OFFLINE_ACCESS_NAME, identity, value);
+  }
+  function offlineAccess() {
+    const identity = offlineIdentity();
+    if (!identity) return null;
+    const cached = window.cidPersistentCache?.read?.(OFFLINE_ACCESS_NAME, identity, Infinity);
+    return cached?.value ? { ...cached.value, __offline: true } : null;
+  }
+
   function publish(nextState) {
     state = nextState;
     window.dispatchEvent(new CustomEvent('cid:feature-access-changed', {
@@ -49,6 +77,7 @@
     if (pending && pendingEpoch === authEpoch) return pending;
     const requestEpoch = authEpoch;
     pending = (async () => {
+      if (isOffline()) return publish(offlineAccess());
       // The secure database is the source of truth for the paid catalogue.
       // Force the public configuration boundary to re-read it as well.
       const config = await (window.cidSiteConfig?.refresh?.() || Promise.resolve(null))
@@ -113,6 +142,7 @@
       // A response started for the previous account must never repaint the
       // newly selected account after logout/login.
       if (requestEpoch !== authEpoch) return state;
+      if (!accountAccess && isOffline()) return publish(offlineAccess());
       const nextState = {
         plans: Array.isArray(access.plans) && access.plans.length ? access.plans : configPlans,
         rules: Array.isArray(access.rules) && access.rules.length ? access.rules : configRules,
@@ -145,9 +175,11 @@
         tokens: Number(access.tokens) || 0,
         countryCode: access.countryCode || ''
       };
+      if (accountAccess) rememberOfflineAccess(nextState);
       return publish(nextState);
     })().catch(() => {
       if (requestEpoch !== authEpoch) return state;
+      if (isOffline()) return publish(offlineAccess());
       // Fail closed. A transient database error must not leave a previous
       // account's entitlement visible as an active purchase state.
       return publish(null);
@@ -330,6 +362,9 @@
    * browser reload.
    */
   window.addEventListener('cid:admin-access-updated', () => {
+    window.cidFeatureAccess.refresh().catch(() => {});
+  });
+  window.addEventListener('online', () => {
     window.cidFeatureAccess.refresh().catch(() => {});
   });
   window.addEventListener('focus', () => {

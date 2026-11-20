@@ -1351,6 +1351,7 @@ import {
   window.addEventListener('cid:feature-unlocked', schedulePrefetch);
   window.addEventListener('cid:subscription-unlocked', schedulePrefetch);
   window.addEventListener('online', schedulePrefetch);
+  window.addEventListener('cid:supabase-ready', schedulePrefetch);
   window.addEventListener('cid:auth-sync', () => prefetchDone.clear());
   // The access state may already be known when this module loads (returning
   // subscriber): start the nine-day prefetch without waiting for an event.

@@ -372,6 +372,9 @@
   window.addEventListener('online', () => {
     window.cidFeatureAccess.refresh().catch(() => {});
   });
+  window.addEventListener('cid:supabase-ready', () => {
+    window.cidFeatureAccess.refresh().catch(() => {});
+  });
   window.addEventListener('focus', () => {
     window.cidFeatureAccess.refresh().catch(() => {});
   });

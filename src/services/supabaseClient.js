@@ -6,26 +6,41 @@
  * /src/auth/supabase-config.js. If Supabase is not configured, account
  * operations fail explicitly instead of switching to a local account.
  */
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+/*
+ * Offline-first loading: the SDK lives on a CDN. A static cross-origin import
+ * that fails while offline would abort this module AND every module that
+ * imports it (feed, cross, history, account…), leaving the installed app on
+ * its skeletons. The SDK is therefore loaded dynamically and never awaited
+ * for longer than SDK_WAIT_MS: without it, the client stays null, cached
+ * localStorage content keeps rendering, and the client is attached as soon as
+ * the SDK becomes available (late response or reconnection).
+ */
+const SUPABASE_SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const SDK_WAIT_MS = 2500;
 
 const config = window.CIDGROUP_SUPABASE_CONFIG || {};
 const supabaseUrl = String(config.url || '').trim();
 const supabaseAnonKey = String(config.anonKey || '').trim();
 const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-const client = isConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        // Keep OAuth callbacks out of the URL fragment. The implicit flow
-        // exposes bearer tokens in copied links; PKCE returns a short-lived
-        // code that the client exchanges for the session.
-        flowType: 'pkce'
-      }
-    })
-  : null;
+let client = null;
+let sdkPromise = null;
+// Live bindings: importers see the client once it is attached.
+export let supabaseClient = null;
+
+function createConfiguredClient(createClient) {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      // Keep OAuth callbacks out of the URL fragment. The implicit flow
+      // exposes bearer tokens in copied links; PKCE returns a short-lived
+      // code that the client exchanges for the session.
+      flowType: 'pkce'
+    }
+  });
+}
 
 function clearAuthCallbackUrl() {
   if (!window.history?.replaceState) return;
@@ -40,11 +55,14 @@ function clearAuthCallbackUrl() {
   window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
 }
 
-const bridge = {
-  client,
-  functions: client?.functions || null,
-  auth: client?.auth || null,
+export const supabase = {
+  client: null,
+  functions: null,
+  auth: null,
   isConfigured,
+  // True while the SDK could not be loaded (offline / CDN unreachable).
+  offline: isConfigured,
+  whenClient() { return loadSdk().then(() => client); },
   async getUser() {
     if (!client) return null;
     /*
@@ -71,11 +89,20 @@ const bridge = {
 
 // auth.js is intentionally kept as a classic script for legacy embeds.
 // Expose the small bridge globally while retaining named module exports for
-// future modules.
+// future modules. The bridge resolves immediately (never blocks on the
+// network); `client` is null until the SDK is available.
+const bridge = supabase;
 window.cidSupabase = bridge;
 window.cidSupabaseReady = Promise.resolve(bridge);
 
-if (client) {
+function attachClient(createClient) {
+  if (client || !isConfigured) return client;
+  client = createConfiguredClient(createClient);
+  bridge.client = client;
+  bridge.functions = client.functions || null;
+  bridge.auth = client.auth || null;
+  bridge.offline = false;
+  supabaseClient = client;
   // Supabase has already been initialized with detectSessionInUrl, so this
   // listener runs after the callback has been consumed. Removing the
   // callback parameters prevents access tokens from being copied or stored
@@ -85,8 +112,34 @@ if (client) {
       window.setTimeout(clearAuthCallbackUrl, 0);
     }
   });
+  try {
+    window.dispatchEvent(new CustomEvent('cid:supabase-ready', { detail: { bridge } }));
+  } catch (_) {}
+  return client;
 }
 
-export const supabaseClient = client;
-export const supabase = bridge;
-export default client;
+function loadSdk() {
+  if (!isConfigured || client) return Promise.resolve(client);
+  if (sdkPromise) return sdkPromise;
+  sdkPromise = import(SUPABASE_SDK_URL)
+    .then((module) => attachClient(module.createClient))
+    .catch((error) => {
+      // Allow a new attempt on reconnection.
+      sdkPromise = null;
+      console.warn('Supabase SDK indisponible (hors connexion ?)', error?.message || error);
+      return null;
+    });
+  return sdkPromise;
+}
+
+if (isConfigured) {
+  window.addEventListener('online', () => { void loadSdk(); });
+  // Bounded wait: the module graph continues with a null client after the
+  // timeout, and the client is attached later if the SDK arrives.
+  await Promise.race([
+    loadSdk(),
+    new Promise((resolve) => window.setTimeout(resolve, SDK_WAIT_MS))
+  ]);
+}
+
+export default bridge;

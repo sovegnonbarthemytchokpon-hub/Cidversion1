@@ -1767,6 +1767,10 @@ window.updateRedCrossForDate = window.updateRedCrossForDate || async function(is
     // Fetch only what is still missing locally when connectivity returns.
     fetchAndApply().catch(() => {});
   });
+  // The Supabase SDK may attach after reconnection (offline start).
+  window.addEventListener('cid:supabase-ready', () => {
+    fetchAndApply().catch(() => {});
+  });
 
   // persist Friday canonical image into cache as /src/shared/images/croix-canonical.png
   try {

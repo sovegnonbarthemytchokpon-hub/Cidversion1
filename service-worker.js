@@ -1,5 +1,5 @@
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v46-offline-first';
+const CACHE_NAME = 'cidmap-cache-v47-offline-modules';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
 const APP_CSS = '/src/styles/app.css?v=unified-v2';
@@ -85,8 +85,40 @@ const URLS_TO_CACHE = [...new Set([
   '/src/croix/red-cross-stability.js', '/src/shared/first-paint-shell.js',
   '/src/matrice/matrice-calculation.js?date-binding-v1',
   '/src/services/dechiffrement-api.js?calculator-v5-timeout-plus',
-  '/src/calculatrice/calculatrice.js?calculator-v12-ranked-group-limits'
+  '/src/calculatrice/calculatrice.js?calculator-v12-ranked-group-limits',
+  // Statically imported ES modules. A single missing dependency makes the
+  // whole module graph fail offline (feed, cross, history, tableaux…), which
+  // left the installed app on its skeletons.
+  '/src/croix/cross-day-styles.js', '/src/services/secureProgrammeApi.js',
+  '/src/shared/history-cache.js?history-cache-v40',
+  '/src/services/history-api.js?history-api-v1',
+  '/src/tableaux/tableau-contract.js',
+  '/src/tableaux/tableau-contract.js?tableau-contract-v2',
+  '/src/tableaux/tableau-component.js',
+  '/components/tableaux/ViewBalsa.js', '/components/tableaux/ViewProgramRunner.js',
+  '/components/tableaux/ViewIntuition.js', '/components/tableaux/ViewLNB.js',
+  '/components/tableaux/ViewOracle.js', '/components/tableaux/ViewStandBy.js',
+  '/components/tableaux/ViewUniverselle.js',
+  '/src/croix/croix-controller.js', '/src/croix/redCrossService.js',
+  '/src/rejetes/rejected-controller.js?date-binding-v1',
+  '/src/matrice/matrice-controller.js', '/src/matrice/matrice-view.js?date-binding-v2',
+  '/src/auth/account-view.js', '/src/auth/account-view.js?share-i18n-v1',
+  '/src/auth/account-page.js', '/src/auth/admin-service.js',
+  '/src/auth/admin-dashboard-view.js?chat-admin-v2-result-import',
+  '/src/auth/admin-result-import.js',
+  '/locales/fr.json', '/locales/en.json', '/locales/es.json',
+  '/locales/pt.json', '/locales/ar.json'
 ])];
+
+// Third-party front-end libraries loaded from CDNs. They are versioned and
+// immutable, so they are served cache-first; without them offline, the
+// Supabase SDK import failed and the dependent modules never rendered.
+const CDN_HOSTS = new Set(['cdn.jsdelivr.net', 'cdnjs.cloudflare.com']);
+const CDN_URLS_TO_CACHE = [
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm',
+  'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
+];
+const CDN_NETWORK_TIMEOUT_MS = 8000;
 
 const SHELL_URLS = ['/', '/index.html', APP_CSS];
 
@@ -102,6 +134,53 @@ async function fetchWithTimeout(request, options = {}) {
 
 function sameOriginRequest(request) {
   return new URL(request.url).origin === self.location.origin;
+}
+
+function isCdnRequest(request) {
+  return CDN_HOSTS.has(new URL(request.url).hostname);
+}
+
+async function warmCdnUrl(cache, url, depth = 0) {
+  const request = new Request(url, { mode: 'cors', credentials: 'omit' });
+  let response = await cache.match(request, { ignoreVary: true });
+  if (!response) {
+    try {
+      response = await fetch(request);
+      if (!isCacheableResponse(response)) return;
+      await cache.put(request, response.clone());
+    } catch (_) {
+      return;
+    }
+  }
+  // jsDelivr "+esm" bundles import further "/npm/…/+esm" modules: warm them
+  // too so the SDK module graph is complete offline.
+  if (depth > 3 || !/\/\+esm$/.test(new URL(url).pathname)) return;
+  let text = '';
+  try { text = await response.clone().text(); } catch (_) { return; }
+  const nested = [...new Set((text.match(/["'](\/npm\/[^"']+)["']/g) || [])
+    .map((match) => new URL(match.slice(1, -1), url).href))];
+  await Promise.all(nested.map((nestedUrl) => warmCdnUrl(cache, nestedUrl, depth + 1)));
+}
+
+async function respondFromCdn(event) {
+  const request = event.request;
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await matchAcrossCaches(request, { ignoreVary: true });
+  if (cached) return cached;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CDN_NETWORK_TIMEOUT_MS);
+  try {
+    const response = await fetch(request, { signal: controller.signal });
+    if (isCacheableResponse(response)) {
+      event.waitUntil(cache.put(request, response.clone()).catch(() => {}));
+    }
+    return response;
+  } catch (_) {
+    // A network error (not an empty stub) lets dynamic imports reject cleanly.
+    return Response.error();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function isCacheableResponse(response) {
@@ -174,7 +253,14 @@ self.addEventListener('install', (event) => {
     // empty cache. Network refreshes are bounded and non-fatal.
     await Promise.all(SHELL_URLS.map((url) => seedFromPreviousCaches(cache, url)));
     await Promise.all(URLS_TO_CACHE.map((url) => seedFromPreviousCaches(cache, url)));
-    await Promise.all(URLS_TO_CACHE.map((url) => warmUrl(cache, url)));
+    await Promise.all(CDN_URLS_TO_CACHE.map(async (url) => {
+      const previous = await matchAcrossCaches(new Request(url), { ignoreVary: true });
+      if (previous) { try { await cache.put(new Request(url), previous.clone()); } catch (_) {} }
+    }));
+    await Promise.all([
+      ...URLS_TO_CACHE.map((url) => warmUrl(cache, url)),
+      ...CDN_URLS_TO_CACHE.map((url) => warmCdnUrl(cache, url).catch(() => {}))
+    ]);
     await self.skipWaiting();
   })());
 });
@@ -225,7 +311,11 @@ function offlineAsset(request) {
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
-  if (request.method !== 'GET' || !sameOriginRequest(request)) return;
+  if (request.method !== 'GET') return;
+  if (!sameOriginRequest(request)) {
+    if (isCdnRequest(request)) event.respondWith(respondFromCdn(event));
+    return;
+  }
   const url = new URL(request.url);
   if (url.pathname.startsWith('/api/')) return;
 
@@ -233,7 +323,8 @@ self.addEventListener('fetch', (event) => {
     || request.destination === 'document'
     || url.pathname === '/' || /\.(?:html?|htm)$/i.test(url.pathname);
   const isStaticAsset = isDocument || ['style', 'script', 'image', 'font'].includes(request.destination)
-    || /\.(?:css|mjs|js|avif|gif|jpe?g|png|svg|webp|woff2?|ttf|otf)$/i.test(url.pathname);
+    || /\.(?:css|mjs|js|avif|gif|jpe?g|png|svg|webp|woff2?|ttf|otf)$/i.test(url.pathname)
+    || /^\/locales\/[a-z-]+\.json$/i.test(url.pathname);
   // Application data and other dynamic requests are left to the page/backend;
   // only the shell and static front-end assets belong in this cache.
   if (!isStaticAsset) return;

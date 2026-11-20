@@ -144,7 +144,7 @@
 </script>
 <!-- Cache lifecycle runs before DOMContentLoaded and before route modules.
      It invalidates stale application data without blocking first paint. -->
-<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v43" defer></script>
+<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v44" defer></script>
 <base href="/">
 <link rel="canonical" href="https://cidmap.com/" />
 <meta name="description" content="Cidmap — publications et programmes du jour." />
@@ -169,16 +169,17 @@
 <meta charset="UTF-8">
 <title>Cidmap</title>
 <!-- Single application stylesheet (render-blocking on purpose: the first frame is final). -->
-<link rel="stylesheet" href="/src/styles/app.css?v=unified-v1">
+<link rel="stylesheet" href="/src/styles/app.css?v=unified-v2">
+<!-- Self-hosted fonts: same glyphs and weights on the first visit and offline. -->
+<link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/archivo-black-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/noto-sans-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/audiowide-latin.woff2" crossorigin>
 <!-- Shell visuals: fetched once, then served from the HTTP/service-worker cache. -->
 <link rel="preload" as="image" href="/src/shared/images/squirrel-red-mask.png" fetchpriority="high">
 <link rel="preload" as="image" href="/src/shared/images/squirrel-croix-192.png">
 <link rel="preload" as="image" href="/src/shared/images/croix-canonical.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://vgebpqzyawnoezgarmfn.supabase.co" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Audiowide&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f0f2f5">
 <meta name="mobile-web-app-capable" content="yes">

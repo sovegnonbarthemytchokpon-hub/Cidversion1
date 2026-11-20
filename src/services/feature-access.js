@@ -289,6 +289,11 @@
   async function verifyTableauxAccess(featureKey) {
     const normalizedFeatureKey = normalizeFeatureKey(featureKey);
     if (!normalizedFeatureKey.startsWith('tableaux-')) return false;
+    // Offline there is no server to ask: answer at once from the last
+    // verified ledger instead of waiting for a network round-trip to fail.
+    if (isOffline()) {
+      return window.cidIsAdmin === true || hasAccess(state, normalizedFeatureKey);
+    }
     try {
       const bridge = await window.cidSupabaseReady;
       const client = bridge?.client;

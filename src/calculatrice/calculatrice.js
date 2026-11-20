@@ -1149,10 +1149,15 @@
     startCalculatorLikeRealtime().catch(() => {});
   }, { once: true });
 
+  let likeSurfaceFrame = 0;
   const likeSurfaceObserver = new MutationObserver(() => {
-    if (document.querySelector('[data-matrix-like]')) {
-      renderLikeMetrics(latestLikeMetrics);
-    }
+    if (likeSurfaceFrame) return;
+    likeSurfaceFrame = window.requestAnimationFrame(() => {
+      likeSurfaceFrame = 0;
+      if (document.querySelector('[data-matrix-like]')) {
+        renderLikeMetrics(latestLikeMetrics);
+      }
+    });
   });
   likeSurfaceObserver.observe(document.body, { childList: true, subtree: true });
 

@@ -76,7 +76,15 @@
     });
 
     // The Profile dashboard is injected after this script has run.
-    const observer = new MutationObserver(render);
+    // One header sync per frame, not one per DOM mutation batch.
+    let renderFrame = 0;
+    const observer = new MutationObserver(() => {
+      if (renderFrame) return;
+      renderFrame = window.requestAnimationFrame(() => {
+        renderFrame = 0;
+        render();
+      });
+    });
     if (document.body) observer.observe(document.body, { childList: true, subtree: true });
   }
 

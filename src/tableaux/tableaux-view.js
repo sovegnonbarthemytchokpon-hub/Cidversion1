@@ -3203,11 +3203,27 @@ import {
     const currentFeatures = currentAccessState?.__serverVerifiedTableaux || [];
     if (featureSignature(value.features) !== featureSignature(currentFeatures)) return null;
     return {
+      savedAt: Number(cached.savedAt) || 0,
       payload: {
         ...value.payload,
         date: parseDate(value.payload.date)
       }
     };
+  }
+
+  /*
+   * Publications change only at the 16:00 Africa/Abidjan (UTC) boundary. A
+   * complete snapshot saved after the latest boundary is therefore the
+   * current publication: it is painted without any new database request.
+   */
+  function isSnapshotCurrent(snapshot) {
+    if (!snapshot?.savedAt || snapshot.payload?.errors?.length) return false;
+    const now = new Date();
+    let boundary = Date.UTC(
+      now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 16, 0, 0, 0
+    );
+    if (now.getTime() < boundary) boundary -= 24 * 60 * 60 * 1000;
+    return snapshot.savedAt >= boundary;
   }
 
   function writeProgramsSnapshot(programs) {
@@ -3405,6 +3421,25 @@ import {
       if (snapshot.payload.date instanceof Date) currentDate = snapshot.payload.date;
       renderProgramDetails(snapshot.payload);
       maskUnavailablePrograms(snapshot.payload);
+    }
+    if (snapshot && (isSnapshotCurrent(snapshot) || navigator.onLine === false)) {
+      // localStorage first: today's publication is already on the device.
+      setRemoteStatus(
+        navigator.onLine === false
+          ? 'Hors ligne : dernières données enregistrées affichées.'
+          : '',
+        navigator.onLine === false ? 'error' : 'ready'
+      );
+      const status = get(VIEW_ID)?.querySelector('#tableauxRemoteStatus');
+      if (status && navigator.onLine !== false) status.hidden = true;
+      get(VIEW_ID)?.querySelectorAll('.date, .table-date').forEach((element) => {
+        element.textContent = formatDate(currentDate);
+      });
+      if (view) {
+        delete view.dataset.tableauxRefreshing;
+        view.setAttribute('aria-busy', 'false');
+      }
+      return;
     }
     let programs = null;
     try {

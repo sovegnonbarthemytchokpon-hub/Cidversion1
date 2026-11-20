@@ -32611,3 +32611,60 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
+
+/* ==========================================================================
+ * Section isolation & scroll contract (final authority).
+ *
+ * Every route (Accueil, Catégories, Croix, Tableaux, Anticipé, Compte,
+ * archives…) is its own fixed scroll surface. A surface that is hidden is
+ * removed from layout and hit-testing so it can never sit above the active
+ * one, swallow a tap or freeze a scroll gesture. The visible surface scrolls
+ * natively with momentum and keeps its overscroll to itself, so the page
+ * behind it never "jumps" or leaves a blank gap.
+ * ========================================================================== */
+.cid-layout-surface[hidden][aria-hidden="true"],
+#results[hidden][aria-hidden="true"],
+#categoriesView[hidden][aria-hidden="true"],
+#croixViewContainer[hidden][aria-hidden="true"],
+#tableauxViewContainer[hidden][aria-hidden="true"],
+#anticipationViewContainer[hidden][aria-hidden="true"],
+#profileViewContainer[hidden][aria-hidden="true"],
+#matrixCalculatorPanel[hidden][aria-hidden="true"],
+#notificationCenter[hidden][aria-hidden="true"] {
+  display: none !important;
+  pointer-events: none !important;
+}
+.cid-layout-surface:not([hidden]),
+#results:not([hidden]),
+#categoriesView:not([hidden]),
+#croixViewContainer:not([hidden]),
+#anticipationViewContainer:not([hidden]),
+#profileViewContainer:not([hidden]),
+#matrixCalculatorPanel:not([hidden]) {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+  overflow-anchor: none;
+  scroll-behavior: auto;
+}
+
+/* Nine-day rails (Croix nationale and paid archives): one aligned card per
+   date, horizontal snap, vertical page scroll still free under the finger. */
+.cid-croix-history-track,
+.cid-publication-history__track {
+  align-items: stretch !important;
+  scroll-snap-type: x mandatory !important;
+  overscroll-behavior-x: contain !important;
+  touch-action: pan-x pan-y !important;
+}
+.cid-croix-history-track > *,
+.cid-publication-history__track > * {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  flex-shrink: 0 !important;
+}
+/* The rail keeps its height while dates hydrate: no empty frame, no jump. */
+.cid-croix-history-track:empty,
+.cid-publication-history__track:empty {
+  min-height: 320px;
+}

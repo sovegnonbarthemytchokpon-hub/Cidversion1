@@ -2,7 +2,7 @@
 // The old cache-first policy could keep a stale Tableaux renderer alive after
 // a deployment, making corrected NAP values appear unchanged.
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v44-unified';
+const CACHE_NAME = 'cidmap-cache-v45-unified';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1200;
 // Application shell: single stylesheet, shell images and every entry script.
@@ -18,6 +18,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/fonts/audiowide-latin.woff2',
   '/src/shared/fonts/audiowide-latin-ext.woff2',
   '/src/shared/fonts/noto-sans-latin.woff2',
+  '/src/shared/fonts/noto-sans-latin-ext.woff2',
   '/src/styles/auth-frame.css?v=unified-v1',
   '/src/auth/auth.html',
   '/src/shared/images/squirrel-red-mask.png',
@@ -29,7 +30,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav',
   '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v44',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v45',
   '/src/shared/translation.js?language-session-v4',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',

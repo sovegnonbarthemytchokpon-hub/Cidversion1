@@ -182,9 +182,12 @@ function hydrateMatrixCache(programmeDate) {
   const stored = window.cidPersistentCache?.read?.(
     `matrix-programmes:${programmeDate}`,
     matrixCacheIdentity(),
-    24 * 60 * 60 * 1000
+    // A programme is final for its date: the key already changes with each
+    // new publication, so the stored copy never expires on its own.
+    Infinity
   );
-  if (!stored?.value || !Array.isArray(stored.value.results)) return null;
+  if (!stored?.value || !Array.isArray(stored.value.results)
+    || !stored.value.results.length) return null;
   const results = applyResponse({
     results: stored.value.results,
     meta: {
@@ -306,9 +309,10 @@ async function generateLottoResults(options = {}) {
 
   if (!force && !generatedResults) hydrateMatrixCache(programmeDate);
   if (!force && generatedResults && lastProgrammeDate === programmeDate) {
-    if (!requestPromise && Date.now() - lastMatrixRefreshAt > 15000) {
-      startMatrixRequest(programmeDate, identity).catch(() => {});
-    }
+    // localStorage first: the day's programme is already on the device, so
+    // no database call is made until the next publication (new date) or an
+    // explicit forced refresh at the 16:00 boundary.
+    void lastMatrixRefreshAt;
     return generatedResults;
   }
   if (requestPromise && !force) return requestPromise;

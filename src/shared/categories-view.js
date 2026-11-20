@@ -2,7 +2,7 @@
  * Dedicated Catégories view.
  *
  * DISPLAY FREEZE v1: keep the category wrapper and option flow stable. The
- * shared card/container mould is enforced by /src/shared/code-freeze.css.
+ * shared card/container mould is enforced by the single stylesheet /src/styles/app.css.
  *
  * The old implementation rendered the category choices as a fixed blue
  * submenu over the Accueil cross. This controller keeps the shell mounted but

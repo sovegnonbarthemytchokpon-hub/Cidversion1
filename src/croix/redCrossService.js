@@ -1406,7 +1406,7 @@ export function applyPayload(payload){
     } catch(e){}
 
     // One final pass removes legacy inline palette writes and hands the
-    // complete colour state to cross-canonical.css. Positions, transforms,
+    // complete colour state to the cross section of /src/styles/app.css. Positions, transforms,
     // sizes and all textual content remain untouched.
     applyCanonicalCrossColors(dayColor, textColor, w);
 

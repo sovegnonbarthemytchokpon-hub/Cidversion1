@@ -54,7 +54,6 @@ import {
   const HISTORY_CROSS_ZERO = '0';
 
   const get = (id) => document.getElementById(id);
-  let historyTableauxBridgePromise = null;
   let historyRequestToken = 0;
   const historyInFlight = new Map();
   const escapeHtml = (value) => String(value ?? '')
@@ -293,40 +292,8 @@ import {
    * identical thing here instead of maintaining a third visual copy.
    */
   function ensureHistoryTableauxBridge() {
-    if (historyTableauxBridgePromise) return historyTableauxBridgePromise;
-    const style = document.createElement('style');
-    style.id = 'publicationHistoryTableauxBridge';
-    style.dataset.tableauxPreviewBridge = 'true';
-    document.head.appendChild(style);
-    const scope = (css) => css
-      .replace(
-        /body\.tableaux-active\s+#tableauxViewContainer/g,
-        'body.archive-active'
-      )
-      .replace(/#tableauxViewContainer/g, '.cid-publication-history__tableau-clone')
-      .replace(/body\.tableaux-active/g, 'body.archive-active');
-    historyTableauxBridgePromise = Promise.all([
-      fetch('/src/tableaux/styles/cidgroup-bridge.css?tableaux-clone-v2', { cache: 'force-cache' }),
-      fetch('/src/tableaux/styles/sections.css', { cache: 'force-cache' })
-    ])
-      .then(async ([bridgeResponse, sectionsResponse]) => {
-        if (!bridgeResponse.ok || !sectionsResponse.ok) {
-          throw new Error('Styles Tableaux indisponibles dans l’historique.');
-        }
-        const [bridgeCss, sectionsCss] = await Promise.all([
-          bridgeResponse.text(),
-          sectionsResponse.text()
-        ]);
-        style.textContent = `${scope(bridgeCss)}\n${scope(sectionsCss)}`;
-        return style;
-      })
-      .catch((error) => {
-        style.remove();
-        historyTableauxBridgePromise = null;
-        console.warn('Pont visuel Tableaux indisponible dans l’historique', error);
-        return null;
-      });
-    return historyTableauxBridgePromise;
+    // The scoped bridge is part of the application stylesheet.
+    return Promise.resolve(null);
   }
 
   const TABLEAU_PORTFOLIO_CLASS = Object.freeze(Object.fromEntries(
@@ -641,14 +608,14 @@ import {
       ? document.createElement('div')
       : clone;
     if (isCreated) {
-      renderRoot.className = 'cid-publication-history__tableau-clone';
+      renderRoot.className = 'cid-publication-history__tableau-clone cid-tableaux-scope';
       renderRoot.appendChild(clone);
       clone.classList.add('cid-publication-history__created-source');
     }
     if (!isCreated) clone.removeAttribute('id');
     clone.hidden = false;
     clone.removeAttribute('hidden');
-    clone.classList.add('cid-publication-history__tableau-clone');
+    clone.classList.add('cid-publication-history__tableau-clone', 'cid-tableaux-scope');
     clone.style.setProperty('background', 'transparent', 'important');
     clone.style.setProperty('border', '0', 'important');
     clone.style.setProperty('box-shadow', 'none', 'important');
@@ -1217,5 +1184,131 @@ import {
   observer.observe(document.body, { childList: true, subtree: true });
   window.setTimeout(mountTableauHistoryButtons, 0);
 
+  /*
+   * Subscription prefetch.
+   *
+   * From the first day of a subscription or unlock, the nine archive dates of
+   * every programme covered by the account are downloaded once in the
+   * background and stored in localStorage (the same entries the archive view
+   * paints first). Values come unchanged from the server loaders; a programme
+   * that is not covered is never requested and keeps its 00 / 000000 / 0
+   * placeholders.
+   */
+  const PREFETCH_DELAY_MS = 2500;
+  const PREFETCH_CONCURRENCY = 2;
+  const prefetchDone = new Set();
+  let prefetchTimer = 0;
+  let prefetchRunning = false;
+
+  function hasPaidEntitlement(access) {
+    if (!access) return false;
+    const subscription = access.subscription;
+    const subscribed = subscription?.status === 'active'
+      && (!subscription.expires_at || Date.parse(subscription.expires_at) > Date.now());
+    const unlocked = (access.featureUnlocks || []).some((unlock) => (
+      !unlock?.expires_at || Date.parse(unlock.expires_at) > Date.now()
+    ));
+    return subscribed || unlocked;
+  }
+
+  function prefetchTargets() {
+    const featureAccess = window.cidFeatureAccess;
+    const access = featureAccess?.state?.();
+    if (!access || access.__offline || !hasPaidEntitlement(access)) return null;
+    const allowed = (key) => featureAccess.has?.(key) === true;
+    return {
+      tableaux: [
+        ...TABLEAU_DEFINITIONS.map(({ featureKey }) => normalizeTableauFeatureKey(featureKey)),
+        'tableaux-created'
+      ].filter((key, index, keys) => key && keys.indexOf(key) === index && allowed(key)),
+      matrix: allowed('matrice'),
+      rejected: allowed('boules-rejetees')
+    };
+  }
+
+  function needsPrefetch(kind, date, featureKey, today) {
+    const cached = cachedPayload(kind, date, featureKey);
+    // Past publications are final; only today's entry is refreshed when stale.
+    return !cached || (date === today && cached.stale);
+  }
+
+  async function runPrefetchTask({ kind, date, featureKeys }) {
+    const payload = await requestHistoryPayload(kind, date, featureKeys[0] || '');
+    if (!payload || (Array.isArray(payload.errors) && payload.errors.length)) return;
+    featureKeys.forEach((featureKey) => {
+      writeHistoryPayload(historyRequestKey(kind, date, featureKey), payload);
+    });
+    if (!featureKeys.length) writeHistoryPayload(historyRequestKey(kind, date), payload);
+  }
+
+  async function prefetchSubscribedHistory() {
+    if (prefetchRunning || navigator.onLine === false) return;
+    const identity = String(window.cidAuthCurrentUserId || '').trim();
+    const targets = identity ? prefetchTargets() : null;
+    if (!targets) return;
+    const today = currentProgrammeDate();
+    const tasks = [];
+    dates().forEach((date) => {
+      const tableauxKeys = targets.tableaux.filter((key) => (
+        needsPrefetch('tableaux', date, key, today)
+      ));
+      // One Tableaux request returns every authorized programme for a date.
+      if (tableauxKeys.length && typeof window.cidFetchTableauxForDate === 'function') {
+        tasks.push({ kind: 'tableaux', date, featureKeys: targets.tableaux });
+      }
+      if (targets.matrix && needsPrefetch('matrix', date, '', today)) {
+        tasks.push({ kind: 'matrix', date, featureKeys: [] });
+      }
+      if (targets.rejected && needsPrefetch('rejected', date, '', today)) {
+        tasks.push({ kind: 'rejected', date, featureKeys: [] });
+      }
+    });
+    const pending = tasks.filter((task) => {
+      const id = `${identity}:${task.kind}:${task.date}:${task.featureKeys.join(',')}`;
+      if (prefetchDone.has(id)) return false;
+      prefetchDone.add(id);
+      return true;
+    });
+    if (!pending.length) return;
+    prefetchRunning = true;
+    try {
+      const worker = async () => {
+        while (pending.length) {
+          if (navigator.onLine === false
+            || String(window.cidAuthCurrentUserId || '').trim() !== identity) return;
+          const task = pending.shift();
+          await runPrefetchTask(task).catch((error) => {
+            prefetchDone.delete(`${identity}:${task.kind}:${task.date}:${task.featureKeys.join(',')}`);
+            console.warn('Préchargement de l’historique impossible', task.kind, task.date, error);
+          });
+        }
+      };
+      await Promise.all(Array.from({ length: PREFETCH_CONCURRENCY }, worker));
+    } finally {
+      prefetchRunning = false;
+    }
+  }
+
+  function schedulePrefetch() {
+    window.clearTimeout(prefetchTimer);
+    prefetchTimer = window.setTimeout(() => {
+      const run = () => { void prefetchSubscribedHistory(); };
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(run, { timeout: 5000 });
+      } else {
+        run();
+      }
+    }, PREFETCH_DELAY_MS);
+  }
+
+  window.addEventListener('cid:feature-access-changed', (event) => {
+    if (event.detail) schedulePrefetch();
+  });
+  window.addEventListener('cid:feature-unlocked', schedulePrefetch);
+  window.addEventListener('cid:subscription-unlocked', schedulePrefetch);
+  window.addEventListener('online', schedulePrefetch);
+  window.addEventListener('cid:auth-sync', () => prefetchDone.clear());
+
   window.cidShowPublicationHistory = show;
+  window.cidPrefetchSubscribedHistory = prefetchSubscribedHistory;
 })();

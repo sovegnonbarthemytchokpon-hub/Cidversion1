@@ -10,3 +10,20 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "no-cache"
+
+# Shell visuals keep stable file names: cache them in the browser so a return
+# visit paints them instantly; only the data hydration refreshes the page.
+[[headers]]
+  for = "/src/shared/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+
+[[headers]]
+  for = "/sfx/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+
+[[headers]]
+  for = "/src/styles/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

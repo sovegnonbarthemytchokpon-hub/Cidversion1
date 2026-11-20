@@ -43,7 +43,6 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
   let renderToken = 0;
   let renderInFlight = null;
   const payloadCache = new Map();
-  let tableauxPreviewBridgePromise = null;
   let tableauxPreviewReadyPromise = null;
   let anticipationRefreshTimer = null;
   let priorityPublication = null;
@@ -906,50 +905,8 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
    * prefix is changed, keeping the visual component itself pixel-identical.
    */
   function installTableauxPreviewBridge() {
-    const existing = get('anticipationTableauxPreviewBridge');
-    if (existing) {
-      document.head.appendChild(existing);
-      return tableauxPreviewBridgePromise || Promise.resolve(existing);
-    }
-
-    const style = document.createElement('style');
-    style.id = 'anticipationTableauxPreviewBridge';
-    style.dataset.tableauxPreviewBridge = 'true';
-    document.head.appendChild(style);
-
-    const stylesheetUrls = [
-      '/src/tableaux/styles/cidgroup-bridge.css?tableaux-clone-v2',
-      '/src/tableaux/styles/sections.css'
-    ];
-    tableauxPreviewBridgePromise = Promise.all(stylesheetUrls.map((url) => (
-      fetch(url, { cache: 'force-cache' }).then((response) => {
-        if (!response.ok) throw new Error(`Tableaux stylesheet unavailable: ${url}`);
-        return response.text();
-      })
-    )))
-      .then(([bridgeCss, sectionsCss]) => {
-        /*
-         * The cloned portfolio is itself the route root. Replacing the
-         * official body/root prefix with the Anticipé body prefix keeps
-         * selectors such as `.portfolio-universal` applicable to that root,
-         * instead of requiring a descendant that does not exist.
-         */
-        const scope = (css) => css
-          .replace(
-            /body\.tableaux-active\s+#tableauxViewContainer/g,
-            'body.anticipation-active'
-          )
-          .replace(/body\.tableaux-active/g, 'body.anticipation-active');
-        style.textContent = `${scope(bridgeCss)}\n${scope(sectionsCss)}`;
-        return style;
-      })
-      .catch((error) => {
-        style.remove();
-        console.warn('Pont visuel Tableaux indisponible dans Anticipé', error);
-        return null;
-      });
-
-    return tableauxPreviewBridgePromise;
+    // The scoped bridge is part of the application stylesheet.
+    return Promise.resolve(null);
   }
 
   function resultRows(payload) {
@@ -1270,7 +1227,7 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     if (!source) return null;
 
     const clone = source.cloneNode(true);
-    clone.classList.add('anticipation-tableaux-scope');
+    clone.classList.add('anticipation-tableaux-scope', 'cid-tableaux-scope');
     clone.hidden = false;
     clone.removeAttribute('hidden');
     /*
@@ -2278,8 +2235,6 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       anticipationRefreshTimer = null;
     }
     get('anticipationTableauxPreviewShell')?.remove();
-    get('anticipationTableauxPreviewBridge')?.remove();
-    tableauxPreviewBridgePromise = null;
     tableauxPreviewReadyPromise = null;
     callGlobal('cidReleaseTableauxStyles');
     if (document.body.dataset.cidDedicatedView === 'anticipe') {

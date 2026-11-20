@@ -18,7 +18,9 @@
 
   const APP_VERSION = 'v40-performance-cache';
   const VERSION_KEY = 'cidmap:app-version';
-  const CURRENT_SW_CACHE = 'cidmap-cache-v40-performance-cache';
+  // Must equal CACHE_NAME in /service-worker.js, otherwise every boot deletes
+  // the live offline cache and all images/scripts are downloaded again.
+  const CURRENT_SW_CACHE = 'cidmap-cache-v43-unified';
 
   const OLD_LOCAL_STORAGE = [
     /^cidmap:/,

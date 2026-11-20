@@ -205,20 +205,11 @@ import {
     'stand-by',
     'robot'
   ]);
-  const ORIGINAL_STYLE_HREFS = [
-    '/src/tableaux/styles/original/main.css',
-    '/src/tableaux/styles/original/containers.css',
-    '/src/tableaux/styles/original/cross.css',
-    '/src/tableaux/styles/original/tables.css',
-    '/src/tableaux/styles/original/responsive.css',
-    '/src/tableaux/styles/cidgroup-bridge.css?tableaux-clone-v2'
-  ];
   let tableauxPreloadPromise = null;
   let mountPromise = null;
   let currentDate = new Date();
   let currentPrograms = null;
   let currentAccessState = null;
-  let originalStyleLinks = [];
   let viewportSyncFrame = 0;
   let viewportSyncBound = false;
   let priorityFeatureKey = '';
@@ -693,35 +684,17 @@ import {
     return false;
   }
 
+  /*
+   * Tableaux styles live in the single application stylesheet, scoped to
+   * `.cid-tableaux-scope`. Nothing is injected or removed at navigation time,
+   * so entering or leaving the route can never block loading or scrolling.
+   * Kept as resolved no-ops for Anticipé/history callers.
+   */
   function ensureOriginalStyles() {
-    if (originalStyleLinks.length === ORIGINAL_STYLE_HREFS.length) return Promise.resolve();
-    const styleReady = [];
-    originalStyleLinks = ORIGINAL_STYLE_HREFS.map((href) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.dataset.tableauxOriginalStyle = 'true';
-      styleReady.push(new Promise((resolve) => {
-        link.addEventListener('load', resolve, { once: true });
-        link.addEventListener('error', resolve, { once: true });
-      }));
-      document.head.appendChild(link);
-      return link;
-    });
-    // Dynamic legacy styles are appended after the initial document styles.
-    // Move the frozen contract to the end so its shell geometry remains the
-    // final authority without rewriting the internal Tableaux grids.
-    const freezeLink = document.querySelector(
-      'link[href^="/src/shared/code-freeze.css"]'
-    );
-    if (freezeLink) document.head.appendChild(freezeLink);
-    return Promise.all(styleReady);
+    return Promise.resolve();
   }
 
-  function removeOriginalStyles() {
-    originalStyleLinks.forEach((link) => link.remove());
-    originalStyleLinks = [];
-  }
+  function removeOriginalStyles() {}
 
   /*
    * The prediction shell is deliberately synchronous. It is the canonical
@@ -893,16 +866,8 @@ import {
    * only be active while the Tableaux view is selected.
    */
   function preloadTableauxView() {
-    if (!tableauxPreloadPromise) {
-      const warmStyles = Promise.all(ORIGINAL_STYLE_HREFS.map((href) => (
-        fetch(href, { cache: 'force-cache' }).catch(() => null)
-      )));
-      tableauxPreloadPromise = warmStyles
-        .catch((error) => {
-          console.warn('Préchargement des tableaux impossible', error);
-          return null;
-        });
-    }
+    // Styles are already part of the application stylesheet.
+    if (!tableauxPreloadPromise) tableauxPreloadPromise = Promise.resolve(null);
     return tableauxPreloadPromise;
   }
 
@@ -3290,7 +3255,8 @@ import {
   async function loadRemotePrograms(
     date = null,
     access = currentAccessState,
-    verifiedFeatures = null
+    verifiedFeatures = null,
+    { isolated = false } = {}
   ) {
     const selectedDate = date ? dateToIso(date) : undefined;
     const allowedProgramIds = new Set(
@@ -3332,8 +3298,11 @@ import {
      */
     const results = await Promise.allSettled(
       requests.map((request) => {
-        const component = tableauComponent(request.key);
         const loader = () => authorizedLoad(request);
+        // Archive, prefetch and Anticipé reads return data only; they must
+        // never repaint the live Tableaux components with another date.
+        if (isolated) return loader();
+        const component = tableauComponent(request.key);
         if (!component) return loader();
         return component.load(loader, {
           requestKey: selectedDate || 'current',
@@ -3826,7 +3795,7 @@ import {
       const date = parseDate(dateKey);
       const access = await window.cidFeatureAccess?.refresh?.();
       const verifiedFeatures = await verifyTableauxAccessSet();
-      return loadRemotePrograms(date, access || null, verifiedFeatures);
+      return loadRemotePrograms(date, access || null, verifiedFeatures, { isolated: true });
     };
     window.addEventListener('cid:early-access-unlocked', (event) => {
       if (event.detail?.featureKey !== 'tableaux-universelle'

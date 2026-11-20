@@ -1,36 +1,25 @@
 /*
  * Cidmap PWA bootstrap.
  *
- * The main entry point owns the service-worker registration so the installed
- * app and the browser version use the same application shell.
+ * Register and update the worker away from the first-paint path. A restored
+ * cache remains usable while registration/update requests are pending or fail.
  */
 (() => {
   'use strict';
 
   if (!('serviceWorker' in navigator)) return;
-
-  /*
-   * This module can be evaluated again after a hot revision or an installed
-   * PWA navigation. Keep registration and update checks idempotent, and move
-   * them off the visual startup path so a worker update cannot compete with
-   * the shell's first layout.
-   */
   if (window.__cidPwaRegistrationPromise) return;
 
   const register = () => {
     if (window.__cidPwaRegistrationPromise) return window.__cidPwaRegistrationPromise;
     window.__cidPwaRegistrationPromise = navigator.serviceWorker
-      .register('/service-worker.js', {
-        scope: '/',
-        updateViaCache: 'none'
-      })
+      .register('/service-worker.js', { scope: '/', updateViaCache: 'none' })
       .then((registration) => {
+        // Update checks are best effort; never await them during app startup.
         registration.update().catch(() => {});
         if (!window.__cidPwaReadyDispatched) {
           window.__cidPwaReadyDispatched = true;
-          window.dispatchEvent(new CustomEvent('cid:pwa-ready', {
-            detail: { registration }
-          }));
+          window.dispatchEvent(new CustomEvent('cid:pwa-ready', { detail: { registration } }));
         }
         return registration;
       })
@@ -43,13 +32,24 @@
   };
 
   const schedule = () => {
-    const run = () => register();
+    const run = () => { void register(); };
     if (typeof window.requestIdleCallback === 'function') {
       window.requestIdleCallback(run, { timeout: 4000 });
     } else {
       window.setTimeout(run, 1200);
     }
   };
+
+  // Retry a failed initial registration and check for deployments when the
+  // network returns, without reloading or blocking the currently painted app.
+  window.addEventListener('online', () => {
+    const registrationPromise = window.__cidPwaRegistrationPromise;
+    if (!registrationPromise) {
+      void register();
+      return;
+    }
+    registrationPromise.then((registration) => registration?.update?.().catch(() => {}));
+  });
 
   if (document.readyState === 'complete') schedule();
   else window.addEventListener('load', schedule, { once: true });

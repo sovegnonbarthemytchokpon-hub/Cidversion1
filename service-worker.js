@@ -89,7 +89,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/dedicated-view-shell.js',
   '/src/shared/categories-view.js?navigation-v9-date-binding',
   '/src/shared/anticipation-view.js?anticipation-v9-unified',
-  '/src/shared/croix-section.js?history-date-focus-v4-proportional-cross',
+  '/src/shared/croix-section.js?history-local-first-v5',
   '/src/shared/publication-history-view.js?publication-history-v8-prefetch',
   '/src/shared/affichageSecurise.js',
   '/src/tableaux/tableaux-view.js?tableaux-unified-v5',

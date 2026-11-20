@@ -300,6 +300,20 @@ export function isCroixArchiveCacheFresh(limit = 31) {
     const requestedLimit = Math.min(100, Math.max(1, Number(limit) || 31));
     const cachedLimit = Number(cache?.historyLimit || 0);
     const historyComplete = Boolean(cache?.historyComplete);
+    // The archive is up to date as soon as the current publication is
+    // stored with enough previous days: nothing new can exist before the
+    // next programme date, whatever the age of the cache.
+    const currentIso = programmeIso(getProgrammeDate(new Date()));
+    const records = cache?.records && typeof cache.records === 'object' ? cache.records : {};
+    const windowDays = Math.min(requestedLimit, 9);
+    const hasWindow = Boolean(currentIso) && Array.from({ length: windowDays }, (_, index) => {
+      const day = new Date(`${currentIso}T12:00:00.000Z`);
+      day.setUTCDate(day.getUTCDate() - index);
+      return Boolean(records[day.toISOString().slice(0, 10)]);
+    }).every(Boolean);
+    if (hasWindow && (historyComplete || cachedLimit >= requestedLimit || requestedLimit <= 9)) {
+      return true;
+    }
     return Number.isFinite(verifiedAt)
       && Date.now() - verifiedAt <= CROSS_CACHE_FRESH_MS
       && (historyComplete || cachedLimit >= requestedLimit);
@@ -608,8 +622,29 @@ async function requestServerCross(date, scope = 'year') {
 export async function fetchCroixProgrammeForDate(value, scope = 'year') {
   const date = parseCrossDate(value);
   if (!date) throw new Error('Date de Croix invalide.');
+  /*
+   * localStorage first. A published Croix row never changes for its date, so
+   * an already stored row (today or an archive day) is returned without any
+   * database request, including offline. Future (Anticipé) dates stay
+   * strictly server-side because they depend on an access grant.
+   */
+  const dateIso = programmeIso(date);
+  const currentIso = programmeIso(getProgrammeDate(new Date()));
+  const isPublishedDate = Boolean(dateIso && currentIso && dateIso <= currentIso);
+  if (isPublishedDate) {
+    const cached = readOfficialCrossRecord(dateIso);
+    if (cached && Array.isArray(cached.assignment) && cached.assignment.length) {
+      return { ...cached, persisted: true, cachedOfficial: true };
+    }
+  }
   const record = await requestServerCross(date, scope);
   if (!record) throw new Error('Publication Croix indisponible.');
+  if (isPublishedDate) {
+    writeOfficialCrossRecord({
+      ...record,
+      savedAt: new Date().toISOString()
+    }, { verifiedAt: new Date().toISOString() });
+  }
   return record;
 }
 
@@ -1535,10 +1570,14 @@ async function fetchAndApplyOnce({ force = false, date = null } = {}){
     // a new/selected programme, but must not turn every reload into a remote
     // request when the official result is already cached.
     const currentProgrammeDate = programmeIso(getProgrammeDate(new Date()));
+    // A stored row for today or any past date is the final publication for
+    // that date: a new publication always arrives under a new programme
+    // date, so no database request is needed until the date changes.
     if (!force
       && cachedRecord
-      && cacheDate === currentProgrammeDate
-      && isOfficialCacheFresh(cachedRecord)) {
+      && cacheDate
+      && currentProgrammeDate
+      && cacheDate <= currentProgrammeDate) {
       return true;
     }
 
@@ -1645,8 +1684,10 @@ async function fetchAndApply({ force = false, date = null } = {}){
 }
 
 window.addEventListener('cid:language-change', () => {
+  // Only labels are localized; the published numbers come from the local
+  // row, so a language switch must not trigger another database read.
   refreshCrossLocalizedLabels();
-  fetchAndApply({ force: true }).catch(() => {});
+  fetchAndApply().catch(() => {});
 });
 
 // expose public API for legacy callers
@@ -1661,8 +1702,9 @@ window.updateRedCrossForDate = window.updateRedCrossForDate || async function(is
     document.getElementById('redCross'),
     programmeState.selectedDate
   );
+  // "Voir" on an archive date paints the stored row instantly; the
+  // database is contacted only when that date is not on the device yet.
   await fetchAndApply({
-    force: true,
     date: programmeState.selectedDate
   });
 };
@@ -1708,13 +1750,22 @@ window.updateRedCrossForDate = window.updateRedCrossForDate || async function(is
       || (raw ? JSON.parse(raw).savedAt : ''));
     cacheAge = Number.isFinite(savedAt) ? Date.now() - savedAt : Infinity;
   } catch (_) {}
-  if (!restored || cacheAge > CROSS_CACHE_FRESH_MS) {
+  let hasCurrentRow = false;
+  try {
+    hasCurrentRow = Boolean(readOfficialCrossRecord(
+      programmeIso(getProgrammeDate(new Date()))
+    ));
+  } catch (_) {}
+  if (!hasCurrentRow && (!restored || cacheAge > CROSS_CACHE_FRESH_MS)) {
     setTimeout(fetchAndApply, 800);
+  } else if (hasCurrentRow) {
+    // Paint the stored publication without contacting the database.
+    setTimeout(() => { fetchAndApply().catch(() => {}); }, 0);
   }
   setInterval(fetchAndApply, INTERVAL);
   window.addEventListener('online', () => {
-    // Reconcile the locally painted row as soon as connectivity returns.
-    fetchAndApply({ force: true }).catch(() => {});
+    // Fetch only what is still missing locally when connectivity returns.
+    fetchAndApply().catch(() => {});
   });
 
   // persist Friday canonical image into cache as /src/shared/images/croix-canonical.png

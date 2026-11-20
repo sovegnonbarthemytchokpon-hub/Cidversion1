@@ -723,6 +723,21 @@ import {
     return readHistoryPayload(historyRequestKey(kind, date, featureKey));
   }
 
+  function payloadHasErrors(payload) {
+    if (!payload || typeof payload !== 'object') return true;
+    if (Array.isArray(payload.errors) && payload.errors.length) return true;
+    // An empty answer usually means the date was not published yet when it
+    // was read; it must be retried instead of being frozen on the device.
+    if (Array.isArray(payload.results) && !payload.results.length) return true;
+    if (payload.groups && typeof payload.groups === 'object'
+      && !Object.keys(payload.groups).length) return true;
+    return false;
+  }
+
+  function isFinalCachedEntry(entry) {
+    return Boolean(entry?.value) && !payloadHasErrors(entry.value);
+  }
+
   function requestHistoryPayload(kind, date, featureKey = '') {
     const key = historyRequestKey(kind, date, featureKey);
     const existing = historyInFlight.get(key);
@@ -989,7 +1004,24 @@ import {
       cachedCount ? 'Synchronisation en arrière-plan…' : 'Chargement des archives…',
       'syncing'
     );
-    let pendingCount = archiveDates.length;
+    /*
+     * localStorage first: a cached publication is final for its date (a new
+     * publication always arrives under a new date), so only dates missing
+     * from the device — or cached with a partial/errored payload — are
+     * requested. Revisits and offline visits therefore make no database call.
+     */
+    const pendingIndexes = archiveDates
+      .map((_, index) => index)
+      .filter((index) => !isFinalCachedEntry(cachedEntries[index]));
+    cards.forEach((card, index) => {
+      if (!pendingIndexes.includes(index)) setCardSyncState(card, 'fresh');
+    });
+    if (!pendingIndexes.length) {
+      setHistorySyncStatus(mount, 'Historique synchronisé', 'ready');
+      void Promise.all(cards.map((card) => hydrateHistorySocial(card)));
+      return true;
+    }
+    let pendingCount = pendingIndexes.length;
     let failedCount = 0;
     const settleSyncStatus = () => {
       pendingCount -= 1;
@@ -1002,13 +1034,16 @@ import {
         failedCount ? 'error' : 'ready'
       );
     };
-    archiveDates.forEach((date, index) => {
+    pendingIndexes.forEach((index) => {
+      const date = archiveDates[index];
       requestHistoryPayload(kind, date, canonicalFeatureKey)
         .then((payload) => {
-          writeHistoryPayload(
-            historyRequestKey(kind, date, canonicalFeatureKey),
-            payload
-          );
+          if (!payloadHasErrors(payload)) {
+            writeHistoryPayload(
+              historyRequestKey(kind, date, canonicalFeatureKey),
+              payload
+            );
+          }
           if (requestToken !== historyRequestToken) return;
           if (kind === 'tableaux') {
             hydrateHistoricalTableau(
@@ -1235,9 +1270,10 @@ import {
   }
 
   function needsPrefetch(kind, date, featureKey, today) {
-    const cached = cachedPayload(kind, date, featureKey);
-    // Past publications are final; only today's entry is refreshed when stale.
-    return !cached || (date === today && cached.stale);
+    void today;
+    // A cached publication is final for its date; only missing or partial
+    // entries are requested so revisits never saturate the database.
+    return !isFinalCachedEntry(cachedPayload(kind, date, featureKey));
   }
 
   async function runPrefetchTask({ kind, date, featureKeys }) {

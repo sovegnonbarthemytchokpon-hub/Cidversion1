@@ -32668,3 +32668,23 @@ html {
 .cid-publication-history__track:empty {
   min-height: 320px;
 }
+
+/* Croix nationale route: geometry reserved from the first frame so the
+   current Croix and the nine-day carousel never collapse, jump or blink
+   while their stored values are painted. */
+body.croix-active #croixViewCurrentCross,
+body[data-cid-dedicated-view="croix"] #croixViewCurrentCross {
+  min-height: min(calc(100vw - 28px), 380px);
+  align-items: center;
+}
+body.croix-active .cid-croix-history-track,
+body[data-cid-dedicated-view="croix"] .cid-croix-history-track {
+  min-height: 320px;
+  overflow-anchor: none;
+  scroll-behavior: auto !important;
+  contain: layout;
+}
+body.croix-active .cid-croix-history-track > .cid-fb-post[data-post-type="cross"],
+body[data-cid-dedicated-view="croix"] .cid-croix-history-track > .cid-fb-post[data-post-type="cross"] {
+  contain: layout;
+}

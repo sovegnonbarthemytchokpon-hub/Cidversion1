@@ -238,10 +238,26 @@ async function refreshCroixGenerations(safeLimit, cacheService) {
   return croixHistoryRefreshPromise;
 }
 
-export async function listCroixGenerations(limit = 31, { refreshStale = true } = {}) {
+export async function listCroixGenerations(
+  limit = 31,
+  { refreshStale = true, forceRefresh = false } = {}
+) {
   const safeLimit = Math.min(100, Math.max(1, Number(limit) || 31));
   const cacheService = await getCroixCacheService();
   const cachedRows = cacheService?.getCachedCroixGenerations?.(safeLimit) || [];
+  /*
+   * The dedicated Croix route asks for one batch read only when its local
+   * nine-day window is incomplete. It replaces the former per-date reads;
+   * a failure (offline, transient outage) keeps the local archive.
+   */
+  if (forceRefresh && navigator.onLine !== false) {
+    try {
+      return await refreshCroixGenerations(safeLimit, cacheService);
+    } catch (error) {
+      if (cachedRows.length) return cachedRows;
+      throw error;
+    }
+  }
   if (cachedRows.length) {
     // The cached rows paint every archive, including offline visits. When
     // online, refresh an old archive in the background from Supabase unless

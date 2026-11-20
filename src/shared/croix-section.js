@@ -10,7 +10,9 @@ import {
   CROSS_DAY_STYLES,
   applyCrossDayStyle,
   crossDayStyleForDate,
-  fetchCroixProgrammeForDate
+  fetchCroixProgrammeForDate,
+  getCachedCroixGenerations,
+  isCroixArchiveCacheFresh
 } from '/src/croix/redCrossService.js';
 import { getProgrammeDate } from '/src/backend-server/methods/program-clock.js';
 
@@ -61,6 +63,9 @@ const HISTORY_CROSS_REFERENCE_SIZE = 380;
 const historyCrossGeometryObservers = new WeakSet();
 let croixHistoryMountEpoch = 0;
 let croixHistoryMarkupRetryTimer = 0;
+// Dates already requested individually during this session. A date that
+// has no published row yet is not requested again on every route opening.
+const croixHistoryDateRequests = new Set();
 
 function canonicalCrossSource() {
   return Array.from(document.querySelectorAll('#redCross')).find((element) => (
@@ -326,29 +331,54 @@ function historyRowFromLiveRecord(record, fallbackDate) {
 }
 
 /*
- * The archive list is an efficient first paint and an offline fallback. Each
- * visible date is then reconciled independently with the official data
- * adapter, so a stale list/cache can never be the final value shown in a
- * historical card.
+ * localStorage first: the nine published rows already stored on the device
+ * (by Accueil, a previous visit or the live Croix) are read synchronously so
+ * the dedicated route paints its complete carousel in the first frame,
+ * including offline. Nothing is calculated here: rows are the stored
+ * back-end records.
  */
-async function refreshHistoryRowsFromOfficialData(rows) {
-  const visibleRows = historyWindowRows(rows);
+function cachedHistoryRows() {
+  try {
+    return getCachedCroixGenerations(CROIX_HISTORY_ROWS_NEEDED) || [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function mergeHistoryRows(...lists) {
+  const byDate = new Map();
+  lists.forEach((list) => {
+    (Array.isArray(list) ? list : []).forEach((row) => {
+      const date = String(row?.programme_date || '').slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) byDate.set(date, row);
+    });
+  });
+  return Array.from(byDate.values());
+}
+
+/*
+ * After the single batch read, only dates that are still absent (normally a
+ * publication that was not listed yet) are read individually, once per
+ * session. The adapter is itself localStorage-first and stores the result.
+ */
+async function fillMissingHistoryRows(rows) {
+  if (navigator.onLine === false) return rows;
+  const missing = historyWindowRows(rows)
+    .filter((row) => row.placeholder && !croixHistoryDateRequests.has(row.programme_date));
+  if (!missing.length) return rows;
+  missing.forEach((row) => croixHistoryDateRequests.add(row.programme_date));
   const liveRows = await Promise.allSettled(
-    visibleRows.map(async (row) => {
+    missing.map(async (row) => {
       const record = await fetchCroixProgrammeForDate(row.programme_date);
       return historyRowFromLiveRecord(record, row.programme_date);
     })
   );
-  const byDate = new Map(
-    (Array.isArray(rows) ? rows : [])
-      .filter((row) => /^\d{4}-\d{2}-\d{2}$/.test(String(row?.programme_date || '')))
-      .map((row) => [String(row.programme_date), row])
+  return mergeHistoryRows(
+    rows,
+    liveRows
+      .filter((result) => result.status === 'fulfilled' && result.value)
+      .map((result) => result.value)
   );
-  liveRows.forEach((result) => {
-    if (result.status !== 'fulfilled' || !result.value) return;
-    byDate.set(result.value.programme_date, result.value);
-  });
-  return Array.from(byDate.values());
 }
 
 function historyCard(row, historyDay = 0) {
@@ -753,11 +783,58 @@ function wireHistoryActions(track) {
   });
 }
 
+function historyStructureKey(history) {
+  return `${uiLocale()}::${history.map((row) => row.programme_date).join(',')}`;
+}
+
+function historyValueSignature(history) {
+  return history.map((row) => [
+    row.programme_date,
+    assignmentOf(row).join(','),
+    row.term || '',
+    row.visible_terminaison || ''
+  ].join('|')).join('||');
+}
+
+// Rows currently painted in the carousel (placeholders excluded), so a later
+// local read can only add values, never blank a card already filled.
+function paintedHistoryRows(track) {
+  return Array.isArray(track?.__cidHistoryRows) ? track.__cidHistoryRows : [];
+}
+
+function historyPosts(track) {
+  return Array.from(track.children).filter((element) => (
+    element.matches('.cid-fb-post[data-post-type="cross"]')
+  ));
+}
+
 async function renderHistory(rows) {
   const track = $('[data-croix-history-track]');
   if (!track) return;
+  const history = historyWindowRows(mergeHistoryRows(paintedHistoryRows(track), rows));
+  track.__cidHistoryRows = history.filter((row) => !row.placeholder);
+  const structure = historyStructureKey(history);
+  const signature = historyValueSignature(history);
+  const posts = historyPosts(track);
+
+  /*
+   * Same nine dates already on screen: repaint only the published values
+   * inside the existing cards. The cards, their Croix clones and the scroll
+   * position stay untouched, so a later data arrival never blinks, rebuilds
+   * or moves the carousel under the visitor's finger.
+   */
+  if (track.dataset.historyStructure === structure && posts.length === history.length) {
+    if (track.dataset.historySignature === signature) return;
+    const scrollLeft = track.scrollLeft;
+    track.dataset.historySignature = signature;
+    posts.forEach((post, index) => {
+      window.cidFacebookFeed?.mountHistoricalCrossPost?.(post, history[index]);
+    });
+    if (track.scrollLeft !== scrollLeft) track.scrollLeft = scrollLeft;
+    return;
+  }
+
   const previousScrollLeft = track.scrollLeft;
-  const history = historyWindowRows(rows);
   const markup = history
     .map((row, index) => historyCard(row, index))
     .filter(Boolean)
@@ -768,7 +845,7 @@ async function renderHistory(rows) {
    * shared Facebook renderer is ready.
    */
   if (!markup) {
-    if (!track.querySelector('.cid-fb-post[data-post-type="cross"]')) {
+    if (!posts.length) {
       track.innerHTML = `<p class="cid-croix-history-loading">${escapeHtml(t(
         'croix.historyLoadingShort',
         'Chargement de l’historique…'
@@ -786,21 +863,12 @@ async function renderHistory(rows) {
     window.clearTimeout(croixHistoryMarkupRetryTimer);
     croixHistoryMarkupRetryTimer = 0;
   }
-  const signature = history.map((row) => [
-    row.programme_date,
-    assignmentOf(row).join(','),
-    row.term || '',
-    row.visible_terminaison || ''
-  ].join('|')).join('||');
-  if (track.dataset.historySignature === signature
-      && track.querySelector('.cid-fb-post[data-post-type="cross"]')) {
-    return;
-  }
   track.__cidHistoryScrollerCleanup?.();
   track.__cidHistoryScrollerCleanup = null;
+  track.dataset.historyStructure = structure;
   track.dataset.historySignature = signature;
   track.innerHTML = markup;
-  track.querySelectorAll('.cid-fb-post[data-post-type="cross"]').forEach((post, index) => {
+  historyPosts(track).forEach((post, index) => {
     const row = history[index];
     window.cidFacebookFeed?.mountHistoricalCrossPost?.(post, row);
     post.dataset.croixPostId = post.dataset.postId || `cross:${row?.programme_date || ''}`;
@@ -811,41 +879,53 @@ async function renderHistory(rows) {
     track.dataset.cidFeedWired = 'true';
   }
   setupHistoryScroller(track);
-  await Promise.all(Array.from(
-    track.querySelectorAll('.cid-fb-post[data-post-type="cross"]')
-  ).map((post) => window.cidFacebookFeed?.hydratePost?.(post)));
+  // Social counters are read once per built card set, not on every value
+  // repaint.
+  await Promise.all(historyPosts(track)
+    .map((post) => window.cidFacebookFeed?.hydratePost?.(post)));
 }
 
-async function loadHistory() {
+async function loadHistory(initialRows = []) {
   const track = $('[data-croix-history-track]');
   const repo = window.cidSocialRepository;
   if (!track) return;
   const mountEpoch = croixHistoryMountEpoch;
-  let rows = [];
+  const stillMounted = () => mountEpoch === croixHistoryMountEpoch && track.isConnected;
+  let rows = initialRows;
+  let windowComplete = false;
   try {
-    if (repo?.listCroixGenerations) {
-      rows = await repo.listCroixGenerations(
+    windowComplete = isCroixArchiveCacheFresh(CROIX_HISTORY_ROWS_NEEDED)
+      && !historyWindowRows(rows).some((row) => row.placeholder);
+  } catch (_) {}
+
+  // The local nine-day window is complete: nothing is requested.
+  if (windowComplete) return;
+
+  // Otherwise one single batch read fetches the nine rows and stores them in
+  // localStorage (offline: the local archive simply stays on screen).
+  if (navigator.onLine !== false && repo?.listCroixGenerations) {
+    try {
+      const fetched = await repo.listCroixGenerations(
         CROIX_HISTORY_ROWS_NEEDED,
-        { refreshStale: false }
+        { forceRefresh: true }
       );
+      rows = mergeHistoryRows(rows, fetched);
+    } catch (error) {
+      track.dataset.historyError = 'true';
+      console.info('Liste historique Croix indisponible, archive locale conservée.', error);
     }
-  } catch (error) {
-    // Keep the preloaded nine-day component pool visible with zero values.
-    // The per-date official reads below can still repair the archive.
-    track.dataset.historyError = 'true';
-    console.info('Liste historique Croix indisponible, lecture par date.', error);
   }
-  if (mountEpoch !== croixHistoryMountEpoch || !track.isConnected) return;
+  if (!stillMounted()) return;
   await renderHistory(rows);
-  if (mountEpoch !== croixHistoryMountEpoch || !track.isConnected) return;
+  if (!stillMounted()) return;
   try {
-    const liveRows = await refreshHistoryRowsFromOfficialData(rows);
-    if (mountEpoch !== croixHistoryMountEpoch || !track.isConnected) return;
-    await renderHistory(liveRows);
+    const completedRows = await fillMissingHistoryRows(rows);
+    if (!stillMounted() || completedRows === rows) return;
+    await renderHistory(completedRows);
   } catch (error) {
     // A transient data outage must not replace the already-painted archive.
     track.dataset.historyRealtimeError = 'true';
-    console.info('Actualisation temps réel de l’historique indisponible.', error);
+    console.info('Actualisation de l’historique indisponible.', error);
   }
 }
 
@@ -970,6 +1050,50 @@ function refreshMountedComments() {
     .catch(() => {});
 }
 
+function selectedDateLabel() {
+  const selectedDate = String(
+    window.__cidActiveProgrammeDate
+      || window.cidProgrammeState?.selectedDate
+      || ''
+  ).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)
+    ? ti('croix.selectedTitle', { date: formatDate(selectedDate) }, 'Croix nationale du {{date}}')
+    : t('croix.todayTitle', 'Croix nationale du jour');
+}
+
+// Refresh the header text of an already mounted section without touching
+// the Croix node or the carousel cards.
+function updateSectionLabels(section) {
+  section.setAttribute('aria-label', t('croix.sectionLabel', 'Croix nationale et historique'));
+  const publication = $('.cid-croix-selected-publication', section);
+  publication?.setAttribute(
+    'aria-label',
+    `${t('croix.official', 'Publication officielle')} ${t('croix.title', 'Croix nationale')}`
+  );
+  const eyebrow = $('.cid-croix-eyebrow', section);
+  if (eyebrow) eyebrow.textContent = t('croix.official', 'Publication officielle');
+  const title = $('.cid-croix-section-heading h1', section);
+  if (title) title.textContent = t('croix.title', 'Croix nationale');
+  const dateLabel = $('[data-croix-selected-date-label]', section);
+  if (dateLabel) dateLabel.textContent = selectedDateLabel();
+  $('.cid-croix-history-section', section)?.setAttribute(
+    'aria-label',
+    t('croix.historyLabel', 'Croix des neuf derniers jours')
+  );
+}
+
+/*
+ * Keep the canonical Croix node alive if the section must be rebuilt: an
+ * innerHTML replacement would otherwise destroy it together with its
+ * already painted official values.
+ */
+function preserveCanonicalCross(mountPoint) {
+  const source = canonicalCrossSource();
+  if (!source || !mountPoint.contains(source)) return;
+  const container = document.getElementById('croixViewContainer') || document.body;
+  container.appendChild(source);
+}
+
 function mount() {
   const mountPoint = document.getElementById('croixViewMount');
   if (!mountPoint) return;
@@ -978,11 +1102,20 @@ function mount() {
     window.clearTimeout(croixHistoryMarkupRetryTimer);
     croixHistoryMarkupRetryTimer = 0;
   }
-  mountPoint.innerHTML = currentMarkup();
-  // Paint the fixed nine-day component pool immediately. The repository
-  // response later replaces only the values, never the artwork.
-  renderHistory([]).catch(() => {});
-  loadHistory()
+  const section = $('#cid-croix-section', mountPoint);
+  if (section) {
+    // Re-opening the route (Voir plus / Historique, back navigation,
+    // language change) reuses the mounted section: no blank frame.
+    updateSectionLabels(section);
+  } else {
+    preserveCanonicalCross(mountPoint);
+    mountPoint.innerHTML = currentMarkup();
+  }
+  // Paint the nine cards from localStorage in this same frame. Later data
+  // only repaints values inside these cards.
+  const cachedRows = cachedHistoryRows();
+  renderHistory(cachedRows).catch(() => {});
+  loadHistory(cachedRows)
     .then(() => focusRequestedHistoryDate(
       mountPoint.querySelector('[data-croix-history-track]')
     ))
@@ -998,7 +1131,14 @@ window.addEventListener('cid:cross-ready', () => {
   // finished restoring its validated payload. Once the source component is
   // ready, populate any history slots that were waiting for its DOM/CSS plane.
   const track = $('[data-croix-history-track]');
-  if (track) mountHistoricalCrosses(track);
+  if (!track) return;
+  mountHistoricalCrosses(track);
+  // The live Croix has just stored its official row locally: complete the
+  // matching card in place (no request, no rebuild).
+  if (document.body?.classList.contains('croix-active')
+      && historyPosts(track).length) {
+    renderHistory(cachedHistoryRows()).catch(() => {});
+  }
 });
 window.addEventListener('cidgroup:illustrations-updated', () => {
   const track = $('[data-croix-history-track]');

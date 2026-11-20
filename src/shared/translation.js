@@ -734,7 +734,14 @@
 
   function installObserver() {
     if (observer || !document.body) return;
-    observer = new MutationObserver(() => {
+    /*
+     * Coalesce DOM mutations into one translation pass per frame. Tableaux
+     * hydration writes many cells in a burst; walking every text node for
+     * each mutation record made taps and scrolling stall on phones.
+     */
+    let frame = 0;
+    const flush = () => {
+      frame = 0;
       if (applying) return;
       applying = true;
       try {
@@ -742,7 +749,15 @@
         translateAttributes();
       } finally {
         applying = false;
+        // Drop the records produced by this pass itself.
+        observer?.takeRecords?.();
       }
+    };
+    observer = new MutationObserver(() => {
+      if (applying || frame) return;
+      frame = typeof window.requestAnimationFrame === 'function'
+        ? window.requestAnimationFrame(flush)
+        : window.setTimeout(flush, 16);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }

@@ -1,4 +1,61 @@
 /*
+ * Self-hosted web fonts (SIL Open Font License).
+ *
+ * Served from this origin and precached by the service worker so the very
+ * first visit and every offline visit render the same glyphs, weights and
+ * metrics. Before, the fonts came from Google Fonts, which the service
+ * worker does not cache: offline, titles and numbers fell back to thinner
+ * system faces and wider metrics pushed the key/cross cards onto two rows.
+ */
+@font-face {
+  font-family: 'Archivo Black';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/src/shared/fonts/archivo-black-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo Black';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/src/shared/fonts/archivo-black-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Audiowide';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/src/shared/fonts/audiowide-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Audiowide';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/src/shared/fonts/audiowide-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/src/shared/fonts/noto-sans-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/src/shared/fonts/noto-sans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/*
  * Cidmap — unified stylesheet.
  *
  * The single stylesheet for index.html. Sections keep the original cascade
@@ -32330,4 +32387,227 @@ html body #tableauxViewContainer#tableauxViewContainer {
 html body #tableauxViewContainer#tableauxViewContainer .cross,
 html body #tableauxViewContainer#tableauxViewContainer .cross * {
   touch-action: pan-y !important;
+}
+
+
+/* ==========================================================================
+ * Key / cross pairs: always side by side (final, authoritative rules).
+ *
+ * The earlier rules placed the cards by DOM position (nth-child). The access
+ * badge (<aside>) is only inserted once the entitlement state is known, so
+ * without it — offline, before hydration, or in an archive clone — the cross
+ * card became nth-child(2), was forced into column 1 and dropped under the
+ * key card, leaving the right half empty. The cards are now placed by what
+ * they contain, so the pair is identical online, offline and in every state.
+ * ========================================================================== */
+body.tableaux-active #tableauxViewContainer .portfolio-universal:not([hidden]),
+body.tableaux-active #tableauxViewContainer .portfolio-intuition:not([hidden]),
+body.tableaux-active #tableauxViewContainer .portfolio-oracle:not([hidden]),
+body.tableaux-active #tableauxViewContainer .portfolio-manual:not([hidden]),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb:not([hidden]),
+body.anticipation-active .portfolio-universal:not([hidden]),
+body.anticipation-active .portfolio-intuition:not([hidden]),
+body.anticipation-active .portfolio-oracle:not([hidden]),
+body.anticipation-active .portfolio-manual:not([hidden]),
+body.anticipation-active .portfolio-lnb:not([hidden]),
+body.archive-active .portfolio-universal:not([hidden]),
+body.archive-active .portfolio-intuition:not([hidden]),
+body.archive-active .portfolio-oracle:not([hidden]),
+body.archive-active .portfolio-manual:not([hidden]),
+body.archive-active .portfolio-lnb:not([hidden]),
+.cid-publication-history__tableau-clone.portfolio-universal:not([hidden]),
+.cid-publication-history__tableau-clone.portfolio-intuition:not([hidden]),
+.cid-publication-history__tableau-clone.portfolio-oracle:not([hidden]),
+.cid-publication-history__tableau-clone.portfolio-manual:not([hidden]),
+.cid-publication-history__tableau-clone.portfolio-lnb:not([hidden]) {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-flow: row !important;
+  align-items: stretch !important;
+  column-gap: clamp(8px, 2.4vw, 16px) !important;
+  row-gap: 12px !important;
+}
+/* Fallback for browsers without :has(): the badge is an <aside>, so the two
+   cards are always the first and second <div>. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-of-type(1),
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-of-type(1),
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-of-type(1),
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-of-type(1),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-of-type(1),
+body.anticipation-active .portfolio-universal > .container:nth-of-type(1),
+body.anticipation-active .portfolio-intuition > .container:nth-of-type(1),
+body.anticipation-active .portfolio-oracle > .container:nth-of-type(1),
+body.anticipation-active .portfolio-manual > .container:nth-of-type(1),
+body.anticipation-active .portfolio-lnb > .container:nth-of-type(1),
+body.archive-active .portfolio-universal > .container:nth-of-type(1),
+body.archive-active .portfolio-intuition > .container:nth-of-type(1),
+body.archive-active .portfolio-oracle > .container:nth-of-type(1),
+body.archive-active .portfolio-manual > .container:nth-of-type(1),
+body.archive-active .portfolio-lnb > .container:nth-of-type(1),
+.cid-publication-history__tableau-clone.portfolio-universal > .container:nth-of-type(1),
+.cid-publication-history__tableau-clone.portfolio-intuition > .container:nth-of-type(1),
+.cid-publication-history__tableau-clone.portfolio-oracle > .container:nth-of-type(1),
+.cid-publication-history__tableau-clone.portfolio-manual > .container:nth-of-type(1),
+.cid-publication-history__tableau-clone.portfolio-lnb > .container:nth-of-type(1) {
+  grid-column: 1 !important;
+  grid-row: auto !important;
+}
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:nth-of-type(2),
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:nth-of-type(2),
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:nth-of-type(2),
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:nth-of-type(2),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:nth-of-type(2),
+body.anticipation-active .portfolio-universal > .container:nth-of-type(2),
+body.anticipation-active .portfolio-intuition > .container:nth-of-type(2),
+body.anticipation-active .portfolio-oracle > .container:nth-of-type(2),
+body.anticipation-active .portfolio-manual > .container:nth-of-type(2),
+body.anticipation-active .portfolio-lnb > .container:nth-of-type(2),
+body.archive-active .portfolio-universal > .container:nth-of-type(2),
+body.archive-active .portfolio-intuition > .container:nth-of-type(2),
+body.archive-active .portfolio-oracle > .container:nth-of-type(2),
+body.archive-active .portfolio-manual > .container:nth-of-type(2),
+body.archive-active .portfolio-lnb > .container:nth-of-type(2),
+.cid-publication-history__tableau-clone.portfolio-universal > .container:nth-of-type(2),
+.cid-publication-history__tableau-clone.portfolio-intuition > .container:nth-of-type(2),
+.cid-publication-history__tableau-clone.portfolio-oracle > .container:nth-of-type(2),
+.cid-publication-history__tableau-clone.portfolio-manual > .container:nth-of-type(2),
+.cid-publication-history__tableau-clone.portfolio-lnb > .container:nth-of-type(2) {
+  grid-column: 2 !important;
+  grid-row: auto !important;
+}
+@supports selector(:has(*)) {
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:not(:has(.cross)),
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:not(:has(.cross)),
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:not(:has(.cross)),
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:not(:has(.cross)),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:not(:has(.cross)),
+body.anticipation-active .portfolio-universal > .container:not(:has(.cross)),
+body.anticipation-active .portfolio-intuition > .container:not(:has(.cross)),
+body.anticipation-active .portfolio-oracle > .container:not(:has(.cross)),
+body.anticipation-active .portfolio-manual > .container:not(:has(.cross)),
+body.anticipation-active .portfolio-lnb > .container:not(:has(.cross)),
+body.archive-active .portfolio-universal > .container:not(:has(.cross)),
+body.archive-active .portfolio-intuition > .container:not(:has(.cross)),
+body.archive-active .portfolio-oracle > .container:not(:has(.cross)),
+body.archive-active .portfolio-manual > .container:not(:has(.cross)),
+body.archive-active .portfolio-lnb > .container:not(:has(.cross)),
+.cid-publication-history__tableau-clone.portfolio-universal > .container:not(:has(.cross)),
+.cid-publication-history__tableau-clone.portfolio-intuition > .container:not(:has(.cross)),
+.cid-publication-history__tableau-clone.portfolio-oracle > .container:not(:has(.cross)),
+.cid-publication-history__tableau-clone.portfolio-manual > .container:not(:has(.cross)),
+.cid-publication-history__tableau-clone.portfolio-lnb > .container:not(:has(.cross)) {
+    grid-column: 1 !important;
+  }
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container:has(.cross),
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container:has(.cross),
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container:has(.cross),
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container:has(.cross),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container:has(.cross),
+body.anticipation-active .portfolio-universal > .container:has(.cross),
+body.anticipation-active .portfolio-intuition > .container:has(.cross),
+body.anticipation-active .portfolio-oracle > .container:has(.cross),
+body.anticipation-active .portfolio-manual > .container:has(.cross),
+body.anticipation-active .portfolio-lnb > .container:has(.cross),
+body.archive-active .portfolio-universal > .container:has(.cross),
+body.archive-active .portfolio-intuition > .container:has(.cross),
+body.archive-active .portfolio-oracle > .container:has(.cross),
+body.archive-active .portfolio-manual > .container:has(.cross),
+body.archive-active .portfolio-lnb > .container:has(.cross),
+.cid-publication-history__tableau-clone.portfolio-universal > .container:has(.cross),
+.cid-publication-history__tableau-clone.portfolio-intuition > .container:has(.cross),
+.cid-publication-history__tableau-clone.portfolio-oracle > .container:has(.cross),
+.cid-publication-history__tableau-clone.portfolio-manual > .container:has(.cross),
+.cid-publication-history__tableau-clone.portfolio-lnb > .container:has(.cross) {
+    grid-column: 2 !important;
+  }
+}
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container,
+body.anticipation-active .portfolio-universal > .container,
+body.anticipation-active .portfolio-intuition > .container,
+body.anticipation-active .portfolio-oracle > .container,
+body.anticipation-active .portfolio-manual > .container,
+body.anticipation-active .portfolio-lnb > .container,
+body.archive-active .portfolio-universal > .container,
+body.archive-active .portfolio-intuition > .container,
+body.archive-active .portfolio-oracle > .container,
+body.archive-active .portfolio-manual > .container,
+body.archive-active .portfolio-lnb > .container,
+.cid-publication-history__tableau-clone.portfolio-universal > .container,
+.cid-publication-history__tableau-clone.portfolio-intuition > .container,
+.cid-publication-history__tableau-clone.portfolio-oracle > .container,
+.cid-publication-history__tableau-clone.portfolio-manual > .container,
+.cid-publication-history__tableau-clone.portfolio-lnb > .container {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  float: none !important;
+}
+body.tableaux-active #tableauxViewContainer .portfolio-universal > :not(.container),
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > :not(.container),
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > :not(.container),
+body.tableaux-active #tableauxViewContainer .portfolio-manual > :not(.container),
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > :not(.container),
+body.anticipation-active .portfolio-universal > :not(.container),
+body.anticipation-active .portfolio-intuition > :not(.container),
+body.anticipation-active .portfolio-oracle > :not(.container),
+body.anticipation-active .portfolio-manual > :not(.container),
+body.anticipation-active .portfolio-lnb > :not(.container),
+body.archive-active .portfolio-universal > :not(.container),
+body.archive-active .portfolio-intuition > :not(.container),
+body.archive-active .portfolio-oracle > :not(.container),
+body.archive-active .portfolio-manual > :not(.container),
+body.archive-active .portfolio-lnb > :not(.container),
+.cid-publication-history__tableau-clone.portfolio-universal > :not(.container),
+.cid-publication-history__tableau-clone.portfolio-intuition > :not(.container),
+.cid-publication-history__tableau-clone.portfolio-oracle > :not(.container),
+.cid-publication-history__tableau-clone.portfolio-manual > :not(.container),
+.cid-publication-history__tableau-clone.portfolio-lnb > :not(.container) {
+  grid-column: 1 / -1 !important;
+  min-width: 0 !important;
+}
+/* Long titles ("croix universelle") wrap inside their card instead of
+   widening it. */
+body.tableaux-active #tableauxViewContainer .portfolio-universal > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-intuition > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-oracle > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-manual > .container .title-text,
+body.tableaux-active #tableauxViewContainer .portfolio-lnb > .container .title-text,
+body.anticipation-active .portfolio-universal > .container .title-text,
+body.anticipation-active .portfolio-intuition > .container .title-text,
+body.anticipation-active .portfolio-oracle > .container .title-text,
+body.anticipation-active .portfolio-manual > .container .title-text,
+body.anticipation-active .portfolio-lnb > .container .title-text,
+body.archive-active .portfolio-universal > .container .title-text,
+body.archive-active .portfolio-intuition > .container .title-text,
+body.archive-active .portfolio-oracle > .container .title-text,
+body.archive-active .portfolio-manual > .container .title-text,
+body.archive-active .portfolio-lnb > .container .title-text,
+.cid-publication-history__tableau-clone.portfolio-universal > .container .title-text,
+.cid-publication-history__tableau-clone.portfolio-intuition > .container .title-text,
+.cid-publication-history__tableau-clone.portfolio-oracle > .container .title-text,
+.cid-publication-history__tableau-clone.portfolio-manual > .container .title-text,
+.cid-publication-history__tableau-clone.portfolio-lnb > .container .title-text {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere;
+}
+
+/* Tableaux taps: no grey flash, no double-tap delay. The scroll container
+   itself is governed by the "Tableaux scroll contract" above. */
+body.tableaux-active #tableauxViewContainer button,
+body.tableaux-active #tableauxViewContainer [role="button"],
+body.tableaux-active #tableauxViewContainer .tableaux-catalogue-tab,
+body.tableaux-active #tableauxViewContainer .tableaux-section-card {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Same text rendering online and offline (no thinning on iOS). */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }

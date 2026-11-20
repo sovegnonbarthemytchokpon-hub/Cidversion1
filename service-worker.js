@@ -2,7 +2,7 @@
 // The old cache-first policy could keep a stale Tableaux renderer alive after
 // a deployment, making corrected NAP values appear unchanged.
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v43-unified';
+const CACHE_NAME = 'cidmap-cache-v44-unified';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1200;
 // Application shell: single stylesheet, shell images and every entry script.
@@ -12,7 +12,12 @@ const URLS_TO_CACHE = [...new Set([
   '/index.html',
   '/pwa.htm',
   '/manifest.json',
-  '/src/styles/app.css?v=unified-v1',
+  '/src/styles/app.css?v=unified-v2',
+  '/src/shared/fonts/archivo-black-latin.woff2',
+  '/src/shared/fonts/archivo-black-latin-ext.woff2',
+  '/src/shared/fonts/audiowide-latin.woff2',
+  '/src/shared/fonts/audiowide-latin-ext.woff2',
+  '/src/shared/fonts/noto-sans-latin.woff2',
   '/src/styles/auth-frame.css?v=unified-v1',
   '/src/auth/auth.html',
   '/src/shared/images/squirrel-red-mask.png',
@@ -24,7 +29,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav',
   '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v43',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v44',
   '/src/shared/translation.js?language-session-v4',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
@@ -172,8 +177,30 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
 
-  // Never cache API or third-party requests. Social data, authentication and
-  // Supabase responses must always use their own freshness and auth rules.
+  // Versioned client libraries (e.g. the Supabase SDK module) are code, not
+  // data: keep a copy so an offline visit can still boot the session layer
+  // from localStorage instead of stalling on a missing import.
+  if (url.origin === 'https://cdn.jsdelivr.net') {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        const cached = await cache.match(event.request);
+        const refresh = fetch(event.request).then((netResp) => {
+          if (netResp && netResp.ok) cache.put(event.request, netResp.clone()).catch(() => {});
+          return netResp;
+        });
+        if (cached) {
+          event.waitUntil(refresh.catch(() => {}));
+          return cached;
+        }
+        return refresh;
+      })()
+    );
+    return;
+  }
+
+  // Never cache API or other third-party requests. Social data,
+  // authentication and Supabase responses keep their own freshness rules.
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) {
     return;
   }

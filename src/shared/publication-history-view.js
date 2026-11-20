@@ -1180,7 +1180,15 @@ import {
     });
   }
 
-  const observer = new MutationObserver(mountTableauHistoryButtons);
+  // Coalesced: one scan per frame instead of one per mutation batch.
+  let historyButtonsFrame = 0;
+  const observer = new MutationObserver(() => {
+    if (historyButtonsFrame) return;
+    historyButtonsFrame = window.requestAnimationFrame(() => {
+      historyButtonsFrame = 0;
+      mountTableauHistoryButtons();
+    });
+  });
   observer.observe(document.body, { childList: true, subtree: true });
   window.setTimeout(mountTableauHistoryButtons, 0);
 
@@ -1308,6 +1316,9 @@ import {
   window.addEventListener('cid:subscription-unlocked', schedulePrefetch);
   window.addEventListener('online', schedulePrefetch);
   window.addEventListener('cid:auth-sync', () => prefetchDone.clear());
+  // The access state may already be known when this module loads (returning
+  // subscriber): start the nine-day prefetch without waiting for an event.
+  if (window.cidFeatureAccess?.state?.()) schedulePrefetch();
 
   window.cidShowPublicationHistory = show;
   window.cidPrefetchSubscribedHistory = prefetchSubscribedHistory;

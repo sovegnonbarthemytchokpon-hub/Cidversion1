@@ -1,5 +1,5 @@
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v47-offline-modules';
+const CACHE_NAME = 'cidmap-cache-v48-daily-local-first';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
 const APP_CSS = '/src/styles/app.css?v=unified-v2';
@@ -67,10 +67,10 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/render-readiness.js?nav-shell-v23',
   '/src/shared/route-persistence.js?route-persistence-v3-result-route',
   '/src/shared/view-transition.js', '/src/shared/dedicated-view-shell.js',
-  '/src/shared/categories-view.js?navigation-v9-date-binding',
-  '/src/shared/anticipation-view.js?anticipation-v9-unified',
+  '/src/shared/categories-view.js?navigation-v10-preview',
+  '/src/shared/anticipation-view.js?anticipation-v10-daily-renderer',
   '/src/shared/croix-section.js?history-local-first-v5',
-  '/src/shared/publication-history-view.js?publication-history-v8-prefetch',
+  '/src/shared/publication-history-view.js?publication-history-v9-free-prefetch',
   '/src/shared/affichageSecurise.js',
   '/src/tableaux/tableaux-view.js?tableaux-unified-v5',
   '/src/croix/image-scanner.js',
@@ -83,7 +83,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/bootstrap.js?nav-shell-v24-route-fix',
   '/src/shared/isolated-components.js?isolated-components-v1',
   '/src/croix/red-cross-stability.js', '/src/shared/first-paint-shell.js',
-  '/src/matrice/matrice-calculation.js?date-binding-v1',
+  '/src/matrice/matrice-calculation.js?local-first-v2',
   '/src/services/dechiffrement-api.js?calculator-v5-timeout-plus',
   '/src/calculatrice/calculatrice.js?calculator-v12-ranked-group-limits',
   // Statically imported ES modules. A single missing dependency makes the
@@ -100,8 +100,8 @@ const URLS_TO_CACHE = [...new Set([
   '/components/tableaux/ViewOracle.js', '/components/tableaux/ViewStandBy.js',
   '/components/tableaux/ViewUniverselle.js',
   '/src/croix/croix-controller.js', '/src/croix/redCrossService.js',
-  '/src/rejetes/rejected-controller.js?date-binding-v1',
-  '/src/matrice/matrice-controller.js', '/src/matrice/matrice-view.js?date-binding-v2',
+  '/src/rejetes/rejected-controller.js?local-first-v2',
+  '/src/matrice/matrice-controller.js', '/src/matrice/matrice-view.js?local-first-v3',
   '/src/auth/account-view.js', '/src/auth/account-view.js?share-i18n-v1',
   '/src/auth/account-page.js', '/src/auth/admin-service.js',
   '/src/auth/admin-dashboard-view.js?chat-admin-v2-result-import',

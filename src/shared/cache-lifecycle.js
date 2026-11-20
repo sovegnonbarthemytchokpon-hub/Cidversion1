@@ -11,7 +11,7 @@
   const APP_VERSION = 'v40-performance-cache';
   const VERSION_KEY = 'cidmap:app-version';
   // Must equal CACHE_NAME in /service-worker.js.
-  const CURRENT_SW_CACHE = 'cidmap-cache-v47-offline-modules';
+  const CURRENT_SW_CACHE = 'cidmap-cache-v48-daily-local-first';
 
   const OLD_LOCAL_STORAGE = [
     /^cidmap:/,

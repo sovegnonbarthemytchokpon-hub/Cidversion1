@@ -1869,6 +1869,9 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       if (token !== renderToken) return card;
       card.className = 'anticipation-unlocked-publication anticipation-publication-modal';
       card.innerHTML = socialPostMarkup(key, date, result.payload);
+      // In-memory only (never localStorage): used to open the daily
+      // renderer for this exact, server-validated future publication.
+      card.__cidAnticipationPayload = result.payload;
       if (key === 'croix') {
         mountCanonicalCrossPreview(card, publicationInfo(date), result.payload);
       }
@@ -1937,6 +1940,7 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       if (!button || !feed.contains(button)) return;
       const post = button.closest('.cid-fb-post');
       if (!post) return;
+      if (openDailyRenderer(post)) return;
       const details = post.querySelector('[data-anticipation-result]');
       if (!details) {
         post.querySelector('.anticipation-post-body')?.scrollIntoView({
@@ -1953,6 +1957,40 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
         details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     });
+  }
+
+  /*
+   * Matrice / Boules rejetées anticipées open in the very same view, layout
+   * and renderer as the daily publication. The view receives the payload
+   * already validated by the server for that date, in an isolated session:
+   * no recalculation, no extra request, no write into today's caches.
+   */
+  function openDailyRenderer(post) {
+    const card = post.closest('[data-anticipation-feature]');
+    const key = card?.dataset?.anticipationFeature || '';
+    const date = String(card?.dataset?.publicationDate || '').slice(0, 10);
+    const payload = card?.__cidAnticipationPayload;
+    if (!payload || !date) return false;
+    const onBack = () => callGlobal('showAnticipationView', { updateHistory: false });
+    if (key === 'matrice' && Array.isArray(payload.results)
+      && typeof window.cidShowMatricePreview === 'function') {
+      callGlobal('cidShowMatricePreview', {
+        programmeDate: date,
+        results: payload.results,
+        onBack
+      });
+      return true;
+    }
+    if (key === 'boules-rejetees' && payload.groups
+      && typeof window.showRejectedView === 'function') {
+      callGlobal('showRejectedView', {
+        updateHistory: false,
+        date,
+        preview: { payload, onBack }
+      });
+      return true;
+    }
+    return false;
   }
 
   function anticipationPlaceholder(entry) {

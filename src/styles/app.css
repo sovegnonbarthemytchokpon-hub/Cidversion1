@@ -32688,3 +32688,22 @@ body.croix-active .cid-croix-history-track > .cid-fb-post[data-post-type="cross"
 body[data-cid-dedicated-view="croix"] .cid-croix-history-track > .cid-fb-post[data-post-type="cross"] {
   contain: layout;
 }
+
+/* History · Boules rejetées: same ball reading as the daily publication. */
+.cid-publication-history__balls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cid-publication-history__balls b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--daily-publication-color, #0962D6);
+  background: #fff;
+  color: var(--daily-publication-color, #0962D6);
+  font: 900 13px/1 'Noto Sans', sans-serif;
+}

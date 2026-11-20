@@ -130,6 +130,9 @@ import {
   async function hasAccess(kind, featureKey = '') {
     if (window.cidIsAdmin === true) return true;
     const key = accessKey(kind, featureKey);
+    // Local snapshot first: a free (or already granted) section opens its
+    // archive immediately; the network is only consulted when it says no.
+    if (window.cidFeatureAccess?.has?.(key) === true) return true;
     const access = await Promise.resolve(
       window.cidFeatureAccess?.refresh?.()
     ).catch(() => null);
@@ -260,13 +263,43 @@ import {
         .filter((row) => row.fields.length);
     }
     if (kind === 'rejected') {
+      // Same reading order and labels as the daily Boules rejetées view.
+      const programmes = Array.isArray(payload.programmes)
+        ? payload.programmes.filter((programme) => (
+          programme && Array.isArray(programme.groups) && programme.groups.length
+        ))
+        : [];
+      if (programmes.length) {
+        return programmes.map((programme) => ({
+          label: [
+            programme.country || 'Pays',
+            Number.isFinite(Number(programme.hour))
+              ? `${String(programme.hour).padStart(2, '0')}h`
+              : '',
+            programme.name || ''
+          ].filter(Boolean).join(' · '),
+          balls: programme.groups.map((value) => String(value).padStart(2, '0'))
+        }));
+      }
       const groups = payload.groups || {};
-      return Object.entries(groups)
+      const names = {
+        ghana: 'Ghana',
+        coteDIvoire: "Côte d'Ivoire",
+        benin: 'Bénin',
+        niger: 'Niger',
+        senegal: 'Sénégal',
+        togo: 'Togo'
+      };
+      const ordered = [
+        ...Object.keys(names).filter((name) => name in groups),
+        ...Object.keys(groups).filter((name) => !(name in names))
+      ];
+      return ordered
+        .map((name) => [name, groups[name]])
         .filter(([, values]) => Array.isArray(values) && values.length)
-        .slice(0, 8)
         .map(([name, values]) => ({
-          label: name,
-          value: values.map((value) => String(value).padStart(2, '0')).join(' · ')
+          label: names[name] || name,
+          balls: values.map((value) => String(value).padStart(2, '0'))
         }));
     }
     const plan = resolveTableauPlan(payload, featureKey) || payload;
@@ -784,7 +817,9 @@ import {
           ? rows.map((row) => `
             <div class="cid-publication-history__row">
               <strong>${escapeHtml(row.label)}</strong>
-              <span>${escapeHtml(row.value || '—')}</span>
+              ${Array.isArray(row.balls)
+                ? `<span class="cid-publication-history__balls">${row.balls.map((ball) => `<b>${escapeHtml(ball)}</b>`).join('')}</span>`
+                : `<span>${escapeHtml(row.value || '—')}</span>`}
             </div>`).join('')
           : '<p>Aucun résultat publié pour cette date.</p>';
     const archiveMeta = kind === 'tableaux'
@@ -1257,15 +1292,24 @@ import {
   function prefetchTargets() {
     const featureAccess = window.cidFeatureAccess;
     const access = featureAccess?.state?.();
-    if (!access || access.__offline || !hasPaidEntitlement(access)) return null;
+    if (!access || access.__offline) return null;
     const allowed = (key) => featureAccess.has?.(key) === true;
+    const paid = hasPaidEntitlement(access);
+    /*
+     * Matrice and Boules rejetées are pre-recorded whenever the account can
+     * read them, including while the main administrator keeps them free.
+     * Tableaux keep the subscription-only prefetch.
+     */
+    const matrix = allowed('matrice');
+    const rejected = allowed('boules-rejetees');
+    if (!paid && !matrix && !rejected) return null;
     return {
-      tableaux: [
+      matrix,
+      rejected,
+      tableaux: !paid ? [] : [
         ...TABLEAU_DEFINITIONS.map(({ featureKey }) => normalizeTableauFeatureKey(featureKey)),
         'tableaux-created'
-      ].filter((key, index, keys) => key && keys.indexOf(key) === index && allowed(key)),
-      matrix: allowed('matrice'),
-      rejected: allowed('boules-rejetees')
+      ].filter((key, index, keys) => key && keys.indexOf(key) === index && allowed(key))
     };
   }
 
@@ -1287,8 +1331,10 @@ import {
 
   async function prefetchSubscribedHistory() {
     if (prefetchRunning || navigator.onLine === false) return;
-    const identity = String(window.cidAuthCurrentUserId || '').trim();
-    const targets = identity ? prefetchTargets() : null;
+    // Visitors share the 'visitor' namespace of the history cache; accounts
+    // each have their own, so sessions never read each other's archive.
+    const identity = String(window.cidAuthCurrentUserId || '').trim() || 'visitor';
+    const targets = prefetchTargets();
     if (!targets) return;
     const today = currentProgrammeDate();
     const tasks = [];
@@ -1319,7 +1365,7 @@ import {
       const worker = async () => {
         while (pending.length) {
           if (navigator.onLine === false
-            || String(window.cidAuthCurrentUserId || '').trim() !== identity) return;
+            || (String(window.cidAuthCurrentUserId || '').trim() || 'visitor') !== identity) return;
           const task = pending.shift();
           await runPrefetchTask(task).catch((error) => {
             prefetchDone.delete(`${identity}:${task.kind}:${task.date}:${task.featureKeys.join(',')}`);

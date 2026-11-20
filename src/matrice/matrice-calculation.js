@@ -186,16 +186,24 @@ function hydrateMatrixCache(programmeDate) {
     // new publication, so the stored copy never expires on its own.
     Infinity
   );
-  if (!stored?.value || !Array.isArray(stored.value.results)
-    || !stored.value.results.length) return null;
+  let source = stored?.value;
+  if (!source || !Array.isArray(source.results) || !source.results.length) {
+    // Fallback: the same server payload pre-recorded by the nine-day history.
+    const cache = window.cidHistoryCache;
+    const archived = cache?.read?.(cache.key({ kind: 'matrix', date: programmeDate }))?.value;
+    source = archived && Array.isArray(archived.results) && archived.results.length
+      ? archived
+      : null;
+  }
+  if (!source) return null;
   const results = applyResponse({
-    results: stored.value.results,
+    results: source.results,
     meta: {
       // Older cache entries carried the legacy client-side default (2710).
       // It was never user-entered, so cached data must not resurrect it.
-      ...(stored.value.meta || {}),
-      drawNumber: stored.value.meta?.drawNumberExplicit === true
-        ? stored.value.meta.drawNumber
+      ...(source.meta || {}),
+      drawNumber: source.meta?.drawNumberExplicit === true
+        ? source.meta.drawNumber
         : null,
       programmeDate
     }
@@ -253,6 +261,9 @@ function startMatrixRequest(programmeDate, identity) {
           }
         }
       );
+      recordMatrixHistory(requestedDate, results, {
+        ...(Number.isSafeInteger(drawNumber) ? { drawNumber } : {})
+      });
       try {
         if (typeof window.updateRedCrossFromState === 'function') {
         window.updateRedCrossFromState({
@@ -302,22 +313,94 @@ async function fetchProgrammeForDate(programmeDate) {
   return { ...data, results: normalizeMatrixResults(data.results) };
 }
 
+/*
+ * Mirror a validated server payload into the user-scoped nine-day history
+ * cache, so the archive (like Croix nationale) paints this date instantly
+ * from localStorage. Only stores what the server returned; never computes.
+ */
+function recordMatrixHistory(programmeDate, results, meta = {}) {
+  const date = String(programmeDate || '').slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(results) || !results.length) return;
+  const cache = window.cidHistoryCache;
+  if (!cache?.write || !cache?.key) return;
+  try {
+    cache.write(cache.key({ kind: 'matrix', date }), {
+      results,
+      meta: { ...meta, programmeDate: date }
+    });
+  } catch (_) {}
+}
+
+function resultsSignature(results) {
+  try { return JSON.stringify(results || []); } catch (_) { return ''; }
+}
+
+/*
+ * Silent stale-while-revalidate. The cached programme stays on screen; the
+ * server answer only replaces it (and notifies the view) when it differs.
+ * One revalidation per date and per account per page session.
+ */
+const revalidatedMatrixDates = new Set();
+function revalidateMatrixInBackground(programmeDate, identity) {
+  const date = String(programmeDate || '').slice(0, 10);
+  const id = `${identity}:${date}`;
+  if (!date || revalidatedMatrixDates.has(id) || navigator.onLine === false) return;
+  revalidatedMatrixDates.add(id);
+  const sequence = requestSequence;
+  invokeCalculateMatrix({ programmeDate: date })
+    .then((payload) => {
+      const results = Array.isArray(payload?.results) ? payload.results : [];
+      if (!results.length || matrixCacheIdentity() !== identity) return;
+      const meta = {
+        programmeDate: date,
+        ...(Number.isSafeInteger(Number(payload?.meta?.drawNumber))
+          ? { drawNumber: Number(payload.meta.drawNumber) } : {}),
+        drawNumberExplicit: Number.isSafeInteger(Number(payload?.meta?.drawNumber)),
+        savedAt: new Date().toISOString()
+      };
+      const changed = resultsSignature(results) !== resultsSignature(
+        lastProgrammeDate === date ? generatedResults : null
+      );
+      window.cidPersistentCache?.write?.(`matrix-programmes:${date}`, identity, { results, meta });
+      recordMatrixHistory(date, results, meta);
+      // A newer explicit request owns the global state; do not overwrite it.
+      if (!changed || sequence !== requestSequence || lastProgrammeDate !== date) return;
+      applyResponse(payload);
+      window.dispatchEvent(new CustomEvent('cid:matrix-results-updated', {
+        detail: { programmeDate: date, results }
+      }));
+    })
+    .catch(() => {
+      // Offline/transient: keep the local copy, retry on a later visit.
+      revalidatedMatrixDates.delete(id);
+    });
+}
+
 async function generateLottoResults(options = {}) {
   const programmeDate = options.programmeDate || getProgrammeDate();
   const force = Boolean(options.force);
   const identity = matrixCacheIdentity();
 
-  if (!force && !generatedResults) hydrateMatrixCache(programmeDate);
+  if (!force && (!generatedResults || lastProgrammeDate !== programmeDate)) {
+    hydrateMatrixCache(programmeDate);
+  }
   if (!force && generatedResults && lastProgrammeDate === programmeDate) {
-    // localStorage first: the day's programme is already on the device, so
-    // no database call is made until the next publication (new date) or an
-    // explicit forced refresh at the 16:00 boundary.
+    // localStorage first: paint the device copy immediately and let the
+    // server confirm it silently in the background (no blocking, no flash).
     void lastMatrixRefreshAt;
+    if (options.revalidate !== false) revalidateMatrixInBackground(programmeDate, identity);
     return generatedResults;
   }
-  if (requestPromise && !force) return requestPromise;
+  if (requestPromise && !force && requestProgrammeDate === programmeDate) return requestPromise;
   return startMatrixRequest(programmeDate, identity);
 }
+
+window.cidHydrateMatrixCache = (programmeDate) => {
+  const date = String(programmeDate || getProgrammeDate()).slice(0, 10);
+  if (generatedResults && lastProgrammeDate === date) return generatedResults;
+  return hydrateMatrixCache(date);
+};
+window.cidMatrixProgrammeDate = () => lastProgrammeDate;
 
 function copyText(text) {
   const value = String(text || '').trim();

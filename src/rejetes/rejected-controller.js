@@ -10,7 +10,25 @@ let rejectedRequest = null;
 let rejectedRequestDate = '';
 let latestRejectedPayload = null;
 let rejectedViewToken = 0;
+// Isolated Anticipé session: { date, payload } or null. Never cached.
+let rejectedPreview = null;
 const REJECTED_CACHE_MAX_AGE = 36 * 60 * 60 * 1000;
+
+function rejectedIdentity() {
+  return String(window.cidAuthCurrentUserId || 'visitor').trim() || 'visitor';
+}
+
+function rejectedSignature(payload) {
+  try {
+    return JSON.stringify([
+      payload?.programmeDate,
+      payload?.groups,
+      payload?.programmes
+    ]);
+  } catch (_) {
+    return '';
+  }
+}
 
 function rejectedProgrammeDate(value) {
   const explicit = String(value || '').slice(0, 10);
@@ -26,15 +44,24 @@ function rejectedCacheKey(date) {
   return `rejected-balls:${rejectedProgrammeDate(date) || 'current'}`;
 }
 
+function historyEntryFor(date) {
+  const cache = window.cidHistoryCache;
+  const programmeDate = rejectedProgrammeDate(date);
+  if (!cache?.read || !cache?.key || !programmeDate) return null;
+  const value = cache.read(cache.key({ kind: 'rejected', date: programmeDate }))?.value;
+  return value?.groups && value?.meta ? value : null;
+}
+
 function readRejectedCache(date) {
   const cache = window.cidComponentRuntime?.cache;
+  // Entries are scoped by account so one session never paints another's.
   const stored = cache?.read?.(rejectedCacheKey(date), {
-    identity: 'visitor',
+    identity: rejectedIdentity(),
     maxAgeMs: REJECTED_CACHE_MAX_AGE
   });
-  return stored?.value && typeof stored.value === 'object'
-    ? stored.value
-    : null;
+  if (stored?.value && typeof stored.value === 'object') return stored.value;
+  // Fallback: the same server payload pre-recorded by the nine-day history.
+  return historyEntryFor(date);
 }
 
 function writeRejectedCache(date, payload) {
@@ -42,7 +69,27 @@ function writeRejectedCache(date, payload) {
   window.cidComponentRuntime?.cache?.write?.(
     rejectedCacheKey(date),
     payload,
-    { identity: 'visitor', meta: { programmeDate: rejectedProgrammeDate(date) } }
+    { identity: rejectedIdentity(), meta: { programmeDate: rejectedProgrammeDate(date) } }
+  );
+  // Pre-record the publication in the archive, as Croix nationale does.
+  const programmeDate = rejectedProgrammeDate(payload?.programmeDate || date);
+  const cache = window.cidHistoryCache;
+  if (programmeDate && payload.groups && payload.meta
+    && Object.keys(payload.groups).length && cache?.write && cache?.key) {
+    try { cache.write(cache.key({ kind: 'rejected', date: programmeDate }), payload); } catch (_) {}
+  }
+}
+
+/*
+ * The inline route shows a clone of #rejectedTableBody. When a background
+ * refresh brings different values, update that visible clone in place instead
+ * of rebuilding the route (no blank frame, scroll position preserved).
+ */
+function syncInlineRejectedView(tbody) {
+  const inlineBody = document.querySelector('#rejectedInlineMain tbody');
+  if (!inlineBody || !tbody || inlineBody === tbody) return;
+  inlineBody.replaceChildren(
+    ...Array.from(tbody.childNodes).map((node) => node.cloneNode(true))
   );
 }
 
@@ -221,17 +268,10 @@ function makeCircleRow(title, numbers, color) {
   copyButton.className = 'copy-button rejected-copy-btn';
   copyButton.textContent = ti('rejected.copy', { title }, 'Copier {{title}}');
   copyButton.style.cssText = 'width:fit-content;display:inline-block;padding:8px 15px;';
-  copyButton.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(`${title}\n${numbers.join('\n')}\n`);
-      copyButton.textContent = t('rejected.copied', 'Copié');
-      window.setTimeout(() => {
-        copyButton.textContent = ti('rejected.copy', { title }, 'Copier {{title}}');
-      }, 1200);
-    } catch (_) {
-      copyButton.textContent = t('rejected.copyFailed', 'Copie impossible');
-    }
-  });
+  // Delegated handler (see below): the inline route displays a DOM clone,
+  // which does not carry listeners attached to the original node.
+  copyButton.dataset.copyText = `${title}\n${numbers.join('\n')}\n`;
+  copyButton.dataset.copyLabel = ti('rejected.copy', { title }, 'Copier {{title}}');
   titleRow.appendChild(copyButton);
   container.appendChild(titleRow);
 
@@ -368,18 +408,37 @@ export async function renderRejectedTable(options = {}) {
       || undefined;
     const requestOptions = programmeDate ? { ...options, programmeDate } : options;
     const requestDate = String(programmeDate || '').slice(0, 10);
+
+    /*
+     * Anticipé preview: render the already validated server payload with the
+     * daily renderer. No network call, no localStorage write: the future
+     * publication stays in its own session.
+     */
+    if (rejectedPreview && (!requestDate || rejectedPreview.date === requestDate)) {
+      latestRejectedPayload = rejectedPreview.payload;
+      renderPayload(tbody, rejectedPreview.payload);
+      tbody.dataset.cidCacheState = 'preview';
+      tbody.dataset.cidSignature = rejectedSignature(rejectedPreview.payload);
+      syncInlineRejectedView(tbody);
+      return rejectedPreview.payload;
+    }
+
     const cachedPayload = readRejectedCache(requestDate);
 
     /*
-     * Paint the last validated public result synchronously. The request below
-     * still runs and remains authoritative, but a slow Supabase response can
-     * no longer turn the whole route into a white/loading rectangle.
+     * localStorage first: paint the last validated result synchronously. The
+     * request below still runs and remains authoritative, but only repaints
+     * when its values actually differ (no flash on identical data).
      */
     if (cachedPayload && viewToken === rejectedViewToken) {
+      latestRejectedPayload = cachedPayload;
       renderPayload(tbody, cachedPayload);
       tbody.dataset.cidCacheState = 'stale-while-revalidate';
+      tbody.dataset.cidSignature = rejectedSignature(cachedPayload);
+      syncInlineRejectedView(tbody);
     } else {
       tbody.innerHTML = `<tr><td colspan="2" style="padding:16px;text-align:center;color:#666;">${escapeHtml(t('rejected.loading', 'Lecture des Boules rejetées…'))}</td></tr>`;
+      tbody.dataset.cidSignature = '';
     }
 
     /*
@@ -389,23 +448,31 @@ export async function renderRejectedTable(options = {}) {
      */
     if (!rejectedRequest || options.force || rejectedRequestDate !== requestDate) {
       rejectedRequestDate = requestDate;
+      const identity = rejectedIdentity();
       rejectedRequest = fetchRejectedBalls(requestOptions).then((payload) => {
         if (viewToken === rejectedViewToken) latestRejectedPayload = payload;
-        writeRejectedCache(requestDate || payload?.programmeDate, payload);
+        if (identity === rejectedIdentity()) {
+          writeRejectedCache(requestDate || payload?.programmeDate, payload);
+        }
         return payload;
       });
     }
+    const paintFresh = (payload) => {
+      const signature = rejectedSignature(payload);
+      if (!options.force && tbody.dataset.cidSignature === signature) {
+        tbody.dataset.cidCacheState = 'fresh';
+        return;
+      }
+      renderPayload(tbody, payload);
+      tbody.dataset.cidCacheState = 'fresh';
+      tbody.dataset.cidSignature = signature;
+      syncInlineRejectedView(tbody);
+    };
     if (cachedPayload) {
-      /*
-       * A cached paint is the usable result of this call. Continue the
-       * authoritative request silently; the next visit will use its fresh
-       * value without making this first paint wait on the network.
-       */
       rejectedRequest
         .then((payload) => {
           if (viewToken !== rejectedViewToken) return;
-          renderPayload(tbody, payload);
-          tbody.dataset.cidCacheState = 'fresh';
+          paintFresh(payload);
         })
         .catch((error) => {
           console.info('Actualisation silencieuse des Boules rejetées impossible.', error);
@@ -416,8 +483,7 @@ export async function renderRejectedTable(options = {}) {
     // A request can finish after navigation. Its response must not repaint a
     // detached/hidden rejected surface or recreate a ghost layer.
     if (viewToken !== rejectedViewToken) return null;
-    renderPayload(tbody, payload);
-    tbody.dataset.cidCacheState = 'fresh';
+    paintFresh(payload);
     return payload;
   } catch (error) {
     if (viewToken !== rejectedViewToken) return null;
@@ -433,8 +499,15 @@ export function enterRejectedView() {
   latestRejectedPayload = null;
 }
 
+export function setRejectedPreview(session = null) {
+  rejectedPreview = session?.payload && session?.date
+    ? { date: String(session.date).slice(0, 10), payload: session.payload }
+    : null;
+}
+
 export function leaveRejectedView() {
   rejectedViewToken += 1;
+  rejectedPreview = null;
   rejectedRequest = null;
   rejectedRequestDate = '';
   latestRejectedPayload = null;
@@ -458,7 +531,23 @@ export function initRejectedController() {
   window.copyAllRejected = copyAllRejected;
   window.rejectedController.enter = enterRejectedView;
   window.rejectedController.leave = leaveRejectedView;
+  window.rejectedController.setPreview = setRejectedPreview;
 }
+
+document.addEventListener('click', async (event) => {
+  const button = event.target instanceof Element
+    ? event.target.closest('.rejected-copy-btn[data-copy-text]')
+    : null;
+  if (!button) return;
+  const label = button.dataset.copyLabel || button.textContent;
+  try {
+    await navigator.clipboard.writeText(button.dataset.copyText);
+    button.textContent = t('rejected.copied', 'Copié');
+    window.setTimeout(() => { button.textContent = label; }, 1200);
+  } catch (_) {
+    button.textContent = t('rejected.copyFailed', 'Copie impossible');
+  }
+});
 
 if (document.readyState !== 'loading') {
   initRejectedController();

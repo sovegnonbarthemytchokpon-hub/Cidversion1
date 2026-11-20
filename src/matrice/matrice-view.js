@@ -13,6 +13,16 @@
   let selectedCountry = null;
   let selectedProgram = null;
   let matrixIllustrationCleanup = null;
+  /*
+   * Isolated preview session (Anticipé). It holds a server payload for a
+   * future date and is used only by this view instance: it never replaces
+   * window.generatedResults, the localStorage cache or the Croix state.
+   */
+  let previewState = null;
+  let activeProgrammeDate = '';
+  const activeResults = () => (
+    previewState ? previewState.results : window.generatedResults
+  );
 
   const t = (key, fallback = key) => (
     window.cidTranslation?.t?.(key, fallback) || fallback
@@ -401,7 +411,7 @@
       : allResults.filter((program) => program && program.country === country);
   };
 
-  const availableCountries = (results = window.generatedResults) => {
+  const availableCountries = (results = activeResults()) => {
     const names = Array.isArray(results)
       ? results
         .map((program) => String(program?.country || '').trim())
@@ -422,12 +432,28 @@
    * returned by the server. New administrator-configured countries therefore
    * appear without a front-end code change.
    */
-  const renderMatrixCountryButtons = (results = window.generatedResults) => {
+  const renderMatrixCountryButtons = (results = activeResults()) => {
     const container = document.getElementById('countryButtons');
     if (!container) return;
     const selected = selectedCountry;
+    const countries = availableCountries(results);
+    const signature = `${window.cidTranslation?.current?.() || ''}|${countries.join('|')}`;
+    /*
+     * Same list as the one already painted: only sync the pressed state.
+     * Rebuilding identical buttons on every open was a visible flash.
+     */
+    if (container.dataset.matrixCountrySignature === signature
+      && container.childElementCount === countries.length) {
+      container.querySelectorAll('.country-filter-btn').forEach((button) => {
+        const active = button.dataset.country === selected;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      return;
+    }
+    container.dataset.matrixCountrySignature = signature;
     container.replaceChildren();
-    availableCountries(results).forEach((country) => {
+    countries.forEach((country) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'country-filter-btn';
@@ -461,7 +487,13 @@
     const button = makeButton(
       'Copier toutes les matrices',
       'copy-button matrix-copy-button',
-      () => window.copyAllResults?.()
+      () => {
+        if (previewState) {
+          copyText(previewState.results.map(formatProgramText).join('\n\n'), button);
+          return;
+        }
+        window.copyAllResults?.();
+      }
     );
     button.id = 'matrixCopyAllButton';
     button.setAttribute('aria-label', 'Copier toutes les matrices');
@@ -587,7 +619,10 @@
 
     const title = document.getElementById('matrixPageTitle');
     if (!title || document.getElementById('dailyMatrixIllustration')) return;
-    const illustration = window.getDailyIllustration?.('matrix');
+    const bannerDate = previewState?.date || activeProgrammeDate || '';
+    const illustration = (bannerDate
+      ? window.getDailyIllustration?.('matrix', bannerDate)
+      : window.getDailyIllustration?.('matrix')) || (bannerDate ? { date: bannerDate } : null);
 
     const frame = document.createElement('div');
     frame.className = 'daily-illustration-frame matrix-daily-illustration matrix-daily-publication-frame';
@@ -605,7 +640,7 @@
     frame.appendChild(visual);
 
     const paintVisual = (next = illustration) => {
-      const date = next?.date || '';
+      const date = bannerDate || next?.date || '';
       const dateObject = new Date(`${date}T12:00:00.000Z`);
       const weekday = Number.isNaN(dateObject.getTime())
         ? ''
@@ -673,7 +708,9 @@
     title.insertAdjacentElement('afterend', frame);
 
     const updateImage = (event) => {
-      const next = event.detail?.matrix;
+      const next = bannerDate
+        ? (window.getDailyIllustration?.('matrix', bannerDate) || illustration)
+        : event.detail?.matrix;
       if (!visual.isConnected) return;
       paintVisual(next);
     };
@@ -756,7 +793,7 @@
     levelHeader.className = 'matrix-level-header';
     levelHeader.appendChild(makeBackButton(t('matrix.back', 'Retour'), () => {
       selectedProgram = null;
-      renderLevelTwo(getProgramsForCountry(window.generatedResults || [], selectedCountry));
+      renderLevelTwo(getProgramsForCountry(activeResults() || [], selectedCountry));
     }));
     levelHeader.appendChild(title);
     level.appendChild(levelHeader);
@@ -821,10 +858,17 @@
   };
 
   const getResults = (requestedProgrammeDate = '') => {
-    const requestedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(requestedProgrammeDate || '').slice(0, 10))
-      ? String(requestedProgrammeDate).slice(0, 10)
+    if (previewState) return Promise.resolve(previewState.results);
+    const requestedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(requestedProgrammeDate || activeProgrammeDate || '').slice(0, 10))
+      ? String(requestedProgrammeDate || activeProgrammeDate).slice(0, 10)
       : '';
     if (!requestedDate && Array.isArray(window.generatedResults)) {
+      return Promise.resolve(window.generatedResults);
+    }
+    // The requested day is already on the device (memory or localStorage):
+    // answer synchronously; the adapter revalidates silently.
+    if (requestedDate && Array.isArray(window.generatedResults)
+      && window.cidMatrixProgrammeDate?.() === requestedDate) {
       return Promise.resolve(window.generatedResults);
     }
     if (!requestedDate && resultsPromise) return resultsPromise;
@@ -842,9 +886,9 @@
       resultsPromise = Promise.resolve(generate({
         reason: 'matrice-navigation',
         programmeDate: requestedDate || undefined,
-        // Recover from a failed/unfinished first generation without letting
-        // the generator's "initial load already done" guard return null.
-        force: Boolean(requestedDate) || !Array.isArray(window.generatedResults)
+        // Never force: the adapter reads localStorage first and only goes to
+        // the network for a date that is not on the device yet.
+        force: false
       }))
         .then((value) => Array.isArray(window.generatedResults)
           ? window.generatedResults
@@ -870,17 +914,36 @@
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
   };
 
-  const activateMatrice = ({ updateHistory = true, programmeDate = '' } = {}) => {
+  const activateMatrice = ({ updateHistory = true, programmeDate = '', preview = null } = {}) => {
     ++viewRequest;
     const activationRequest = viewRequest;
+    const previewDate = String(preview?.programmeDate || '').slice(0, 10);
+    previewState = preview && /^\d{4}-\d{2}-\d{2}$/.test(previewDate)
+      && Array.isArray(preview.results)
+      ? {
+        date: previewDate,
+        results: preview.results.filter(Boolean),
+        onBack: typeof preview.onBack === 'function' ? preview.onBack : null
+      }
+      : null;
+    activeProgrammeDate = previewState
+      ? previewState.date
+      : (/^\d{4}-\d{2}-\d{2}$/.test(String(programmeDate || '').slice(0, 10))
+        ? String(programmeDate).slice(0, 10)
+        : '');
+    if (previewState) updateHistory = false;
+    // localStorage first: the day's programme is in memory before the first
+    // paint, so the country list is drawn once with its final content.
+    if (!previewState) window.cidHydrateMatrixCache?.(activeProgrammeDate || undefined);
     ensureStyles();
     window.hideAnticipationView?.();
     window.cidCloseBalancePanel?.({ fromHistory: true });
     window.rejectedController?.leave?.();
+    const previewBack = previewState?.onBack;
     window.cidShowDedicatedView?.({
       id: 'matrice',
       title: 'Matrice',
-      onBack: () => window.showCategoriesView?.()
+      onBack: () => (previewBack ? previewBack() : window.showCategoriesView?.())
     });
     window.hideTableauxView?.();
     window.scrollTo(0, 0);
@@ -898,10 +961,10 @@
     document.getElementById('plantMatriceBtn')?.classList.add('active');
     // Keep the bottom bar's single-selection state even though the legacy
     // Matrice shortcut also highlights its plant button.
-    window.setBottomNavActiveTab?.('categories');
+    window.setBottomNavActiveTab?.(previewState ? 'anticipe' : 'categories');
     window.__currentCategory = 'matrice';
     window.__matriceViewOwned = true;
-    window.cidRoutePersistence?.remember('matrice');
+    if (!previewState) window.cidRoutePersistence?.remember('matrice');
     if (updateHistory && history.state?.view !== 'matrice') {
       const url = new URL(window.location.href);
       url.searchParams.set('section', 'matrice');
@@ -947,7 +1010,7 @@
       console.warn('Unable to render Matrice country filters', error);
     }
     renderLevelOne();
-    getResults(programmeDate)
+    getResults(activeProgrammeDate)
       .then((results) => {
         if (activationRequest !== viewRequest
           || !document.body.classList.contains('matrice-active')
@@ -959,6 +1022,8 @@
 
   const hideMatriceView = () => {
     ++viewRequest;
+    previewState = null;
+    activeProgrammeDate = '';
     selectedCountry = null;
     selectedProgram = null;
     removeMatrixIllustration();
@@ -984,7 +1049,11 @@
     });
 
     const results = document.getElementById('results');
-    showLocalLoader();
+    // Data already on the device: render the level directly, no loader flash.
+    const ready = previewState
+      || (Array.isArray(window.generatedResults)
+        && (!activeProgrammeDate || window.cidMatrixProgrammeDate?.() === activeProgrammeDate));
+    if (!ready) showLocalLoader();
 
     getResults().then((data) => {
       if (requestId !== viewRequest) return;
@@ -1045,6 +1114,28 @@
     window.activateMatriceView = activateMatrice;
   window.selectMatriceCountry = selectMatriceCountry;
   window.hideMatriceView = hideMatriceView;
+    /*
+     * The adapter only emits this when the server answer differs from the
+     * local copy. Repaint the visible level once; identical data never
+     * touches the DOM.
+     */
+    window.addEventListener('cid:matrix-results-updated', (event) => {
+      if (previewState || !document.body.classList.contains('matrice-active')) return;
+      const date = String(event.detail?.programmeDate || '');
+      if (activeProgrammeDate && date !== activeProgrammeDate) return;
+      if (selectedProgram) return; // keep the open programme stable
+      if (selectedCountry) {
+        const programs = getProgramsForCountry(activeResults() || [], selectedCountry);
+        window.__matrixCopyResults = programs;
+        renderLevelTwo(programs);
+      } else {
+        renderMatrixCountryButtons();
+      }
+    });
+    window.cidShowMatricePreview = ({ programmeDate, results, onBack } = {}) => activateMatrice({
+      updateHistory: false,
+      preview: { programmeDate, results, onBack }
+    });
     window.addEventListener('cid:language-change', () => {
       if (!document.body.classList.contains('matrice-active')) return;
       renderMatrixCountryButtons();

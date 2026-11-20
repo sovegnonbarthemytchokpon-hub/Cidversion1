@@ -554,17 +554,33 @@
     finishTransition();
   };
 
-  const showRejectedView = ({ updateHistory = true, date = '' } = {}) => {
+  const showRejectedView = ({ updateHistory = true, date = '', preview = null } = {}) => {
     const requestedDate = /^\d{4}-\d{2}-\d{2}$/.test(String(date || '').slice(0, 10))
       ? String(date).slice(0, 10)
       : '';
+    /*
+     * Anticipé preview: the server payload already validated for that future
+     * date is rendered through the exact same renderer as the daily
+     * publication, in an isolated session (no route memory, no cache write).
+     */
+    const previewSession = preview && requestedDate && preview.payload
+      && typeof preview.payload === 'object'
+      ? {
+        date: requestedDate,
+        payload: preview.payload,
+        onBack: typeof preview.onBack === 'function' ? preview.onBack : null
+      }
+      : null;
+    if (previewSession) updateHistory = false;
     const requestEpoch = ++navigationEpoch;
     beginFeatureGate('boules-rejetees', requestEpoch);
     startTransition('Numéros rejetés');
     window.cidShowDedicatedView?.({
       id: 'rejected',
       title: 'Numéros rejetés',
-      onBack: () => window.showCategoriesView?.()
+      onBack: () => (previewSession?.onBack
+        ? previewSession.onBack()
+        : window.showCategoriesView?.())
     });
     releaseInitialCategoryLock();
     setBottomNavActiveTab('categories');
@@ -580,6 +596,8 @@
     window.__cidActiveProgrammeDate = requestedDate;
     window.__currentCategory = 'boules rejetees';
     window.rejectedController?.enter?.();
+    window.rejectedController?.setPreview?.(previewSession);
+    if (previewSession) setBottomNavActiveTab('anticipe');
     const results = get('results');
     if (results) {
       results.style.display = '';
@@ -612,7 +630,7 @@
         if (!message.isConnected) results.appendChild(message);
       }
     }
-    rememberRoute('rejetes');
+    if (!previewSession) rememberRoute('rejetes');
     if (updateHistory) {
       const url = new URL(window.location.href);
       url.searchParams.set('section', 'rejetes');

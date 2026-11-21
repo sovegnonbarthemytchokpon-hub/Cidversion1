@@ -1,8 +1,8 @@
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v48-daily-local-first';
+const CACHE_NAME = 'cidmap-cache-v49-stable-views';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
-const APP_CSS = '/src/styles/app.css?v=unified-v2';
+const APP_CSS = '/src/styles/app.css?v=unified-v3-bottom-clearance';
 
 // The current shell, styles, fonts, and images are precached. The remaining
 // scripts are cached as they are requested and are also warmed here where
@@ -67,8 +67,8 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/render-readiness.js?nav-shell-v23',
   '/src/shared/route-persistence.js?route-persistence-v3-result-route',
   '/src/shared/view-transition.js', '/src/shared/dedicated-view-shell.js',
-  '/src/shared/categories-view.js?navigation-v10-preview',
-  '/src/shared/anticipation-view.js?anticipation-v10-daily-renderer',
+  '/src/shared/categories-view.js?navigation-v11-stable-rejected',
+  '/src/shared/anticipation-view.js?anticipation-v11-stable-daily',
   '/src/shared/croix-section.js?history-local-first-v5',
   '/src/shared/publication-history-view.js?publication-history-v9-free-prefetch',
   '/src/shared/affichageSecurise.js',
@@ -79,7 +79,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/modules/matrices-plurijetees/MatricesView.js',
   '/src/calculatrice/matrix-text-parser.js',
   '/src/shared/facebook-feed.js?feed-date-archive-v3-proportional-cross',
-  '/src/shared/smart-country-filter.js',
+  '/src/shared/smart-country-filter.js?idempotent-v1',
   '/src/shared/bootstrap.js?nav-shell-v24-route-fix',
   '/src/shared/isolated-components.js?isolated-components-v1',
   '/src/croix/red-cross-stability.js', '/src/shared/first-paint-shell.js',
@@ -100,7 +100,7 @@ const URLS_TO_CACHE = [...new Set([
   '/components/tableaux/ViewOracle.js', '/components/tableaux/ViewStandBy.js',
   '/components/tableaux/ViewUniverselle.js',
   '/src/croix/croix-controller.js', '/src/croix/redCrossService.js',
-  '/src/rejetes/rejected-controller.js?local-first-v2',
+  '/src/rejetes/rejected-controller.js?stable-inline-v3',
   '/src/matrice/matrice-controller.js', '/src/matrice/matrice-view.js?local-first-v3',
   '/src/auth/account-view.js', '/src/auth/account-view.js?share-i18n-v1',
   '/src/auth/account-page.js', '/src/auth/admin-service.js',

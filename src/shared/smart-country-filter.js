@@ -42,6 +42,30 @@
   let rejectedRoot = null;
   let applyingMatrix = false;
 
+  /*
+   * Idempotent DOM writes. refreshAdapters() is driven by a MutationObserver
+   * on <body>: writing an identical value still queues a mutation, which
+   * re-scheduled refreshAdapters() every 70 ms forever. That loop made the
+   * Boules rejetées / Matrice toolbars and groups tremble and blink. Only
+   * touch the DOM when the visible value actually changes.
+   */
+  const setText = (element, value) => {
+    if (element && element.textContent !== value) element.textContent = value;
+  };
+  const setHtml = (element, value) => {
+    if (!element || element.dataset.smartHtml === value) return;
+    element.innerHTML = value;
+    element.dataset.smartHtml = value;
+  };
+  const setAttr = (element, name, value) => {
+    if (element && element.getAttribute(name) !== value) element.setAttribute(name, value);
+  };
+  const setHidden = (element, hidden) => {
+    if (!element) return;
+    if (element.hidden !== hidden) element.hidden = hidden;
+    setAttr(element, 'aria-hidden', String(hidden));
+  };
+
   const normalize = (value) => String(value || '')
     .trim()
     .toLocaleLowerCase('fr-FR')
@@ -309,16 +333,15 @@
     }
 
     const country = profileCountry();
-    if (copy) copy.innerHTML = country !== 'Tous'
+    setHtml(copy, country !== 'Tous'
       ? `<strong>${ti('smart.customProgram', { country }, 'Programme personnalisé : {{country}}')}</strong><span>${t('smart.matrixFiltered', 'La matrice est filtrée par votre pays.')}</span>`
-      : `<strong>${t('smart.globalProgram', 'Programme global')}</strong><span>${t('smart.allCountries', 'Tous les pays sont disponibles.')}</span>`;
+      : `<strong>${t('smart.globalProgram', 'Programme global')}</strong><span>${t('smart.allCountries', 'Tous les pays sont disponibles.')}</span>`);
     if (button) {
-      const hasCountry = country && country !== 'Tous';
-      button.hidden = !hasCountry;
-      button.setAttribute('aria-hidden', String(!hasCountry));
-      button.textContent = matrixManualOverride
+      const hasCountry = Boolean(country && country !== 'Tous');
+      setHidden(button, !hasCountry);
+      setText(button, matrixManualOverride
         ? `🌍 ${ti('smart.backToProgram', { country }, 'Revenir au programme {{country}}')}`
-        : `🌍 ${t('smart.otherCountries', 'Voir le programme des autres pays')}`;
+        : `🌍 ${t('smart.otherCountries', 'Voir le programme des autres pays')}`);
     }
   }
 
@@ -355,9 +378,13 @@
     const showAll = rejectedGlobalOverride || !country || country === 'Tous';
     groups.forEach(group => {
       const visible = showAll || countryMatches(rejectedGroupLabel(group), country);
-      group.dataset.smartHidden = String(!visible);
-      group.setAttribute('aria-hidden', String(!visible));
-      group.classList.add('cid-smart-rejected-group');
+      if (group.dataset.smartHidden !== String(!visible)) {
+        group.dataset.smartHidden = String(!visible);
+      }
+      setAttr(group, 'aria-hidden', String(!visible));
+      if (!group.classList.contains('cid-smart-rejected-group')) {
+        group.classList.add('cid-smart-rejected-group');
+      }
     });
     return groups;
   }
@@ -368,11 +395,9 @@
     filterRejectedGroups(root);
     const button = root?.querySelector('[data-smart-country-other="rejected"]');
     const country = profileCountry();
-    if (button) {
-      button.textContent = rejectedGlobalOverride
-        ? `🌍 ${ti('smart.backToRejected', { country }, 'Revenir aux boules {{country}}')}`
-        : `🌍 ${t('smart.otherRejected', 'Voir les boules rejetées des autres pays')}`;
-    }
+    setText(button, rejectedGlobalOverride
+      ? `🌍 ${ti('smart.backToRejected', { country }, 'Revenir aux boules {{country}}')}`
+      : `🌍 ${t('smart.otherRejected', 'Voir les boules rejetées des autres pays')}`);
   }
 
   function ensureRejectedToolbar(root) {
@@ -398,16 +423,15 @@
     }
 
     const country = profileCountry();
-    if (copy) copy.innerHTML = country !== 'Tous'
+    setHtml(copy, country !== 'Tous'
       ? `<strong>${ti('smart.customRejected', { country }, 'Boules rejetées personnalisées : {{country}}')}</strong><span>${t('smart.existingMethod', 'La méthode existante est conservée, seul l’affichage est filtré.')}</span>`
-      : `<strong>${t('smart.globalRejected', 'Boules rejetées globales')}</strong><span>${t('smart.allDisplayed', 'Tous les pays sont affichés.')}</span>`;
+      : `<strong>${t('smart.globalRejected', 'Boules rejetées globales')}</strong><span>${t('smart.allDisplayed', 'Tous les pays sont affichés.')}</span>`);
     if (button) {
-      const hasCountry = country && country !== 'Tous';
-      button.hidden = !hasCountry;
-      button.setAttribute('aria-hidden', String(!hasCountry));
-      button.textContent = rejectedGlobalOverride
+      const hasCountry = Boolean(country && country !== 'Tous');
+      setHidden(button, !hasCountry);
+      setText(button, rejectedGlobalOverride
         ? `🌍 ${ti('smart.backToRejected', { country }, 'Revenir aux boules {{country}}')}`
-        : `🌍 ${t('smart.otherRejected', 'Voir les boules rejetées des autres pays')}`;
+        : `🌍 ${t('smart.otherRejected', 'Voir les boules rejetées des autres pays')}`);
     }
     if (toolbar.parentNode !== root || root.lastElementChild !== toolbar) {
       root.appendChild(toolbar);
@@ -462,7 +486,10 @@
     window.cidSmartCountry = {
       get: profileCountry,
       set: (country) => saveCountry(country, 'api'),
-      normalize: countryFromLabel
+      normalize: countryFromLabel,
+      // Synchronous pass for a route that has just mounted its content, so
+      // the country filter and its toolbar land in the same frame.
+      refresh: refreshAdapters
     };
 
     document.addEventListener('change', event => {

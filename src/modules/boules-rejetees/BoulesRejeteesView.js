@@ -2,4 +2,4 @@
 export {
   initRejectedController as mountBoulesRejetees,
   renderRejectedTable
-} from '../../rejetes/rejected-controller.js?local-first-v2';
+} from '../../rejetes/rejected-controller.js?stable-inline-v3';

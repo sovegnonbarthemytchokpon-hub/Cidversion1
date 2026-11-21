@@ -604,7 +604,15 @@
       results.removeAttribute('aria-hidden');
     }
     const inlineButton = get('showRejectedInlineButton');
-    if (inlineButton && typeof inlineButton.click === 'function') {
+    if (typeof window.cidMountRejectedInline === 'function') {
+      /*
+       * Single synchronous mount: the host and its buttons are created once,
+       * then the localStorage (or Anticipé) payload paints into it in the
+       * same frame. No remove/await/rebuild cycle, so nothing blinks.
+       */
+      window.__cidRejectedInlineEpoch = requestEpoch;
+      window.cidMountRejectedInline({ epoch: requestEpoch })?.catch?.(() => {});
+    } else if (inlineButton && typeof inlineButton.click === 'function') {
       window.__cidRejectedInlineEpoch = requestEpoch;
       /*
        * The inline route owns a local rejected host. Keep the prepared home

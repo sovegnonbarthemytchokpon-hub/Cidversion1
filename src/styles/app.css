@@ -32707,3 +32707,73 @@ body[data-cid-dedicated-view="croix"] .cid-croix-history-track > .cid-fb-post[da
   color: var(--daily-publication-color, #0962D6);
   font: 900 13px/1 'Noto Sans', sans-serif;
 }
+
+/* ==========================================================================
+ * Mobile / PWA bottom clearance (single source of truth).
+ *
+ * The bottom navigation is fixed over every scroll surface. Each surface had
+ * its own hard-coded bottom padding (32px, 112px, nav + 28px…), and several
+ * did not count the safe area or the visual-viewport extension, so the last
+ * buttons of a page (Copier tous, Débloquer, Voir plus…) ended up under the
+ * bar. Every surface now reserves the same space: nav + safe area + the
+ * viewport extension + a comfortable gap. scroll-padding keeps focused or
+ * scrolled-to controls above the bar as well.
+ * ========================================================================== */
+:root {
+  --cid-bottom-nav-clearance: calc(
+    var(--cid-nav-height, 66px) +
+    env(safe-area-inset-bottom, 0px) +
+    var(--cid-visual-bottom-extension, 0px) +
+    24px
+  );
+  /* Modals / notification centre stop exactly above the navigation bar. */
+  --cid-page-bottom: calc(
+    var(--cid-nav-height, 66px) +
+    env(safe-area-inset-bottom, 0px)
+  );
+}
+html body:not([data-cid-dedicated-view]) #results,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #results,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #categoriesView,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #tableauxViewContainer,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #matrixCalculatorPanel,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #profileViewContainer,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #resultatAideViewContainer,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #historyViewContainer,
+html body[data-cid-dedicated-view]:not([data-cid-dedicated-view="virtual-assistant"]) #globalStatisticsViewContainer,
+html body #anticipationViewContainer,
+html body.tableaux-active #tableauxViewContainer {
+  padding-bottom: var(--cid-bottom-nav-clearance) !important;
+  scroll-padding-bottom: var(--cid-bottom-nav-clearance) !important;
+}
+/* Croix keeps its larger historical breathing room under the carousel. */
+html body.croix-active #croixViewContainer,
+html body[data-cid-dedicated-view="croix"] #croixViewContainer {
+  padding-bottom: max(
+    calc(148px + env(safe-area-inset-bottom, 0px)),
+    var(--cid-bottom-nav-clearance)
+  ) !important;
+  scroll-padding-bottom: var(--cid-bottom-nav-clearance) !important;
+}
+/* Modal bodies scroll above the bar, never behind it. */
+html body .modal-overlay .modal-body {
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  scroll-padding-bottom: 16px;
+}
+
+/* Boules rejetées route: stable host, no animated reflow on open. */
+#rejectedInlineMain {
+  overflow-anchor: none;
+  contain: layout style;
+}
+#rejectedInlineMain .rejected-balls-grid .circle-cell,
+#rejectedInlineMain .rejected-copy-btn,
+#rejectedInlineMain .cid-smart-toolbar {
+  animation: none !important;
+  transition: background-color 120ms ease, color 120ms ease !important;
+}
+
+/* Anticipé feed: cards keep their geometry while they refresh in place. */
+.anticipation-feed > [data-anticipation-feature] {
+  overflow-anchor: none;
+}

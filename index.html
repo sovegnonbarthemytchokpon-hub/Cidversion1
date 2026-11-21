@@ -169,7 +169,7 @@
 <meta charset="UTF-8">
 <title>Cidmap</title>
 <!-- Single application stylesheet (render-blocking on purpose: the first frame is final). -->
-<link rel="stylesheet" href="/src/styles/app.css?v=unified-v2">
+<link rel="stylesheet" href="/src/styles/app.css?v=unified-v3-bottom-clearance">
 <!-- Self-hosted fonts: same glyphs and weights on the first visit and offline. -->
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/archivo-black-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/noto-sans-latin.woff2" crossorigin>
@@ -248,8 +248,8 @@
 <script type="module" src="/src/shared/route-persistence.js?route-persistence-v3-result-route"></script>
 <script type="module" src="/src/shared/view-transition.js"></script>
 <script type="module" src="/src/shared/dedicated-view-shell.js"></script>
-<script type="module" src="/src/shared/categories-view.js?navigation-v10-preview"></script>
-<script type="module" src="/src/shared/anticipation-view.js?anticipation-v10-daily-renderer"></script>
+<script type="module" src="/src/shared/categories-view.js?navigation-v11-stable-rejected"></script>
+<script type="module" src="/src/shared/anticipation-view.js?anticipation-v11-stable-daily"></script>
 <script type="module" src="/src/shared/croix-section.js?history-local-first-v5"></script>
 <script type="module" src="/src/shared/publication-history-view.js?publication-history-v9-free-prefetch"></script>
 <script type="module" src="/src/shared/affichageSecurise.js"></script>
@@ -261,7 +261,7 @@
 <script type="module" src="/src/modules/matrices-plurijetees/MatricesView.js"></script>
 <script type="module" src="/src/calculatrice/matrix-text-parser.js"></script>
 <script type="module" src="/src/shared/facebook-feed.js?feed-date-archive-v3-proportional-cross"></script>
-<script type="module" src="/src/shared/smart-country-filter.js"></script>
+<script type="module" src="/src/shared/smart-country-filter.js?idempotent-v1"></script>
 <script type="module" src="/src/shared/bootstrap.js?nav-shell-v24-route-fix"></script>
 <script type="module" src="/src/shared/isolated-components.js?isolated-components-v1"></script>
 </head>
@@ -1418,90 +1418,12 @@ window.preloadSiteAssets = (function(){
 <!-- New: quick access to "Boules rejetées" integrated in the white area -->
 <button id="showRejectedInlineButton" class="copy-button" style="margin-left:8px; display:none;" type="button" aria-hidden="true"
   onclick="(async function(){ try{
-    const rejectedRouteEpoch = window.__cidRejectedInlineEpoch;
-    // Render rejected table data then inject it into the main results area (do not touch header or plant du pied)
-    if (typeof renderRejectedTable === 'function') {
-      await renderRejectedTable({
-        programmeDate: window.__cidRequestedProgrammeDate || undefined
-      });
+    // Delegates to the Boules rejetées controller, which builds its host
+    // synchronously and paints the stored payload in the same frame.
+    if (typeof window.cidMountRejectedInline === 'function') {
+      await window.cidMountRejectedInline({ epoch: window.__cidRejectedInlineEpoch });
     }
-    if (rejectedRouteEpoch !== window.__cidRejectedInlineEpoch) return;
-    const results = document.getElementById('results');
-    if (!results) return;
-    // Keep the prepared Accueil feed mounted. Route changes may hide a
-    // surface, but they must not destroy its already measured DOM.
-    const existingFeed = results.querySelector('#cid-home-feed');
-    if (existingFeed) {
-      existingFeed.hidden = true;
-      existingFeed.setAttribute('aria-hidden', 'true');
-      existingFeed.style.display = 'none';
-    }
-    results.querySelector('#cid-home-skeleton')?.setAttribute('hidden', '');
-    results.querySelector('#rejectedInlineMain')?.remove();
-    // Create a container and copy produced rejected content from the modal's body/table into it
-    const container = document.createElement('div');
-    container.id = 'rejectedInlineMain';
-    container.style.width = '100%';
-    container.style.maxWidth = '1200px';
-    container.style.margin = '12px auto';
-    container.style.background = '#ffffff';
-    container.style.borderRadius = '12px';
-    container.style.padding = '12px';
-    container.style.boxShadow = '0 8px 30px rgba(2,6,23,0.06)';
-    // If renderRejectedTable produced a table tbody (#rejectedTableBody) move its children into the container.
-    const producedTbody = document.getElementById('rejectedTableBody');
-    if (producedTbody && producedTbody.childNodes && producedTbody.childNodes.length) {
-      // Build a visual wrapper similar to modal body
-      const title = document.createElement('div');
-      title.style.fontWeight = '900';
-      title.style.marginBottom = '8px';
-      title.textContent = 'Boules rejetées';
-      container.appendChild(title);
-      const copyControls = document.createElement('div');
-      copyControls.style.display = 'flex';
-      copyControls.style.justifyContent = 'flex-end';
-      copyControls.style.marginBottom = '8px';
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'copy-button';
-      copyBtn.textContent = 'copier tous';
-      copyBtn.onclick = function(){ if (typeof copyAllRejected === 'function') copyAllRejected(); };
-      copyControls.appendChild(copyBtn);
-      container.appendChild(copyControls);
-      // move produced nodes into a content wrapper
-      const contentWrapper = document.createElement('div');
-      // If renderRejectedTable created an HTML table, clone its parent to show same layout
-      const table = producedTbody.closest('table');
-      if (table) {
-        const tableClone = table.cloneNode(true);
-        // remove any existing tbody children to avoid duplication, then populate with producedTbody children clone
-        const newTbody = tableClone.querySelector('tbody') || document.createElement('tbody');
-        newTbody.innerHTML = '';
-        Array.from(producedTbody.childNodes).forEach(n => newTbody.appendChild(n.cloneNode(true)));
-        if (!tableClone.querySelector('tbody')) tableClone.appendChild(newTbody);
-        contentWrapper.appendChild(tableClone);
-      } else {
-        // fallback: copy modal body if available
-        const modalBody = document.querySelector('#rejectedModal .modal-body') || producedTbody;
-        if (modalBody) contentWrapper.appendChild(modalBody.cloneNode(true));
-      }
-      container.appendChild(contentWrapper);
-    } else {
-      // fallback message when nothing was produced
-      const p = document.createElement('p');
-      p.style.color = '#666';
-      p.style.padding = '12px';
-      p.textContent = 'Aucune donnée disponible.';
-      container.appendChild(p);
-    }
-    results.appendChild(container);
-    // #results is the fixed application scroll surface; never scroll the
-    // document root while changing an in-page view.
-    try { results.scrollTo({ top: 0, left: 0, behavior: 'smooth' }); } catch(e){}
-    return;
-  }catch(e){
-    if (rejectedRouteEpoch !== window.__cidRejectedInlineEpoch) return;
-    // fallback to opening the modal if anything fails
-    try{ document.getElementById('rejectedModal')?.classList.add('open'); }catch(_){} } })()">
+  }catch(e){ console.warn('Boules rejetées inline view failed', e); } })()">
   numéros rejetés
 </button>
 

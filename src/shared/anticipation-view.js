@@ -46,6 +46,8 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
   let tableauxPreviewReadyPromise = null;
   let anticipationRefreshTimer = null;
   let priorityPublication = null;
+  // Account whose cards are currently mounted (never reuse another one's).
+  let lastRenderIdentity = '';
   /*
    * A subscriber can reveal a future publication from Anticipé without
    * buying a second, date-specific anticipation grant. Keep that choice
@@ -1920,7 +1922,16 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
   async function hydrateSocialPosts(feed) {
     const posts = Array.from(feed.querySelectorAll('.cid-fb-post'))
       .filter((post) => post !== feed && post.querySelector('.cid-fb-like'));
-    callGlobalMethod('cidFacebookFeed', 'wireFeed', feed);
+    /*
+     * The feed host is preserved across refreshes (focus, visibility, 60 s
+     * timer). Wiring it on every refresh stacked one more click listener
+     * each time, so a single tap toggled Like / Partager several times and
+     * the buttons flickered on and off. Wire the shared handlers once.
+     */
+    if (feed.dataset.anticipationFeedWired !== 'true') {
+      feed.dataset.anticipationFeedWired = 'true';
+      callGlobalMethod('cidFacebookFeed', 'wireFeed', feed);
+    }
     const hydratePost = window.cidFacebookFeed?.hydratePost;
     if (typeof hydratePost === 'function') {
       await Promise.all(posts.map((post) => (
@@ -1971,7 +1982,12 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     const date = String(card?.dataset?.publicationDate || '').slice(0, 10);
     const payload = card?.__cidAnticipationPayload;
     if (!payload || !date) return false;
-    const onBack = () => callGlobal('showAnticipationView', { updateHistory: false });
+    // Return to the exact card the visitor opened, without a reload flash.
+    const returnScrollTop = get(VIEW_ID)?.scrollTop || 0;
+    const onBack = () => callGlobal('showAnticipationView', {
+      updateHistory: false,
+      restoreScrollTop: returnScrollTop
+    });
     if (key === 'matrice' && Array.isArray(payload.results)
       && typeof window.cidShowMatricePreview === 'function') {
       callGlobal('cidShowMatricePreview', {
@@ -2164,6 +2180,16 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
         }
       });
       target.replaceChildren(...Array.from(fresh.childNodes));
+      /*
+       * Keep the in-memory server payload with the patched card. Without it
+       * a refresh made "Voir plus" fall back to the compact inline list
+       * instead of opening the same view as the daily publication.
+       */
+      if (fresh.__cidAnticipationPayload) {
+        target.__cidAnticipationPayload = fresh.__cidAnticipationPayload;
+      } else {
+        delete target.__cidAnticipationPayload;
+      }
       window.cidComponentRuntime?.mark?.(target, {
         type: target.dataset.anticipationFeature?.startsWith('tableaux-')
           ? 'tableaux'
@@ -2193,10 +2219,21 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
 
   async function showAnticipationView({
     updateHistory = true,
-    focusFeature = ''
+    focusFeature = '',
+    restoreScrollTop = null
   } = {}) {
     const view = get(VIEW_ID);
     if (!view) return false;
+    /*
+     * Coming back from the Matrice / Boules rejetées renderer: keep the
+     * already-mounted cards of the same account on screen and refresh them
+     * in place, instead of flashing the loading state and rebuilding.
+     */
+    const identity = currentIdentity();
+    const canPreserve = Boolean(
+      lastRenderIdentity === identity
+      && get(MOUNT_ID)?.querySelector('.anticipation-feed > [data-anticipation-feature]')
+    );
     hideOtherViews();
     callGlobal('cidShowDedicatedView', {
       id: 'anticipe',
@@ -2215,7 +2252,9 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     view.hidden = false;
     view.style.display = 'block';
     view.setAttribute('aria-hidden', 'false');
-    view.scrollTop = 0;
+    view.scrollTop = canPreserve && Number.isFinite(Number(restoreScrollTop))
+      ? Number(restoreScrollTop)
+      : 0;
     callGlobal('setBottomNavActiveTab', 'anticipe');
     if (!anticipationRefreshTimer) {
       anticipationRefreshTimer = window.setInterval(() => {
@@ -2232,7 +2271,8 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       url.searchParams.set('section', 'anticipe');
       history.pushState({ ...(history.state || {}), view: 'anticipe' }, '', url.toString());
     }
-    await render();
+    lastRenderIdentity = identity;
+    await render({ preserveView: canPreserve });
     /*
      * A successful Tableau unlock can send the visitor here directly. Keep
      * the new secondary action precise by landing on that Tableau's future

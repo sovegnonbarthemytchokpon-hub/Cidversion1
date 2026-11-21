@@ -91,6 +91,101 @@ function syncInlineRejectedView(tbody) {
   inlineBody.replaceChildren(
     ...Array.from(tbody.childNodes).map((node) => node.cloneNode(true))
   );
+  // Apply the country filter in the same task as the paint: groups never
+  // appear and then disappear 70 ms later, and the toolbar lands at once.
+  try { window.cidSmartCountry?.refresh?.(); } catch (_) {}
+}
+
+/*
+ * Dedicated Boules rejetées route. The host is built synchronously with its
+ * final structure (title, "copier tous", table) BEFORE the data request, so
+ * the localStorage / Anticipé payload paints into it in the same frame. The
+ * previous flow removed the host, awaited the network, then rebuilt it,
+ * which made the buttons and the content blink on every open.
+ */
+function buildRejectedInlineHost() {
+  const container = document.createElement('div');
+  container.id = 'rejectedInlineMain';
+  container.className = 'rejected-inline-main';
+  container.style.cssText = [
+    'width:100%',
+    'max-width:1200px',
+    'margin:12px auto',
+    'background:#ffffff',
+    'border-radius:12px',
+    'padding:12px',
+    'box-shadow:0 8px 30px rgba(2,6,23,0.06)'
+  ].join(';');
+
+  const title = document.createElement('div');
+  title.className = 'rejected-inline-title';
+  title.style.cssText = 'font-weight:900;margin-bottom:8px;';
+  title.textContent = t('rejected.title', 'Boules rejetées');
+  container.appendChild(title);
+
+  const copyControls = document.createElement('div');
+  copyControls.className = 'rejected-inline-actions';
+  copyControls.style.cssText = 'display:flex;justify-content:flex-end;margin-bottom:8px;';
+  const copyButton = document.createElement('button');
+  copyButton.type = 'button';
+  copyButton.className = 'copy-button';
+  copyButton.textContent = t('rejected.copyAll', 'Copier tous');
+  copyButton.addEventListener('click', () => { copyAllRejected(); });
+  copyControls.appendChild(copyButton);
+  container.appendChild(copyControls);
+
+  const contentWrapper = document.createElement('div');
+  contentWrapper.className = 'rejected-inline-content';
+  const sourceTable = document.getElementById('rejectedTable');
+  const table = sourceTable
+    ? sourceTable.cloneNode(false)
+    : document.createElement('table');
+  table.removeAttribute('id');
+  if (!sourceTable) table.style.cssText = 'width:100%;border-collapse:collapse;';
+  const head = sourceTable?.querySelector('thead');
+  if (head) table.appendChild(head.cloneNode(true));
+  const tbody = document.createElement('tbody');
+  const sourceBody = document.getElementById('rejectedTableBody');
+  if (sourceBody) {
+    tbody.append(...Array.from(sourceBody.childNodes).map((node) => node.cloneNode(true)));
+  }
+  table.appendChild(tbody);
+  contentWrapper.appendChild(table);
+  container.appendChild(contentWrapper);
+  return container;
+}
+
+export async function mountRejectedInline({ epoch } = {}) {
+  const routeEpoch = epoch ?? window.__cidRejectedInlineEpoch;
+  const results = document.getElementById('results');
+  if (!results) return null;
+  const feed = results.querySelector('#cid-home-feed');
+  if (feed) {
+    feed.hidden = true;
+    feed.setAttribute('aria-hidden', 'true');
+    feed.style.display = 'none';
+  }
+  results.querySelector('#cid-home-skeleton')?.setAttribute('hidden', '');
+
+  let host = results.querySelector('#rejectedInlineMain');
+  if (!host) {
+    // Neutral state first: never show the previous route's values.
+    document.getElementById('rejectedTableBody')?.replaceChildren();
+    host = buildRejectedInlineHost();
+    results.appendChild(host);
+  }
+  // Open at the top instantly: a smooth scroll here read as a jump.
+  results.scrollTop = 0;
+
+  try {
+    return await renderRejectedTable({
+      programmeDate: window.__cidRequestedProgrammeDate || undefined
+    });
+  } catch (_) {
+    if (routeEpoch !== window.__cidRejectedInlineEpoch) return null;
+    syncInlineRejectedView(document.getElementById('rejectedTableBody'));
+    return null;
+  }
 }
 
 const t = (key, fallback = key) => (
@@ -439,6 +534,7 @@ export async function renderRejectedTable(options = {}) {
     } else {
       tbody.innerHTML = `<tr><td colspan="2" style="padding:16px;text-align:center;color:#666;">${escapeHtml(t('rejected.loading', 'Lecture des Boules rejetées…'))}</td></tr>`;
       tbody.dataset.cidSignature = '';
+      syncInlineRejectedView(tbody);
     }
 
     /*
@@ -490,6 +586,7 @@ export async function renderRejectedTable(options = {}) {
     rejectedRequest = null;
     console.warn('Rejected balls loading failed', error);
     renderError(tbody, t('rejected.unavailable', 'Les Boules rejetées sont indisponibles pour le moment.'));
+    syncInlineRejectedView(tbody);
     throw error;
   }
 }
@@ -532,6 +629,8 @@ export function initRejectedController() {
   window.rejectedController.enter = enterRejectedView;
   window.rejectedController.leave = leaveRejectedView;
   window.rejectedController.setPreview = setRejectedPreview;
+  window.rejectedController.mountInline = mountRejectedInline;
+  window.cidMountRejectedInline = mountRejectedInline;
 }
 
 document.addEventListener('click', async (event) => {

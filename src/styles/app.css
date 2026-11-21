@@ -32720,11 +32720,20 @@ body[data-cid-dedicated-view="croix"] .cid-croix-history-track > .cid-fb-post[da
  * scrolled-to controls above the bar as well.
  * ========================================================================== */
 :root {
+  /*
+   * The larger of the theoretical bar (nav + safe area + viewport extension)
+   * and the height the bar really covers on this device, measured live by
+   * scroll-stability.js (--cid-bottom-nav-occupied), plus a 32px gap.
+   */
   --cid-bottom-nav-clearance: calc(
-    var(--cid-nav-height, 66px) +
-    env(safe-area-inset-bottom, 0px) +
-    var(--cid-visual-bottom-extension, 0px) +
-    24px
+    max(
+      calc(
+        var(--cid-nav-height, 66px) +
+        env(safe-area-inset-bottom, 0px) +
+        var(--cid-visual-bottom-extension, 0px)
+      ),
+      var(--cid-bottom-nav-occupied, 0px)
+    ) + 32px
   );
   /* Modals / notification centre stop exactly above the navigation bar. */
   --cid-page-bottom: calc(

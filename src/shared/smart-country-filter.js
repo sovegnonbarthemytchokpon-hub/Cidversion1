@@ -295,16 +295,57 @@
     }
   }
 
-  function matrixOtherCountries() {
-    matrixManualOverride = true;
-    if (typeof window.selectMatriceCountry === 'function') {
-      window.selectMatriceCountry('Tous');
-    } else {
-      $$('#countryButtons .country-filter-btn')
-        .find(button => normalize(button.dataset.country) === 'tous')
-        ?.click();
+  /*
+   * One click = one state change. The button used to force "Tous" on every
+   * click, even while it read "Revenir au programme {{country}}", so a tap
+   * re-rendered the same list again instead of returning to the profile
+   * country. It now toggles between the two views, ignores taps while the
+   * previous switch is still rendering, and keeps the button on screen.
+   */
+  let matrixSwitchPending = false;
+  let pendingMatrixAnchor = null;
+  function matrixOtherCountries(event) {
+    if (matrixSwitchPending) return;
+    const country = profileCountry();
+    const backToCountry = Boolean(matrixManualOverride && country && country !== 'Tous');
+    const target = backToCountry
+      ? $$('#countryButtons .country-filter-btn')
+        .find(item => countryMatches(item.dataset.country, country))?.dataset.country
+      : 'Tous';
+    if (!target) return;
+    matrixSwitchPending = true;
+    window.setTimeout(() => { matrixSwitchPending = false; }, 400);
+    matrixManualOverride = !backToCountry;
+    if (backToCountry) matrixAutoApplied = `${matrixViewToken}:${country}`;
+    const anchorTop = event?.currentTarget?.getBoundingClientRect?.().top;
+    pendingMatrixAnchor = Number.isFinite(anchorTop) ? anchorTop : null;
+    applyingMatrix = true;
+    try {
+      if (typeof window.selectMatriceCountry === 'function') {
+        window.selectMatriceCountry(target);
+      } else {
+        $$('#countryButtons .country-filter-btn')
+          .find(button => normalize(button.dataset.country) === normalize(target))
+          ?.click();
+      }
+    } finally {
+      setTimeout(() => { applyingMatrix = false; }, 0);
     }
     ensureMatrixOtherCountriesButton();
+  }
+
+  /*
+   * After the level is rebuilt, keep the toolbar button at the same place on
+   * screen: the list grows or shrinks around it, the button does not jump.
+   */
+  function restoreMatrixAnchor() {
+    if (pendingMatrixAnchor == null) return;
+    const button = document.querySelector('[data-smart-country-other="matrix"]');
+    const scroller = document.getElementById('results');
+    if (!button || !scroller) return;
+    const delta = button.getBoundingClientRect().top - pendingMatrixAnchor;
+    pendingMatrixAnchor = null;
+    if (Math.abs(delta) > 1) scroller.scrollTop += delta;
   }
 
   function ensureMatrixOtherCountriesButton() {
@@ -389,7 +430,14 @@
     return groups;
   }
 
-  function rejectedOtherCountries() {
+  let rejectedSwitchAt = 0;
+  function rejectedOtherCountries(event) {
+    // A double tap (or a ghost click on mobile) must not toggle twice.
+    const now = Date.now();
+    if (now - rejectedSwitchAt < 350) return;
+    rejectedSwitchAt = now;
+    const clicked = event?.currentTarget;
+    const anchorTop = clicked?.getBoundingClientRect?.().top;
     rejectedGlobalOverride = !rejectedGlobalOverride;
     const root = rejectedRootElement();
     filterRejectedGroups(root);
@@ -398,6 +446,12 @@
     setText(button, rejectedGlobalOverride
       ? `🌍 ${ti('smart.backToRejected', { country }, 'Revenir aux boules {{country}}')}`
       : `🌍 ${t('smart.otherRejected', 'Voir les boules rejetées des autres pays')}`);
+    // Keep the button where the finger is: the list opens around it.
+    const scroller = root?.closest?.('#results');
+    if (button && scroller && Number.isFinite(anchorTop)) {
+      const delta = button.getBoundingClientRect().top - anchorTop;
+      if (Math.abs(delta) > 1) scroller.scrollTop += delta;
+    }
   }
 
   function ensureRejectedToolbar(root) {
@@ -489,7 +543,14 @@
       normalize: countryFromLabel,
       // Synchronous pass for a route that has just mounted its content, so
       // the country filter and its toolbar land in the same frame.
-      refresh: refreshAdapters
+      refresh: refreshAdapters,
+      // Matrice level two was just rebuilt: mount its toolbar in the same
+      // frame instead of 70 ms later (the button used to pop in and push
+      // the country list).
+      refreshMatrixToolbar: () => {
+        ensureMatrixOtherCountriesButton();
+        restoreMatrixAnchor();
+      }
     };
 
     document.addEventListener('change', event => {

@@ -789,7 +789,30 @@
   };
   window.i18n = window.cidI18n;
 
-  window.addEventListener('cid:site-config-loaded', () => loadSavedLanguage().catch(() => {}));
+  /*
+   * Re-apply the saved language after a configuration load only when the
+   * locale, or its administrator-managed translations, actually changed.
+   * Re-emitting an identical `cid:language-change` closed a loop
+   * (language change -> promo banners reload the config -> config loaded ->
+   * language change...) that re-rendered every mounted view about every
+   * 600 ms: the Boules rejetées list, its "autres pays" button and the
+   * Matrice country list kept jumping on screen.
+   */
+  let appliedConfigSignature = '';
+  const configLanguageSignature = () => {
+    const saved = preferredLocaleOverride || databaseLocale() || readPersistedLocale();
+    const locale = resolveLocale(saved || FALLBACK_LOCALE);
+    let translations = '';
+    try { translations = JSON.stringify(databaseTranslations(locale)); } catch (_) {}
+    return `${locale}|${translations}`;
+  };
+  window.addEventListener('cid:site-config-loaded', () => {
+    const signature = configLanguageSignature();
+    if (signature === appliedConfigSignature
+      && signature.split('|')[0] === currentLocale) return;
+    appliedConfigSignature = signature;
+    loadSavedLanguage().catch(() => {});
+  });
   window.addEventListener('cid:auth-sync', () => {
     // The authenticated catalogue contains the authoritative
     // user_language_preferences row. Reapply it after login/logout so a

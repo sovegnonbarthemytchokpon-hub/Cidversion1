@@ -78,6 +78,23 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     )
   );
   const keyOf = (rule) => clean(rule?.feature_key || rule?.featureKey).toLowerCase();
+  /*
+   * Publication renderer for a rule key. The administrator can publish the
+   * anticipated Boules rejetées (or Matrice / Croix) under the history key
+   * (`historique-rejetees`, ...). That key fell through every branch, so the
+   * card had no coloured banner and "Voir plus" could not open the grids.
+   * Only the DISPLAY is aliased: grants, unlock requests and server checks
+   * keep the exact key configured by the administrator.
+   */
+  const CONTENT_KEY_ALIASES = Object.freeze({
+    'historique-rejetees': 'boules-rejetees',
+    'historique-matrice': 'matrice',
+    'historique-croix': 'croix'
+  });
+  const contentKeyOf = (key) => {
+    const value = clean(key).toLowerCase();
+    return CONTENT_KEY_ALIASES[value] || value;
+  };
   const currentIdentity = () => (
     String(window.cidAuthCurrentUserId || 'visitor').trim() || 'visitor'
   );
@@ -1020,8 +1037,9 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       </div>`;
   }
 
-  function lockedMediaMarkup(key, date) {
+  function lockedMediaMarkup(featureKey, date) {
     const info = publicationInfo(date);
+    const key = contentKeyOf(featureKey);
     if (key === 'matrice') return matrixMedia(info, null);
     if (key === 'boules-rejetees') return rejectedMedia(info, null);
     if (key === 'croix') return crossMedia(info, null);
@@ -1447,7 +1465,8 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       </div>`;
   }
 
-  function canonicalSocialPostId(key, date) {
+  function canonicalSocialPostId(featureKey, date) {
+    const key = contentKeyOf(featureKey);
     const normalizedDate = String(date || '').slice(0, 10);
     const publicationKey = key === 'matrice'
       ? 'matrix'
@@ -1539,7 +1558,8 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     }
   }
 
-  async function loadUnlockedPayloadFromNetwork(key, date) {
+  async function loadUnlockedPayloadFromNetwork(featureKey, date) {
+    const key = contentKeyOf(featureKey);
     let promise;
     if (key === 'matrice') {
       promise = Promise.resolve(callGlobal('cidFetchProgrammeForDate', date))
@@ -1593,15 +1613,16 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     const title = `${label} · ${info.fullDate}`;
     const copy = `Disponible par anticipation · publication normale le ${info.fullDate}`;
     const postId = canonicalSocialPostId(key, date);
-    const postType = key.startsWith('tableaux-')
+    const contentKey = contentKeyOf(key);
+    const postType = contentKey.startsWith('tableaux-')
       ? 'tableaux'
-      : key === 'matrice'
+      : contentKey === 'matrice'
         ? 'matrix'
-        : key === 'boules-rejetees'
+        : contentKey === 'boules-rejetees'
           ? 'rejected'
-          : key === 'croix'
+          : contentKey === 'croix'
             ? 'cross'
-            : key;
+            : contentKey;
     const commentsEnabled = typeof window.cidContentControl?.commentsEnabled === 'function'
       ? callGlobalMethod('cidContentControl', 'commentsEnabled', postId, postType)
       : false;
@@ -1609,9 +1630,9 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       ? ''
       : `anticipation:${key}:${String(date || '').slice(0, 10)}`;
     let media = '<div class="cid-fb-media anticipation-real-media"></div>';
-    if (key === 'matrice') media = matrixMedia(info, payload);
-    else if (key === 'boules-rejetees') media = rejectedMedia(info, payload);
-    else if (key === 'croix') media = crossMedia(info, payload);
+    if (contentKey === 'matrice') media = matrixMedia(info, payload);
+    else if (contentKey === 'boules-rejetees') media = rejectedMedia(info, payload);
+    else if (contentKey === 'croix') media = crossMedia(info, payload);
     else if (key.startsWith('tableaux-')) media = tableauMedia(info, payload, key);
 
     const renderer = window.cidFacebookFeed?.postMarkup;
@@ -1947,6 +1968,21 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     if (feed.dataset.anticipationActionsWired === 'true') return;
     feed.dataset.anticipationActionsWired = 'true';
     feed.addEventListener('click', (event) => {
+      /*
+       * Tapping the coloured "Programme du jour" banner of an unlocked
+       * Matrice / Boules rejetées card opens the dedicated view, exactly
+       * like "Voir plus" on the daily publication.
+       */
+      const banner = event.target.closest(
+        '.cid-fb-daily-publication-media, .cid-fb-configured-publication-media'
+      );
+      if (banner && feed.contains(banner)) {
+        const bannerPost = banner.closest('.cid-fb-post');
+        if (bannerPost && openDailyRenderer(bannerPost)) {
+          event.preventDefault();
+          return;
+        }
+      }
       const button = event.target.closest('.cid-fb-more-button');
       if (!button || !feed.contains(button)) return;
       const post = button.closest('.cid-fb-post');
@@ -1978,7 +2014,7 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
    */
   function openDailyRenderer(post) {
     const card = post.closest('[data-anticipation-feature]');
-    const key = card?.dataset?.anticipationFeature || '';
+    const key = contentKeyOf(card?.dataset?.anticipationFeature || '');
     const date = String(card?.dataset?.publicationDate || '').slice(0, 10);
     const payload = card?.__cidAnticipationPayload;
     if (!payload || !date) return false;

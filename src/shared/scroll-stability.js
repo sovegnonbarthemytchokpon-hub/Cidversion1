@@ -70,7 +70,43 @@
     root.style.setProperty('--cid-visual-offset-top', `${offsetTop}px`);
     root.style.setProperty('--cid-visual-height', `${visibleHeight}px`);
     root.style.setProperty('--cid-visual-bottom-extension', `${bottomExtension}px`);
+    syncBottomNavOccupancy();
   };
+
+  /*
+   * Real height covered by the fixed bottom navigation, measured from the
+   * bottom of the visible viewport. The CSS clearance used a theoretical
+   * nav height; on phones with a home indicator, larger labels or a PWA
+   * standalone window the bar is taller, and the last blocks of a scroll
+   * view (e.g. "Bénin" / "Copier Bénin") ended up under it.
+   */
+  let lastNavOccupancy = -1;
+  function syncBottomNavOccupancy() {
+    const root = document.documentElement;
+    const nav = document.querySelector('.category-bar');
+    if (!nav) return;
+    const rect = nav.getBoundingClientRect();
+    const viewport = window.visualViewport;
+    const visibleBottom = (Number(viewport?.offsetTop) || 0)
+      + (Number(viewport?.height) || window.innerHeight || root.clientHeight || 0);
+    const hidden = rect.height <= 0 || getComputedStyle(nav).display === 'none';
+    const occupied = hidden ? 0 : Math.max(0, Math.ceil(visibleBottom - rect.top));
+    if (occupied === lastNavOccupancy) return;
+    lastNavOccupancy = occupied;
+    root.style.setProperty('--cid-bottom-nav-occupied', `${occupied}px`);
+  }
+  const observeBottomNav = () => {
+    const nav = document.querySelector('.category-bar');
+    if (!nav) return false;
+    syncBottomNavOccupancy();
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(() => syncBottomNavOccupancy()).observe(nav);
+    }
+    return true;
+  };
+  if (!observeBottomNav()) {
+    document.addEventListener('DOMContentLoaded', observeBottomNav, { once: true });
+  }
 
   syncVisualViewportGeometry();
   window.visualViewport?.addEventListener('resize', syncVisualViewportGeometry, { passive: true });

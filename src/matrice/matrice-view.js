@@ -771,6 +771,8 @@
     }
     level.appendChild(slots);
     results.appendChild(level);
+    // Country toolbar ("autres pays") lands in this same frame: no pop-in.
+    try { window.cidSmartCountry?.refreshMatrixToolbar?.(); } catch (_) {}
   };
 
   const renderLevelThree = () => {

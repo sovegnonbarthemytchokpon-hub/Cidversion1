@@ -88,6 +88,14 @@ function writeRejectedCache(date, payload) {
 function syncInlineRejectedView(tbody) {
   const inlineBody = document.querySelector('#rejectedInlineMain tbody');
   if (!inlineBody || !tbody || inlineBody === tbody) return;
+  /*
+   * Same markup as the one already shown: keep the mounted nodes. Rebuilding
+   * identical groups reset the country filter for a frame, so the
+   * "autres pays" button and the country list below it jumped.
+   */
+  const sourceHtml = tbody.innerHTML;
+  if (inlineBody.__cidSourceHtml === sourceHtml) return;
+  inlineBody.__cidSourceHtml = sourceHtml;
   inlineBody.replaceChildren(
     ...Array.from(tbody.childNodes).map((node) => node.cloneNode(true))
   );

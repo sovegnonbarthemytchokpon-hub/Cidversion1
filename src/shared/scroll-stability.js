@@ -1,42 +1,80 @@
 /*
  * Scroll stability contract.
  *
- * The application uses fixed, independently scrollable route surfaces. The
- * document itself must therefore never retain a stale modal lock when a
- * route changes. This small, dependency-free controller is loaded before the
- * route modules so every navigation path can release the same state.
+ * Route controllers own their isolated scroll surface. The document remains
+ * available for normal page scrolling, while modal locks are explicit and
+ * transient. Keep this controller dependency-free and load it before routes.
  */
 (() => {
   'use strict';
 
   const BODY_LOCK_CLASSES = [
-    'modal-open',
-    'no-scroll',
-    'noscroll',
-    'scroll-lock',
-    'overflow-hidden',
-    'is-locked'
+    'modal-open', 'no-scroll', 'noscroll', 'scroll-lock',
+    'overflow-hidden', 'is-locked'
   ];
 
   const ROUTE_SURFACES = [
-    '#results',
-    '#categoriesView',
-    '#tableauxViewContainer',
-    '#profileViewContainer',
-    '#croixViewContainer',
-    '#matrixCalculatorPanel',
-    '#anticipationViewContainer',
-    '#resultatAideViewContainer',
-    '#globalStatisticsViewContainer',
-    '#virtualAssistantViewContainer',
+    '#results', '#categoriesView', '#tableauxViewContainer',
+    '#profileViewContainer', '#croixViewContainer', '#matrixCalculatorPanel',
+    '#anticipationViewContainer', '#resultatAideViewContainer',
+    '#globalStatisticsViewContainer', '#virtualAssistantViewContainer',
     '#notificationCenter'
   ].join(', ');
 
   /*
-   * Keep the current visual viewport available to overlays and keyboard-aware
-   * surfaces. The persistent header/navigation use ordinary fixed positioning
-   * so Safari can move them with its own browser chrome transitions.
+   * Prefer native touch scrolling in every route and nested table. In
+   * particular, don't constrain touch-action to pan-y: horizontal overflow
+   * tables need to accept sideways gestures without cancelling vertical ones.
    */
+  const SCROLL_STYLE_ID = 'cid-native-scroll-contract';
+  function installNativeScrollContract() {
+    if (document.getElementById(SCROLL_STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = SCROLL_STYLE_ID;
+    style.textContent = `
+      html, body { touch-action: pan-x pan-y !important; }
+      html:not(.cid-scroll-locked), body:not(.cid-scroll-locked) {
+        overscroll-behavior-y: auto !important;
+      }
+      ${ROUTE_SURFACES},
+      .cid-layout-surface,
+      .profile-native-host,
+      .modal-body,
+      #archiveContent,
+      .notification-list {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        touch-action: pan-x pan-y;
+        scroll-behavior: auto;
+      }
+      #tableauxViewContainer,
+      #results,
+      .profile-native-host,
+      .cid-layout-surface {
+        min-height: 0;
+        scroll-padding-block: 12px;
+      }
+      #tableauxViewContainer .table-container,
+      #tableauxViewContainer .satellites-table-container,
+      #tableauxViewContainer .created-program-template-satellites,
+      .cid-layout-surface .table-container,
+      .cid-layout-surface .table-responsive {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-inline: contain;
+        touch-action: pan-x pan-y;
+      }
+      #tableauxViewContainer table,
+      .cid-layout-surface table { scroll-margin-block: 12px; }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+  }
+  installNativeScrollContract();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', installNativeScrollContract, { once: true });
+  }
+
   const syncVisualViewportGeometry = () => {
     const root = document.documentElement;
     const viewport = window.visualViewport;
@@ -45,12 +83,6 @@
       0,
       parseFloat(root.style.getPropertyValue('--cid-visual-offset-top')) || 0
     );
-    /*
-     * During Safari's first layout pass visualViewport can briefly report
-     * zero after the parser already measured the real browser-chrome offset.
-     * Do not overwrite that seeded value with a transient zero while the
-     * splash is still covering the page.
-     */
     const offsetTop = measuredOffsetTop > 0
       || !root.classList.contains('cid-booting')
       ? measuredOffsetTop
@@ -63,23 +95,13 @@
       1,
       root.clientHeight || window.innerHeight || visibleHeight
     );
-    const bottomExtension = Math.max(
-      0,
-      visibleHeight + offsetTop - layoutHeight
-    );
+    const bottomExtension = Math.max(0, visibleHeight + offsetTop - layoutHeight);
     root.style.setProperty('--cid-visual-offset-top', `${offsetTop}px`);
     root.style.setProperty('--cid-visual-height', `${visibleHeight}px`);
     root.style.setProperty('--cid-visual-bottom-extension', `${bottomExtension}px`);
     syncBottomNavOccupancy();
   };
 
-  /*
-   * Real height covered by the fixed bottom navigation, measured from the
-   * bottom of the visible viewport. The CSS clearance used a theoretical
-   * nav height; on phones with a home indicator, larger labels or a PWA
-   * standalone window the bar is taller, and the last blocks of a scroll
-   * view (e.g. "Bénin" / "Copier Bénin") ended up under it.
-   */
   let lastNavOccupancy = -1;
   function syncBottomNavOccupancy() {
     const root = document.documentElement;
@@ -95,12 +117,13 @@
     lastNavOccupancy = occupied;
     root.style.setProperty('--cid-bottom-nav-occupied', `${occupied}px`);
   }
+
   const observeBottomNav = () => {
     const nav = document.querySelector('.category-bar');
     if (!nav) return false;
     syncBottomNavOccupancy();
     if (typeof ResizeObserver === 'function') {
-      new ResizeObserver(() => syncBottomNavOccupancy()).observe(nav);
+      new ResizeObserver(syncBottomNavOccupancy).observe(nav);
     }
     return true;
   };
@@ -109,55 +132,36 @@
   }
 
   syncVisualViewportGeometry();
+  // visualViewport scroll fires repeatedly as iOS browser chrome moves. Updating
+  // layout variables on every event changes fixed-surface height mid-gesture;
+  // resize/orientation/pageshow are sufficient to resynchronize geometry.
   window.visualViewport?.addEventListener('resize', syncVisualViewportGeometry, { passive: true });
-  window.visualViewport?.addEventListener('scroll', syncVisualViewportGeometry, { passive: true });
   window.addEventListener('resize', syncVisualViewportGeometry, { passive: true });
   window.addEventListener('orientationchange', syncVisualViewportGeometry, { passive: true });
   window.addEventListener('pageshow', syncVisualViewportGeometry, { passive: true });
+  [50, 180, 420, 900].forEach((delay) => window.setTimeout(syncVisualViewportGeometry, delay));
 
-  /*
-   * iOS Safari can publish the first visualViewport dimensions a little after
-   * the document's load event. Re-read them during the boot window so the
-   * first visible frame does not use the layout viewport and leave the header
-   * behind the address bar or the navigation above a grey tail.
-   */
-  [50, 180, 420, 900].forEach((delay) => {
-    window.setTimeout(syncVisualViewportGeometry, delay);
-  });
-
-  const activeTouchAction = () => (
-    document.body?.classList.contains('croix-active')
-      || document.body?.dataset?.cidDedicatedView === 'croix'
-      ? 'pan-x pan-y'
-      : 'pan-y'
-  );
+  const activeTouchAction = () => 'pan-x pan-y';
 
   const setDocumentScroll = (locked) => {
-    const value = locked ? 'hidden' : 'auto';
     const root = document.documentElement;
     const body = document.body;
     [root, body].filter(Boolean).forEach((element) => {
-      element.style.setProperty('overflow-y', value, 'important');
+      element.style.setProperty('overflow-y', locked ? 'hidden' : 'auto', 'important');
       element.style.setProperty('overflow-x', 'hidden', 'important');
-      element.style.setProperty('overscroll-behavior-y', 'none', 'important');
+      element.style.setProperty('overscroll-behavior-y', locked ? 'none' : 'auto', 'important');
       element.style.setProperty('touch-action', activeTouchAction(), 'important');
+      element.classList.toggle('cid-scroll-locked', locked);
       element.classList.toggle('modal-open', locked);
       element.classList.toggle('no-scroll', locked);
     });
-    if (body) {
-      BODY_LOCK_CLASSES.forEach((className) => {
-        if (!locked || className === 'modal-open' || className === 'no-scroll') {
-          body.classList.toggle(className, locked);
-        }
-      });
-    }
+    if (body) BODY_LOCK_CLASSES.forEach((className) => body.classList.toggle(className, locked));
   };
 
   const closeOpenModals = () => {
     document.querySelectorAll('.modal-overlay.open, .modal.open').forEach((modal) => {
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden', 'true');
-      // A few legacy handlers use inline display values, so clear those too.
       modal.style.display = 'none';
     });
     document.querySelectorAll('[aria-expanded="true"]').forEach((element) => {
@@ -167,38 +171,26 @@
 
   const resetScroll = ({ closeModals = false, resetSurfaces = true } = {}) => {
     if (closeModals) closeOpenModals();
-
     const root = document.documentElement;
     const body = document.body;
-    /*
-     * Route initialization calls this reset before the splash gate is
-     * released. Keep the document locked during that window so its inline
-     * `overflow-y: auto` value cannot reintroduce the cold-load coordinate
-     * jump that the shell CSS is preventing.
-     */
     const shellIsBooting = root?.classList.contains('cid-booting')
       || window.__cidRenderReady !== true;
-    const documentOverflow = shellIsBooting ? 'hidden' : 'auto';
     [root, body].filter(Boolean).forEach((element) => {
       element.style.removeProperty('overflow');
-      element.style.setProperty('overflow-y', documentOverflow, 'important');
+      element.style.setProperty('overflow-y', shellIsBooting ? 'hidden' : 'auto', 'important');
       element.style.setProperty('overflow-x', 'hidden', 'important');
-      element.style.setProperty('overscroll-behavior-y', 'none', 'important');
+      element.style.setProperty('overscroll-behavior-y', 'auto', 'important');
       element.style.setProperty('touch-action', activeTouchAction(), 'important');
       BODY_LOCK_CLASSES.forEach((className) => element.classList.remove(className));
+      element.classList.remove('cid-scroll-locked');
     });
-
     if (body) {
-      // Be defensive against classes added by older integrations.
       Array.from(body.classList).forEach((className) => {
-        if (/(?:modal|scroll|overflow|no-?scroll)/i.test(className)) {
-          body.classList.remove(className);
-        }
+        if (/(?:modal|scroll|overflow|no-?scroll)/i.test(className)) body.classList.remove(className);
       });
     }
-
     if (resetSurfaces) {
-      try { window.scrollTo(0, 0); } catch (_) {}
+      try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (_) {}
       document.querySelectorAll(ROUTE_SURFACES).forEach((surface) => {
         try {
           surface.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
@@ -213,14 +205,6 @@
   window.cidResetScrollLock = resetScroll;
   window.cidCloseOpenModals = closeOpenModals;
 
-  /*
-   * Some mobile browsers restore the document position once the native load
-   * event completes, after the early bootstrap reset has already run. That
-   * restoration moves the fixed shell as a whole and is perceived as the
-   * header disappearing with a blank tail below it. Re-assert the cold
-   * position at that boundary, but never disturb a visitor who has already
-   * interacted with a route.
-   */
   const resetColdDocumentPosition = () => {
     if (window.__cidRenderReady === true
       && !document.documentElement.classList.contains('cid-booting')) return;
@@ -235,29 +219,23 @@
 
   window.addEventListener('load', () => {
     resetColdDocumentPosition();
-    requestAnimationFrame(() => resetColdDocumentPosition());
+    requestAnimationFrame(resetColdDocumentPosition);
   }, { once: true });
   window.addEventListener('pageshow', resetColdDocumentPosition, { once: true });
 
-  // History transitions are also route transitions. Keep this safety net in
-  // place for controllers that do not share categories-view.js.
+  /*
+   * History changes are not necessarily route changes (filters and tabs also
+   * use pushState). Never reset every scroll owner just because the URL was
+   * updated; the destination route controller explicitly resets its own view.
+   */
   ['pushState', 'replaceState'].forEach((method) => {
     const original = window.history?.[method];
     if (typeof original !== 'function') return;
     window.history[method] = function stableScrollHistoryMethod(...args) {
       const result = original.apply(this, args);
-      resetScroll({ resetSurfaces: true });
+      resetScroll({ resetSurfaces: false });
       return result;
     };
   });
-  window.addEventListener('popstate', () => {
-    resetScroll({ resetSurfaces: true });
-  });
-
-  /*
-   * Scrolling stays entirely native. The previous document-level touchmove
-   * listener cancelled downward gestures at the top of a nested surface,
-   * which made mobile scrolling feel stuck and forced every touch through a
-   * non-passive handler. CSS overscroll containment above is sufficient here.
-   */
+  window.addEventListener('popstate', () => resetScroll({ resetSurfaces: false }));
 })();

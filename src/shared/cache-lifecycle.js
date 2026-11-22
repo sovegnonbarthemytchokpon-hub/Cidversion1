@@ -1,17 +1,17 @@
 /*
  * Cidmap cache lifecycle.
  *
- * Keep the previous Service Worker cache until the new worker has copied the
- * offline shell and activated successfully. Deleting it during page startup
- * can leave a newly deployed app without its HTML, CSS, or images when offline.
+ * Preserve the active offline shell while workers migrate caches. Static
+ * styles and interface assets are warmed asynchronously; dynamic publication
+ * data remains owned by the application repositories/backend.
  */
 (() => {
   'use strict';
 
-  const APP_VERSION = 'v40-performance-cache';
+  const APP_VERSION = 'v41-mobile-scroll-cache';
   const VERSION_KEY = 'cidmap:app-version';
-  // Must equal CACHE_NAME in /service-worker.js.
-  const CURRENT_SW_CACHE = 'cidmap-cache-v49-stable-views';
+  // Must equal CACHE_NAME in /service-worker.js (cidmap-cache-v50-stable-toggle).
+  const CURRENT_SW_CACHE = 'cidmap-cache-v50-stable-toggle';
 
   const OLD_LOCAL_STORAGE = [
     /^cidmap:/,
@@ -40,6 +40,27 @@
     '.cid-legacy-component',
     '.cid-old-component'
   ].join(', ');
+
+  // These are static shell resources only. Do not add API/database endpoints:
+  // account and publication data must continue through their existing access
+  // checks and local-first repositories.
+  const STATIC_ASSETS = [
+    '/src/styles/app.css?v=unified-v4-nav-occupied',
+    '/src/styles/auth-frame.css?v=unified-v1',
+    '/src/shared/images/squirrel-red-mask.png',
+    '/src/shared/images/squirrel-croix-192.png',
+    '/src/shared/images/squirrel-croix-512.png',
+    '/src/shared/images/croix-canonical.png',
+    '/src/shared/images/redCross-610x601.png',
+    '/src/shared/images/app-icon-192.png',
+    '/src/shared/images/app-icon-512.png',
+    '/src/shared/fonts/archivo-black-latin.woff2',
+    '/src/shared/fonts/archivo-black-latin-ext.woff2',
+    '/src/shared/fonts/audiowide-latin.woff2',
+    '/src/shared/fonts/audiowide-latin-ext.woff2',
+    '/src/shared/fonts/noto-sans-latin.woff2',
+    '/src/shared/fonts/noto-sans-latin-ext.woff2'
+  ];
 
   function matchesAny(value, patterns) {
     return patterns.some((pattern) => pattern.test(String(value || '')));
@@ -70,8 +91,6 @@
     purgeStorage(window.sessionStorage, OLD_SESSION_STORAGE);
   }
 
-  // Cache migration and cleanup are owned by the Service Worker. In particular,
-  // do not delete the previous shell while a new worker is still installing.
   async function purgeBrowserCaches() {
     if (!('caches' in window)) return [];
     try {
@@ -79,6 +98,27 @@
       return names.filter((name) => name === CURRENT_SW_CACHE);
     } catch (_) {
       return [];
+    }
+  }
+
+  async function warmStaticAssets() {
+    if (!('caches' in window)) return;
+    try {
+      const cache = await caches.open(CURRENT_SW_CACHE);
+      await Promise.all(STATIC_ASSETS.map(async (path) => {
+        const url = new URL(path, location.origin).href;
+        if (await cache.match(url, { ignoreSearch: false })) return;
+        try {
+          const response = await fetch(url, { credentials: 'same-origin' });
+          if (response.ok && response.type !== 'opaque') {
+            await cache.put(url, response.clone());
+          }
+        } catch (_) {
+          // Offline/slow fetch is non-fatal; the service worker retains old assets.
+        }
+      }));
+    } catch (_) {
+      // Cache Storage may be disabled or unavailable (e.g. private browsing).
     }
   }
 
@@ -121,9 +161,9 @@
     }
     purgeOldStorage();
 
-    // Storage/cache maintenance and update checks are deliberately off the
-    // first-paint path; localStorage-backed content can render immediately.
+    // Never block first paint on cache maintenance or worker update checks.
     void purgeBrowserCaches();
+    void warmStaticAssets();
     void refreshServiceWorkers();
 
     const finishDomPurge = () => {
@@ -138,7 +178,8 @@
 
     window.__cidAppVersion = APP_VERSION;
     window.__cidCacheLifecycle = Object.freeze({
-      version: APP_VERSION, changed, purgeBrowserCaches, refreshServiceWorkers, purgeLegacyDom
+      version: APP_VERSION, changed, purgeBrowserCaches, warmStaticAssets,
+      refreshServiceWorkers, purgeLegacyDom
     });
   }
 

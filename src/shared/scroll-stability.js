@@ -25,14 +25,36 @@
    * Prefer native touch scrolling in every route and nested table. In
    * particular, don't constrain touch-action to pan-y: horizontal overflow
    * tables need to accept sideways gestures without cancelling vertical ones.
+   * `manipulation` keeps both pan axes plus pinch-zoom and is the most widely
+   * supported non-default value (Android Chrome, Safari, Firefox, Opera).
    */
+  /*
+   * Lightweight browsers (Opera Mini, very old WebViews) can't scroll inside
+   * fixed containers. Let the document scroll for them instead; see the
+   * `html.cid-document-scroll` rules in app.css.
+   */
+  const needsDocumentScroll = (() => {
+    try {
+      const ua = navigator.userAgent || '';
+      if (window.operamini || /Opera Mini|OPiOS\/[0-8]\./i.test(ua)) return true;
+      if (window.CSS && typeof CSS.supports === 'function') {
+        return !(CSS.supports('position', 'sticky')
+          || CSS.supports('position', '-webkit-sticky'));
+      }
+      return !window.CSS;
+    } catch (_) {
+      return false;
+    }
+  })();
+  if (needsDocumentScroll) document.documentElement.classList.add('cid-document-scroll');
+
   const SCROLL_STYLE_ID = 'cid-native-scroll-contract';
   function installNativeScrollContract() {
     if (document.getElementById(SCROLL_STYLE_ID)) return;
     const style = document.createElement('style');
     style.id = SCROLL_STYLE_ID;
     style.textContent = `
-      html, body { touch-action: pan-x pan-y !important; }
+      html, body { touch-action: manipulation !important; }
       html:not(.cid-scroll-locked), body:not(.cid-scroll-locked) {
         overscroll-behavior-y: auto !important;
       }
@@ -44,7 +66,7 @@
       .notification-list {
         -webkit-overflow-scrolling: touch;
         overscroll-behavior-y: contain;
-        touch-action: pan-x pan-y;
+        touch-action: manipulation;
         scroll-behavior: auto;
       }
       #tableauxViewContainer,
@@ -62,8 +84,9 @@
         max-width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        overscroll-behavior-inline: contain;
-        touch-action: pan-x pan-y;
+        overscroll-behavior-x: contain;
+        overscroll-behavior-y: auto;
+        touch-action: manipulation;
       }
       #tableauxViewContainer table,
       .cid-layout-surface table { scroll-margin-block: 12px; }
@@ -141,7 +164,7 @@
   window.addEventListener('pageshow', syncVisualViewportGeometry, { passive: true });
   [50, 180, 420, 900].forEach((delay) => window.setTimeout(syncVisualViewportGeometry, delay));
 
-  const activeTouchAction = () => 'pan-x pan-y';
+  const activeTouchAction = () => 'manipulation';
 
   const setDocumentScroll = (locked) => {
     const root = document.documentElement;

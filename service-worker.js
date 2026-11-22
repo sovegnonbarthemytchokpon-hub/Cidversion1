@@ -1,8 +1,8 @@
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v50-stable-toggle';
+const CACHE_NAME = 'cidmap-cache-v51-native-scroll';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
-const APP_CSS = '/src/styles/app.css?v=unified-v4-nav-occupied';
+const APP_CSS = '/src/styles/app.css?v=unified-v5-native-scroll';
 
 // The current shell, styles, fonts, and images are precached. The remaining
 // scripts are cached as they are requested and are also warmed here where
@@ -29,7 +29,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
   '/src/shared/international-phone.js?dial-codes-v2-iso-profile',
-  '/src/shared/scroll-stability.js?scroll-stability-v3',
+  '/src/shared/scroll-stability.js?scroll-stability-v4',
   '/src/shared/like-sound.js?like-sound-v1',
   '/src/croix/cross-responsive.js', '/src/croix/cross-date-fit.js',
   '/src/croix/draggableCross.js', '/src/matrice/displayResults.js',

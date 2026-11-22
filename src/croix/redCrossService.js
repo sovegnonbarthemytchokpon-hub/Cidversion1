@@ -1321,7 +1321,7 @@ export function applyPayload(payload){
             // freeze interaction and size so positions remain fixed
             el.style.setProperty('pointer-events','none','important');
             el.style.setProperty('user-select','none','important');
-            el.style.setProperty('touch-action','none','important');
+            el.style.setProperty('touch-action','manipulation','important');
           } catch(e){}
         });
         // mark DOM that positions are locked

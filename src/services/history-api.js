@@ -7,6 +7,7 @@
  * history consumer the same date validation and response checks.
  */
 import { fetchRejectedBalls } from '/src/backend-server/methods/boulesRejeteesMethod.js';
+import '/src/shared/tableau-history-cache-paint.js?tableau-history-cache-paint-v1';
 
 const HISTORY_KINDS = new Set(['matrix', 'rejected', 'tableaux']);
 

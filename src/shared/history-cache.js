@@ -77,6 +77,9 @@ export function writeHistoryPayload(key, payload, userId = identity()) {
       savedAt: Date.now(),
       payload
     }));
+    window.dispatchEvent(new CustomEvent('cid:history-cache-written', {
+      detail: { key, userId: safePart(userId) }
+    }));
     return true;
   } catch (_) {
     // Quota/private mode must never make a successful network response fail.

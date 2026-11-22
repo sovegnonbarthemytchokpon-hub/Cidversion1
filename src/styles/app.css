@@ -611,8 +611,10 @@ h1 {
 }
 #redCross .cross-numbers .num { 
   pointer-events: auto;
-  cursor: grab;
-  touch-action: none;
+  cursor: default;
+  /* Published digits are not draggable: let a swipe that starts on the
+     Croix scroll the page instead of being swallowed. */
+  touch-action: manipulation;
 }
 #redCross .cross-numbers .num {
   position: absolute;
@@ -11539,7 +11541,7 @@ body.croix-active #croixViewCurrentCross > #redCross,
   scrollbar-width: auto;
   scrollbar-color: #9a3412 #fed7aa;
   scrollbar-gutter: stable;
-  touch-action: pan-x pan-y;
+  touch-action: manipulation;
   scroll-padding-inline: 16px;
 }
 body[data-cid-dedicated-view="croix"] #croixViewContainer
@@ -17161,7 +17163,7 @@ body.tableaux-active #tableauxSectionDetail .tableaux-section-detail__header {
 /*  ==== src/shared/code-freeze.css ====  */
 :root {
   --cid-freeze-nav-z-index: 99999;
-  --cid-shell-viewport-height: 100dvh;
+  --cid-shell-viewport-height: 100vh;
   --cid-freeze-nav-bottom-gap: 0px;
   --cid-freeze-content-clearance: 0px;
   --cid-freeze-content-bottom-padding: calc(
@@ -17172,6 +17174,9 @@ body.tableaux-active #tableauxSectionDetail .tableaux-section-detail__header {
   --cid-layout-header-height: var(--cid-shell-header-height, 50px);
   --cid-layout-inline-padding: var(--cid-shell-side-padding, 14px);
   --cid-layout-top-padding: 16px;
+}
+@supports (height: 100dvh) {
+  :root { --cid-shell-viewport-height: 100dvh; }
 }
 html,
 body {
@@ -17184,13 +17189,12 @@ body {
   overflow-y: hidden !important;
   overscroll-behavior: none !important;
   overscroll-behavior-y: none !important;
-  touch-action: pan-y;
+  touch-action: manipulation;
 }
-*,
-*::before,
-*::after {
-  overscroll-behavior-y: none !important;
-}
+/* Overscroll is owned by the document and the route surfaces only (see the
+   cross-browser scroll contract at the end of this file). Applying
+   overscroll-behavior to every element trapped vertical swipes that started
+   on horizontal tables/rails on Android Chrome, so the page looked frozen. */
 #app,
 #appRoot,
 main,
@@ -17300,7 +17304,7 @@ body.cid-keyboard-input-active .category-bar {
   overflow-y: auto !important;
   overscroll-behavior: none !important;
   overscroll-behavior-y: none !important;
-  touch-action: pan-y;
+  touch-action: manipulation;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: auto;
   scroll-padding-bottom: calc(
@@ -17313,7 +17317,7 @@ body.croix-active #croixViewContainer,
 body[data-cid-dedicated-view="croix"] #croixViewContainer,
 body.croix-active .cid-croix-history-section,
 body[data-cid-dedicated-view="croix"] .cid-croix-history-section {
-  touch-action: pan-x pan-y !important;
+  touch-action: manipulation !important;
 }
 .cid-croix-history-track {
   display: flex !important;
@@ -17323,7 +17327,7 @@ body[data-cid-dedicated-view="croix"] .cid-croix-history-section {
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   overscroll-behavior-x: contain !important;
-  touch-action: pan-x pan-y !important;
+  touch-action: manipulation !important;
 }
 body.croix-active #croixViewContainer,
 body[data-cid-dedicated-view="croix"] #croixViewContainer {
@@ -18090,10 +18094,18 @@ body[data-cid-dedicated-view="profile"] #profileViewContainer {
 
 /*  ==== src/shared/first-paint-shell.css ====  */
 :root {
-  --cid-shell-viewport-height: 100svh !important;
+  --cid-shell-viewport-height: 100vh !important;
   --cid-visual-offset-top: 0px;
-  --cid-visual-height: 100dvh;
+  --cid-visual-height: 100vh;
   --cid-visual-bottom-extension: 0px;
+}
+/* Viewport units without a fallback made the whole shell collapse on
+   browsers that predate svh/dvh (older Android WebViews, Opera Mini). */
+@supports (height: 100svh) {
+  :root { --cid-shell-viewport-height: 100svh !important; }
+}
+@supports (height: 100dvh) {
+  :root { --cid-visual-height: 100dvh; }
 }
 html {
   width: 100% !important;
@@ -20407,7 +20419,7 @@ body[data-cid-dedicated-view="virtual-assistant"] .cid-virtual-send-button svg {
   background: #fff;
   -webkit-overflow-scrolling: touch;
   scrollbar-color: #b8c9df #f4f7fb;
-  touch-action: pan-x pan-y;
+  touch-action: manipulation;
 }
 .cid-history-table { width: 100%; border-collapse: collapse; min-width: 760px; }
 .cid-history-table th, .cid-history-table td { padding: 10px 12px; border-bottom: 1px solid #edf0f5; text-align: left; vertical-align: top; }
@@ -20913,7 +20925,7 @@ body[data-cid-dedicated-view="history"] #historyViewMount {
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 16px;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
+  touch-action: manipulation;
   background: #f97316;
   scrollbar-color: #9a3412 #fed7aa;
 }
@@ -21377,7 +21389,7 @@ body[data-cid-dedicated-view="history"] #historyViewMount {
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
   -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
+  touch-action: manipulation !important;
 }
 .modal-overlay.cid-payment-overlay.cid-unlock-confirmation
   .cid-unlock-confirmation__card {
@@ -21399,7 +21411,7 @@ body[data-cid-dedicated-view="history"] #historyViewMount {
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
   -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
+  touch-action: manipulation !important;
   scrollbar-gutter: stable;
   scroll-padding-block: 12px;
 }
@@ -21484,7 +21496,7 @@ body[data-cid-dedicated-view="history"] #historyViewMount {
   ) !important;
   overscroll-behavior: contain !important;
   -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
+  touch-action: manipulation !important;
 }
 #cidBalanceDialog.cid-wallet-view-container .cid-balance-page {
   min-width: 0;
@@ -27520,7 +27532,7 @@ table.standby-week-table.color-table:where(.cid-tableaux-scope) tr#standbyBottom
     font-size: 16px;
   }
   :where(.cid-tableaux-scope) .cross, .cross:where(.cid-tableaux-scope) {
-    touch-action: pan-y;
+    touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
   }
@@ -31044,7 +31056,7 @@ body.tableaux-active .site-header {
   overflow-y: auto !important;
   overscroll-behavior: none !important;
   overscroll-behavior-y: none !important;
-  touch-action: pan-y;
+  touch-action: manipulation;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: auto;
   scroll-padding-bottom: calc(
@@ -32380,13 +32392,13 @@ html body #tableauxViewContainer#tableauxViewContainer {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: none !important;
   overscroll-behavior-y: contain !important;
-  touch-action: pan-y !important;
+  touch-action: manipulation !important;
   scroll-behavior: auto !important;
   overflow-anchor: none;
 }
 html body #tableauxViewContainer#tableauxViewContainer .cross,
 html body #tableauxViewContainer#tableauxViewContainer .cross * {
-  touch-action: pan-y !important;
+  touch-action: manipulation !important;
 }
 
 
@@ -32655,7 +32667,7 @@ html {
   align-items: stretch !important;
   scroll-snap-type: x mandatory !important;
   overscroll-behavior-x: contain !important;
-  touch-action: pan-x pan-y !important;
+  touch-action: manipulation !important;
 }
 .cid-croix-history-track > *,
 .cid-publication-history__track > * {
@@ -32785,4 +32797,106 @@ html body .modal-overlay .modal-body {
 /* Anticipé feed: cards keep their geometry while they refresh in place. */
 .anticipation-feed > [data-anticipation-feature] {
   overflow-anchor: none;
+}
+
+/* ==========================================================================
+ * Cross-browser native scroll contract (final authority).
+ *
+ * One vertical scroll owner per visible route (the fixed route surface), the
+ * document never bounces, and nested horizontal tables/rails only capture
+ * sideways gestures: a vertical swipe that starts on a table, a card or the
+ * Croix always reaches the route surface. `touch-action: manipulation` keeps
+ * both pan axes and pinch-zoom (no 300ms tap delay) and is understood by
+ * Android Chrome, Safari iOS, Firefox and Opera; browsers that ignore it fall
+ * back to native defaults.
+ * ========================================================================== */
+html,
+body {
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+}
+.cid-layout-surface,
+#results,
+#categoriesView,
+#croixViewContainer,
+#tableauxViewContainer,
+#anticipationViewContainer,
+#profileViewContainer,
+#matrixCalculatorPanel,
+#notificationCenter {
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+}
+html body #tableauxViewContainer#tableauxViewContainer,
+html body #tableauxViewContainer#tableauxViewContainer .cross,
+html body #tableauxViewContainer#tableauxViewContainer .cross * {
+  touch-action: manipulation !important;
+}
+
+/* Nested horizontal scrollers: keep sideways overscroll local (no browser
+   back-swipe), but let vertical gestures chain to the route surface. */
+.table-container,
+.table-responsive,
+.satellites-table-container,
+.created-program-template-satellites,
+.cid-history-table-wrap,
+.cid-croix-history-track,
+.cid-publication-history__track {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto !important;
+  touch-action: manipulation !important;
+}
+#tableauxViewContainer .table-container,
+#tableauxViewContainer .satellites-table-container,
+#tableauxViewContainer .created-program-template-satellites,
+html body.tableaux-active #tableauxSectionDetail .table-container {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+}
+
+/* Wide content can never widen a route surface and drag the page sideways. */
+#results img,
+#results video,
+#results iframe,
+#tableauxViewContainer img,
+#tableauxViewContainer canvas {
+  max-width: 100%;
+}
+
+/* Lightweight browsers (Opera Mini, very old WebViews) cannot scroll inside
+   fixed containers. scroll-stability.js flags them with
+   `html.cid-document-scroll`: the document becomes the only scroller and
+   route surfaces flow normally under the header. */
+html.cid-document-scroll,
+html.cid-document-scroll body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+html.cid-document-scroll body .cid-layout-surface,
+html.cid-document-scroll body #results,
+html.cid-document-scroll body #categoriesView,
+html.cid-document-scroll body #croixViewContainer,
+html.cid-document-scroll body #tableauxViewContainer#tableauxViewContainer,
+html.cid-document-scroll body #anticipationViewContainer,
+html.cid-document-scroll body #profileViewContainer,
+html.cid-document-scroll body #matrixCalculatorPanel,
+html.cid-document-scroll body #notificationCenter {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+html.cid-document-scroll body {
+  padding-top: calc(
+    var(--cid-layout-header-height, 50px) +
+    env(safe-area-inset-top, 0px)
+  ) !important;
 }

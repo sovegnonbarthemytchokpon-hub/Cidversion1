@@ -24,7 +24,7 @@
   ).forEach((element) => {
     element.style.pointerEvents = 'none';
     element.style.userSelect = 'none';
-    element.style.touchAction = 'none';
+    element.style.touchAction = 'manipulation';
     element.style.cursor = 'default';
   });
 

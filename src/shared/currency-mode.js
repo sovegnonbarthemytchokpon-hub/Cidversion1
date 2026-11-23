@@ -82,11 +82,7 @@
 
   if (document.readyState !== 'loading') sync();
   else document.addEventListener('DOMContentLoaded', sync, { once: true });
-  window.addEventListener('focus', sync);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') sync();
-  });
-  window.setInterval(() => {
-    if (document.visibilityState === 'visible') sync();
-  }, 30000);
+  // The site configuration owns its refresh schedule (16:00 UTC boundary
+  // and stale resume); every refresh emits cid:site-config-loaded above, so
+  // no extra polling request is sent from here.
 })();

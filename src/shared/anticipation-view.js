@@ -2293,12 +2293,15 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       : 0;
     callGlobal('setBottomNavActiveTab', 'anticipe');
     if (!anticipationRefreshTimer) {
-      anticipationRefreshTimer = window.setInterval(() => {
+      // Anticipations roll over only at the 16:00 UTC generation boundary:
+      // re-read them then instead of polling every minute.
+      anticipationRefreshTimer = true;
+      window.addEventListener('cid:programme-boundary', () => {
+        payloadCache.clear();
         if (document.body.classList.contains('anticipation-active')) {
-          payloadCache.clear();
           render({ preserveView: true });
         }
-      }, 60000);
+      });
     }
     installTableauxPreviewShell();
     await installTableauxPreviewBridge();
@@ -2344,10 +2347,8 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       view.setAttribute('aria-hidden', 'true');
     }
     document.body.classList.remove('anticipation-active');
-    if (anticipationRefreshTimer) {
-      window.clearInterval(anticipationRefreshTimer);
-      anticipationRefreshTimer = null;
-    }
+    // The boundary listener stays registered (it only re-renders while the
+    // view is active) so it is never added twice.
     get('anticipationTableauxPreviewShell')?.remove();
     tableauxPreviewReadyPromise = null;
     callGlobal('cidReleaseTableauxStyles');

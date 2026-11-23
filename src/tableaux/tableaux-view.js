@@ -3803,6 +3803,12 @@ import {
         render().catch(() => {});
       }
     };
+    // New programmes exist only after the 16:00 UTC generation: refresh
+    // the open Tableaux once at that boundary instead of polling. A closed
+    // view repaints from its snapshot check (isSnapshotCurrent) on next show.
+    window.addEventListener('cid:programme-boundary', () => {
+      window.cidRefreshTableaux?.();
+    });
     /*
      * Anticipé reads only after the entitlement layer has confirmed the
      * matching early-access grant. The remote loaders still enforce their

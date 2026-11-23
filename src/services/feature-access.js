@@ -55,8 +55,26 @@
     const identity = offlineIdentity();
     if (!identity) return null;
     const cached = window.cidPersistentCache?.read?.(OFFLINE_ACCESS_NAME, identity, Infinity);
-    return cached?.value ? { ...cached.value, __offline: true } : null;
+    if (!cached?.value) return null;
+    // Every subscription known on this device (multi-abonnements) is merged
+    // back, so one stored snapshot never hides another unlock.
+    const value = window.cidSubscriptionLedger?.supplementAccess?.(cached.value, identity)
+      || cached.value;
+    return { ...value, __offline: true, __complete: false };
   }
+
+  /*
+   * Local-first paint: the last snapshot confirmed by the server for this
+   * account is published immediately (expiry dates are still compared on
+   * every read by hasAccess). The live read started right after replaces it.
+   */
+  function seedFromLedger() {
+    const snapshot = offlineAccess();
+    if (!snapshot || state) return;
+    publish({ ...snapshot, __offline: false, __fromLedger: true });
+  }
+
+  let lastLiveLoadAt = 0;
 
   function publish(nextState) {
     state = nextState;
@@ -173,8 +191,11 @@
           : [],
         stars: Number(access.stars) || 0,
         tokens: Number(access.tokens) || 0,
-        countryCode: access.countryCode || ''
+        countryCode: access.countryCode || '',
+        // A full live answer lets the ledger drop revoked unlocks.
+        __complete: Boolean(accountAccess)
       };
+      if (accountAccess) lastLiveLoadAt = Date.now();
       if (accountAccess) rememberOfflineAccess(nextState);
       return publish(nextState);
     })().catch(() => {
@@ -332,9 +353,19 @@
      */
     adopt: (nextState) => {
       if (!nextState || typeof nextState !== 'object') return state;
+      /*
+       * Prolongation / new unlock: the server already returns the new
+       * period. It is merged as-is (no client-side date arithmetic) and the
+       * subscription ledger stores it under its own key without erasing
+       * the account's other subscriptions.
+       */
       state = state && typeof state === 'object'
         ? { ...state, ...nextState }
-        : nextState;
+        : { ...nextState };
+      state.__complete = false;
+      state.__fromLedger = false;
+      state.__offline = false;
+      rememberOfflineAccess(state);
       window.dispatchEvent(new CustomEvent('cid:feature-access-changed', {
         detail: state
       }));
@@ -375,25 +406,29 @@
   window.addEventListener('cid:supabase-ready', () => {
     window.cidFeatureAccess.refresh().catch(() => {});
   });
-  window.addEventListener('focus', () => {
+  /*
+   * No availability polling. Publications and anticipations only change at
+   * the 16:00 UTC generation boundary, so the live state is re-read then.
+   * Returning to the app re-reads it only when the last live read is old
+   * (administrator revocations still propagate without a 30 s loop).
+   */
+  const RESUME_REFRESH_AFTER_MS = 15 * 60 * 1000;
+  window.addEventListener('cid:programme-boundary', () => {
     window.cidFeatureAccess.refresh().catch(() => {});
   });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
+    if (document.visibilityState === 'visible'
+      && Date.now() - lastLiveLoadAt > RESUME_REFRESH_AFTER_MS) {
       window.cidFeatureAccess.refresh().catch(() => {});
     }
   });
-  window.setInterval(() => {
-    if (document.visibilityState === 'visible') {
-      window.cidFeatureAccess.refresh().catch(() => {});
-    }
-  }, 30000);
 
   /*
    * Warm the catalogue after the current script/module batch has registered.
    * This is intentionally deferred so it never competes with the first paint
    * or makes a tap wait on an avoidable startup request.
    */
+  seedFromLedger();
   window.setTimeout(() => {
     window.cidFeatureAccess.load().catch(() => {});
   }, 0);

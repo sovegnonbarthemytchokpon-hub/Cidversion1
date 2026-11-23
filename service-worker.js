@@ -1,5 +1,5 @@
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v51-native-scroll';
+const CACHE_NAME = 'cidmap-cache-v52-programme-sync';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
 const APP_CSS = '/src/styles/app.css?v=unified-v5-native-scroll';
@@ -24,7 +24,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-192.png',
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav', '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v45',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v46',
   '/src/shared/translation.js?language-session-v5',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
@@ -46,7 +46,8 @@ const URLS_TO_CACHE = [...new Set([
   '/src/auth/user-stats.js', '/src/auth/supabase-config.js',
   '/src/shared/pwa-register.js', '/src/services/supabaseClient.js',
   '/src/services/social-repository.js',
-  '/src/services/feature-access.js?feature-access-offline-v1',
+  '/src/shared/programme-sync.js?programme-sync-v1',
+  '/src/services/feature-access.js?feature-access-ledger-v2',
   '/src/services/access-actions.js',
   '/src/services/early-access-ui.js?anticipation-v2',
   '/src/shared/unlock-feedback.js', '/src/auth/message-repository.js',

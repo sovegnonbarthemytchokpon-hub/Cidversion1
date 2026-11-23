@@ -10,8 +10,8 @@
 
   const APP_VERSION = 'v41-mobile-scroll-cache';
   const VERSION_KEY = 'cidmap:app-version';
-  // Must equal CACHE_NAME in /service-worker.js (cidmap-cache-v51-native-scroll).
-  const CURRENT_SW_CACHE = 'cidmap-cache-v51-native-scroll';
+  // Must equal CACHE_NAME in /service-worker.js (cidmap-cache-v52-programme-sync).
+  const CURRENT_SW_CACHE = 'cidmap-cache-v52-programme-sync';
 
   const OLD_LOCAL_STORAGE = [
     /^cidmap:/,

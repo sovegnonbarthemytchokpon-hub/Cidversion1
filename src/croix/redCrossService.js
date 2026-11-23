@@ -1546,8 +1546,6 @@ export async function memorizeMondayDesign() {
   } catch (e) { console.warn('memorizeMondayDesign failed', e); return false; }
 }
 
-// Poll the protected Edge Function so the page stays current.
-const INTERVAL = 300000;
 let recordedCoreDate = '';
 
 async function fetchAndApplyOnce({ force = false, date = null } = {}){
@@ -1762,7 +1760,11 @@ window.updateRedCrossForDate = window.updateRedCrossForDate || async function(is
     // Paint the stored publication without contacting the database.
     setTimeout(() => { fetchAndApply().catch(() => {}); }, 0);
   }
-  setInterval(fetchAndApply, INTERVAL);
+  // No polling: the next official row only exists after the 16:00 UTC
+  // generation, so the database is asked once at that boundary.
+  window.addEventListener('cid:programme-boundary', () => {
+    fetchAndApply().catch(() => {});
+  });
   window.addEventListener('online', () => {
     // Fetch only what is still missing locally when connectivity returns.
     fetchAndApply().catch(() => {});

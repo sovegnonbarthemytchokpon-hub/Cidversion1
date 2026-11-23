@@ -249,11 +249,16 @@
    * payment mode, plans, locks or comments propagates without requiring a
    * manual reload. Focus/visibility keep the first return to the site fast.
    */
-  window.addEventListener('focus', () => refresh().catch(() => {}));
+  // No 30 s polling: the catalogue is re-read at the 16:00 UTC programme
+  // boundary and, on return to the app, only when the copy is old.
+  const RESUME_REFRESH_AFTER_MS = 15 * 60 * 1000;
+  let lastRefreshAt = Date.now();
+  window.addEventListener('cid:site-config-loaded', () => { lastRefreshAt = Date.now(); });
+  window.addEventListener('cid:programme-boundary', () => refresh().catch(() => {}));
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') refresh().catch(() => {});
+    if (document.visibilityState === 'visible'
+      && Date.now() - lastRefreshAt > RESUME_REFRESH_AFTER_MS) {
+      refresh().catch(() => {});
+    }
   });
-  window.setInterval(() => {
-    if (document.visibilityState === 'visible') refresh().catch(() => {});
-  }, 30000);
 })();

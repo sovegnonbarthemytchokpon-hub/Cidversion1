@@ -1398,6 +1398,9 @@ import {
   window.addEventListener('cid:subscription-unlocked', schedulePrefetch);
   window.addEventListener('online', schedulePrefetch);
   window.addEventListener('cid:supabase-ready', schedulePrefetch);
+  // 16:00 UTC: the new publication enters the nine-entry window (the
+  // programme clock has already pruned the date that left it).
+  window.addEventListener('cid:programme-boundary', schedulePrefetch);
   window.addEventListener('cid:auth-sync', () => prefetchDone.clear());
   // The access state may already be known when this module loads (returning
   // subscriber): start the nine-day prefetch without waiting for an event.

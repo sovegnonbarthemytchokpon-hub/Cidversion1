@@ -491,36 +491,18 @@ window.renderCountryButtons = function renderCountryButtons(resultsOverride = ge
   });
 };
 
+/*
+ * The matrix is regenerated once per 16:00 UTC boundary. The shared
+ * programme clock (src/shared/programme-sync.js) owns the timer, computed
+ * from epoch ms so the device timezone never moves it.
+ */
+let matrixBoundaryListening = false;
 function refreshAtNextBoundary() {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Africa/Abidjan',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    hourCycle: 'h23'
-  }).formatToParts(now);
-  const part = (type) => Number(parts.find((entry) => entry.type === type)?.value);
-  const todayBoundary = Date.UTC(
-    part('year'),
-    part('month') - 1,
-    part('day'),
-    16,
-    0,
-    0,
-    0
-  );
-  const next = new Date(now.getTime() < todayBoundary
-    ? todayBoundary
-    : Date.UTC(part('year'), part('month') - 1, part('day') + 1, 16, 0, 0, 0));
-  window.setTimeout(async () => {
-    try {
-      await generateLottoResults({ force: true });
-    } finally {
-      refreshAtNextBoundary();
-    }
-  }, Math.max(next.getTime() - now.getTime(), 1000));
+  if (matrixBoundaryListening) return;
+  matrixBoundaryListening = true;
+  window.addEventListener('cid:programme-boundary', () => {
+    generateLottoResults({ force: true }).catch(() => {});
+  });
 }
 
 /*

@@ -2,11 +2,14 @@
 // the byte change makes installed PWAs fetch, install and activate the new
 // worker, which then purges every older cidmap-cache-* entry.
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const SW_VERSION = 'v56-network-first-assets';
+const SW_VERSION = 'v57-auto-update-offline-sections';
 const CACHE_NAME = `cidmap-cache-${SW_VERSION}`;
 const DOCUMENT_NETWORK_TIMEOUT_MS = 3500;
 const NETWORK_TIMEOUT_MS = 1400;
-// HTML, JS and CSS are network-first; slow networks fall back to the cache.
+// HTML and JS are network-first; slow networks fall back to the cache.
+// The versioned stylesheet is served from the cache at once and refreshed in
+// the background (stale-while-revalidate): it is never downloaded again on
+// the critical path, and stays available offline.
 const CODE_NETWORK_TIMEOUT_MS = 3000;
 const APP_CSS = '/src/styles/app.css?v=unified-v9-network-first';
 
@@ -31,7 +34,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-192.png',
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav', '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v50',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v51',
   '/src/shared/translation.js?language-session-v5',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
@@ -51,7 +54,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/splash-squirrel.js?squirrel-v4',
   '/src/croix/downloadCross.js', '/src/shared/security.js',
   '/src/auth/user-stats.js', '/src/auth/supabase-config.js',
-  '/src/shared/pwa-register.js?pwa-update-v3', '/src/services/supabaseClient.js',
+  '/src/shared/pwa-register.js?pwa-update-v4-warm-sections', '/src/services/supabaseClient.js',
   '/src/services/social-repository.js',
   '/src/services/subscription-union.js?subscription-union-v1',
   '/src/shared/programme-sync.js?programme-sync-v2-elapsed',
@@ -77,17 +80,17 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/route-persistence.js?route-persistence-v3-result-route',
   '/src/shared/view-transition.js', '/src/shared/dedicated-view-shell.js',
   '/src/shared/categories-view.js?navigation-v11-stable-rejected',
-  '/src/shared/anticipation-view.js?anticipation-v13-cumulative',
+  '/src/shared/anticipation-view.js?anticipation-v14-offline',
   '/src/shared/croix-section.js?history-local-first-v5',
   '/src/shared/publication-history-view.js?publication-history-v12-uniform-mould',
   '/src/shared/affichageSecurise.js',
-  '/src/tableaux/tableaux-view.js?tableaux-unified-v8-light-sync',
+  '/src/tableaux/tableaux-view.js?tableaux-unified-v9-scroll-guard',
   '/src/croix/image-scanner.js',
   '/src/modules/croix-nationale/CroixNationaleView.js',
   '/src/modules/boules-rejetees/BoulesRejeteesView.js',
   '/src/modules/matrices-plurijetees/MatricesView.js',
   '/src/calculatrice/matrix-text-parser.js',
-  '/src/shared/facebook-feed.js?feed-date-archive-v3-proportional-cross',
+  '/src/shared/facebook-feed.js?feed-date-archive-v4-offline-paint',
   '/src/shared/smart-country-filter.js?stable-toggle-v2',
   '/src/shared/bootstrap.js?nav-shell-v24-route-fix',
   '/src/shared/isolated-components.js?isolated-components-v1',
@@ -115,6 +118,13 @@ const URLS_TO_CACHE = [...new Set([
   '/src/auth/account-page.js', '/src/auth/admin-service.js',
   '/src/auth/admin-dashboard-view.js?chat-admin-v2-result-import',
   '/src/auth/admin-result-import.js',
+  // Imported by other modules (not by index.html): needed offline too.
+  '/src/auth/account-service.js',
+  '/src/auth/account-page.js?v=admin-dashboard-v4',
+  '/src/shared/tableau-history-cache-paint.js?tableau-history-cache-paint-v1',
+  '/src/backend-server/methods/program-clock.js',
+  '/src/backend-server/methods/boulesRejeteesMethod.js',
+  '/src/shared/privacy-policy.css',
   '/locales/fr.json', '/locales/en.json', '/locales/es.json',
   '/locales/pt.json', '/locales/ar.json'
 ])];
@@ -285,6 +295,82 @@ async function warmUrl(cache, url) {
   }
 }
 
+/* Old revisions of the current code (another ?v= query, css-guard ?retry=
+ * copies) are deleted so an outdated stylesheet or component can never be
+ * served, even as an offline fallback. */
+const CURRENT_CODE_URLS = new Map();
+URLS_TO_CACHE.forEach((path) => {
+  const url = new URL(path, self.location.origin);
+  if (!/\.(?:css|mjs|js)$/i.test(url.pathname)) return;
+  if (!CURRENT_CODE_URLS.has(url.pathname)) CURRENT_CODE_URLS.set(url.pathname, new Set());
+  CURRENT_CODE_URLS.get(url.pathname).add(url.search);
+});
+
+async function purgeSupersededEntries() {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const keys = await cache.keys();
+    await Promise.all(keys.map((request) => {
+      const url = new URL(request.url);
+      if (url.origin !== self.location.origin) return null;
+      const stale = url.searchParams.has('retry')
+        || (CURRENT_CODE_URLS.has(url.pathname) && !CURRENT_CODE_URLS.get(url.pathname).has(url.search));
+      return stale ? cache.delete(request) : null;
+    }));
+  } catch (_) {}
+}
+
+/* css-guard retries add ?retry=<time>; they all share one cache entry. */
+function stylesheetCacheKey(request) {
+  const url = new URL(request.url);
+  url.searchParams.delete('retry');
+  return new Request(url.href);
+}
+
+async function respondToStylesheet(event, cache) {
+  const request = event.request;
+  const key = stylesheetCacheKey(request);
+  const forceNetwork = new URL(request.url).searchParams.has('retry');
+  const refresh = async () => {
+    const response = await fetchWithTimeout(key, { cache: 'no-cache' }, CODE_NETWORK_TIMEOUT_MS);
+    if (isCacheableResponse(response)) await saveResponse(cache, key, response.clone());
+    return response;
+  };
+  const cached = forceNetwork ? undefined : await cache.match(key);
+  if (cached) {
+    event.waitUntil(refresh().catch(() => {}));
+    return cached;
+  }
+  try {
+    const response = await refresh();
+    if (isCacheableResponse(response)) return response;
+  } catch (_) {}
+  return (await matchAcrossCaches(key)) || offlineAsset(request);
+}
+
+/* Pages ask the worker to keep every same-origin file a visited section
+ * used (scripts, styles, fonts, images, locales), including those loaded
+ * before this worker controlled the page. */
+const WARMABLE_PATH = /\.(?:css|mjs|js|json|avif|gif|jpe?g|png|svg|webp|woff2?|wav|html?)$/i;
+async function warmVisitedUrls(urls) {
+  if (!Array.isArray(urls) || !urls.length) return;
+  const cache = await caches.open(CACHE_NAME);
+  const unique = [...new Set(urls.slice(0, 300))];
+  for (const raw of unique) {
+    let url;
+    try { url = new URL(String(raw), self.location.origin); } catch (_) { continue; }
+    if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')
+      || url.pathname.startsWith('/.netlify/') || !WARMABLE_PATH.test(url.pathname)
+      || url.searchParams.has('retry')) continue;
+    const request = new Request(url.href);
+    if (await cache.match(request)) continue;
+    try {
+      const response = await fetchWithTimeout(request, { cache: 'no-cache' }, CODE_NETWORK_TIMEOUT_MS);
+      await saveResponse(cache, request, response);
+    } catch (_) {}
+  }
+}
+
 async function purgeOldCaches() {
   const names = await caches.keys();
   // Copy the offline shell into the new cache first (no-op when the install
@@ -295,6 +381,7 @@ async function purgeOldCaches() {
   await Promise.all(names
     .filter((name) => name !== CACHE_NAME && name !== IMAGE_CACHE_NAME)
     .map((name) => caches.delete(name)));
+  await purgeSupersededEntries();
 }
 
 self.addEventListener('install', (event) => {
@@ -332,6 +419,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'CIDMAP_PURGE_OLD_CACHES') {
     event.waitUntil(purgeOldCaches());
+  }
+  if (event.data?.type === 'CIDMAP_WARM_URLS') {
+    event.waitUntil(warmVisitedUrls(event.data.urls).catch(() => {}));
   }
   if (event.data?.type === 'CIDMAP_SKIP_WAITING') {
     event.waitUntil(self.skipWaiting());
@@ -427,8 +517,8 @@ self.addEventListener('fetch', (event) => {
   // only the shell and static front-end assets belong in this cache.
   if (!isStaticAsset) return;
 
-  // JS, CSS and locale files: network-first so an installed app never keeps
-  // an outdated component or stylesheet once a deployment is online.
+  // JS and locale files: network-first so an installed app never keeps an
+  // outdated component once a deployment is online (CSS: see above).
   const isCode = request.destination === 'style' || request.destination === 'script'
     || /\.(?:css|mjs|js)$/i.test(url.pathname)
     || /^\/locales\/[a-z-]+\.json$/i.test(url.pathname);
@@ -436,6 +526,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     if (isDocument) return respondToDocument(event, cache);
+    if (request.destination === 'style' || /\.css$/i.test(url.pathname)) {
+      return respondToStylesheet(event, cache);
+    }
 
     if (isCode) {
       try {

@@ -1555,17 +1555,66 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     };
   }
 
+  /*
+   * Offline copy of the last validated future publications, stored under the
+   * visitor's own identity (same rule as the Tableaux snapshot). It is never
+   * a first-paint source: the network is always asked first, and the copy is
+   * only used when that request fails (offline / unreachable server). Only
+   * publications this account already opened are kept, capped in number.
+   */
+  const OFFLINE_PAYLOADS_NAME = 'anticipation-offline-payloads';
+  const OFFLINE_PAYLOADS_MAX = 18;
+
+  function readOfflinePayload(identity, key, date) {
+    const cached = window.cidPersistentCache?.read?.(OFFLINE_PAYLOADS_NAME, identity, Infinity);
+    const entry = cached?.value?.[`${key}:${date}`];
+    const result = entry && entry.result ? entry.result : null;
+    // Tableaux payloads carry a Date object, which JSON turned into a string.
+    if (result?.type === 'tableaux' && typeof result.payload?.date === 'string') {
+      const revived = new Date(result.payload.date);
+      if (!Number.isNaN(revived.getTime())) {
+        return { ...result, payload: { ...result.payload, date: revived } };
+      }
+    }
+    return result;
+  }
+
+  function writeOfflinePayload(identity, key, date, result) {
+    if (!result || result.type === 'message') return;
+    try {
+      const cached = window.cidPersistentCache?.read?.(OFFLINE_PAYLOADS_NAME, identity, Infinity);
+      const entries = { ...(cached?.value || {}) };
+      entries[`${key}:${date}`] = { savedAt: Date.now(), result };
+      const kept = Object.entries(entries)
+        .sort(([, left], [, right]) => Number(right?.savedAt || 0) - Number(left?.savedAt || 0))
+        .slice(0, OFFLINE_PAYLOADS_MAX);
+      window.cidPersistentCache?.write?.(OFFLINE_PAYLOADS_NAME, identity, Object.fromEntries(kept));
+    } catch (_) {
+      // Quota or serialisation errors never block the live publication.
+    }
+  }
+
   async function loadUnlockedPayload(key, date) {
     const requestedDate = payloadDate(date);
     const identity = currentIdentity();
     const cacheKey = `${identity}:${key}:${requestedDate}`;
     if (payloadCache.has(cacheKey)) return payloadCache.get(cacheKey);
     /*
-     * A future Tableau payload is date- and entitlement-sensitive. Never
-     * hydrate it from localStorage: fetch the validated session payload on
-     * every new render and share only the in-flight promise in this page.
+     * A future Tableau payload is date- and entitlement-sensitive: fetch the
+     * validated session payload on every new render and share only the
+     * in-flight promise in this page. The identity-bound offline copy is
+     * used only when that request fails.
      */
-    const promise = loadUnlockedPayloadFromNetwork(key, requestedDate);
+    const promise = loadUnlockedPayloadFromNetwork(key, requestedDate)
+      .then((result) => {
+        writeOfflinePayload(identity, key, requestedDate, result);
+        return result;
+      })
+      .catch((error) => {
+        const offline = readOfflinePayload(identity, key, requestedDate);
+        if (offline) return { ...offline, offline: true };
+        throw error;
+      });
     payloadCache.set(cacheKey, promise);
     try {
       return await promise;

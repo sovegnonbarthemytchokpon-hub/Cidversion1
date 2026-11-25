@@ -423,6 +423,17 @@ window.cidAccountServiceReady = Promise.resolve(accountService);
 if (supabaseClient?.auth?.onAuthStateChange) {
   supabaseClient.auth.onAuthStateChange((event, session) => {
     const user = session?.user || null;
+    // Explicit « déconnecté » status: paid content is never shown from the
+    // local copies after a sign-out (an offline start without a restorable
+    // session keeps the previous status untouched).
+    if (event === 'SIGNED_OUT' || (!user?.id && navigator.onLine !== false)) {
+      try {
+        localStorage.setItem('cidmap:session-status:v1', JSON.stringify({
+          status: 'disconnected', userId: '', email: '', plans: [], unlocks: [],
+          updatedAt: new Date().toISOString()
+        }));
+      } catch (_) {}
+    }
     if (event === 'SIGNED_OUT' || !user?.id) {
       if (lastPublishedAuthUserId) {
         authRevision += 1;

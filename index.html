@@ -144,7 +144,7 @@
 </script>
 <!-- Cache lifecycle runs before DOMContentLoaded and before route modules.
      It invalidates stale application data without blocking first paint. -->
-<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v48" defer></script>
+<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v49" defer></script>
 <base href="/">
 <link rel="canonical" href="https://cidmap.com/" />
 <meta name="description" content="Cidmap — publications et programmes du jour." />
@@ -169,7 +169,7 @@
 <meta charset="UTF-8">
 <title>Cidmap</title>
 <!-- Single application stylesheet (render-blocking on purpose: the first frame is final). -->
-<link rel="stylesheet" href="/src/styles/app.css?v=unified-v7-history-continuity">
+<link rel="stylesheet" href="/src/styles/app.css?v=unified-v8-history-mould">
 <!-- Self-hosted fonts: same glyphs and weights on the first visit and offline. -->
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/archivo-black-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/noto-sans-latin.woff2" crossorigin>
@@ -218,7 +218,7 @@
 <script type="module" src="/src/shared/pwa-register.js?pwa-update-v2"></script>
 <script type="module" src="/src/services/supabaseClient.js"></script>
 <script type="module" src="/src/services/social-repository.js"></script>
-<script src="/src/services/feature-access.js?feature-access-cumulative-v3"></script>
+<script src="/src/services/feature-access.js?feature-access-session-v4"></script>
 <script src="/src/services/access-actions.js?access-actions-cumulative-v2"></script>
 <script src="/src/services/early-access-ui.js?anticipation-v2"></script>
 <script src="/src/shared/unlock-feedback.js"></script>
@@ -229,7 +229,7 @@
 <script src="/src/auth/auth.js"></script>
 <script src="/src/services/paystack-payment.js" defer></script>
 <script src="/src/services/paystack-return.js" defer></script>
-<script type="module" src="/src/auth/account-service.js?auth-flow-v4"></script>
+<script type="module" src="/src/auth/account-service.js?auth-flow-v5-session-status"></script>
 <script src="/src/notifications/notification-repository.js"></script>
 <script src="/src/notifications/notification-center.js"></script>
 <script src="/src/auth/header-sync.js"></script>
@@ -253,9 +253,9 @@
 <script type="module" src="/src/shared/categories-view.js?navigation-v11-stable-rejected"></script>
 <script type="module" src="/src/shared/anticipation-view.js?anticipation-v13-cumulative"></script>
 <script type="module" src="/src/shared/croix-section.js?history-local-first-v5"></script>
-<script type="module" src="/src/shared/publication-history-view.js?publication-history-v11-post-continuity"></script>
+<script type="module" src="/src/shared/publication-history-view.js?publication-history-v12-uniform-mould"></script>
 <script type="module" src="/src/shared/affichageSecurise.js"></script>
-<script type="module" src="/src/tableaux/tableaux-view.js?tableaux-unified-v7-cumulative"></script>
+<script type="module" src="/src/tableaux/tableaux-view.js?tableaux-unified-v8-light-sync"></script>
 <script type="module" src="/src/croix/image-scanner.js"></script>
 <script type="module" src="/src/modules/croix-nationale/CroixNationaleView.js"></script>
 <script type="module" src="/src/modules/boules-rejetees/BoulesRejeteesView.js"></script>

@@ -38,22 +38,125 @@
    * the server answer always wins.
    */
   const OFFLINE_ACCESS_NAME = 'feature-access-offline';
+  const VISITOR_IDENTITY = 'visitor';
   const isOffline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
+
+  /*
+   * Explicit connection status kept in localStorage:
+   *   { status: 'connected' | 'disconnected', userId, email, updatedAt,
+   *     plans: [{ slug, name, status, started_at, expires_at }],
+   *     unlocks: [{ feature_key, unlocked_at, expires_at }] }
+   * 'disconnected' never exposes paid content, even offline. 'connected'
+   * lets a returning account (online or not) reopen its tableaux and its
+   * nine archived publications from this device at once. The server answer
+   * always replaces it as soon as the network is available.
+   */
+  const SESSION_STATUS_KEY = 'cidmap:session-status:v1';
+  function readSessionStatus() {
+    try {
+      const value = JSON.parse(localStorage.getItem(SESSION_STATUS_KEY) || 'null');
+      return value && (value.status === 'connected' || value.status === 'disconnected')
+        ? value
+        : null;
+    } catch (_) {
+      return null;
+    }
+  }
+  function writeSessionStatus(next) {
+    try {
+      localStorage.setItem(SESSION_STATUS_KEY, JSON.stringify({
+        ...next,
+        updatedAt: new Date().toISOString()
+      }));
+    } catch (_) {}
+  }
+  function markConnected(profile) {
+    const userId = String(profile?.id || profile?.uid || '').trim();
+    if (!userId) return;
+    const previous = readSessionStatus();
+    const sameAccount = previous?.userId === userId;
+    writeSessionStatus({
+      status: 'connected',
+      userId,
+      email: String(profile?.email || (sameAccount ? previous?.email : '') || ''),
+      plans: sameAccount && Array.isArray(previous?.plans) ? previous.plans : [],
+      unlocks: sameAccount && Array.isArray(previous?.unlocks) ? previous.unlocks : []
+    });
+  }
+  function markDisconnected() {
+    writeSessionStatus({ status: 'disconnected', userId: '', email: '', plans: [], unlocks: [] });
+  }
+  /* Active, non-expired plans and individual unlocks of the account. */
+  function rememberEntitlements(access) {
+    const status = readSessionStatus();
+    const userId = String(window.cidAuthCurrentUserId || '').trim();
+    if (!access || !userId || status?.status !== 'connected' || status.userId !== userId) return;
+    const now = Date.now();
+    const union = window.cidSubscriptionUnion;
+    const plans = union
+      ? union.validPlans(access, now).map((entry) => ({
+        slug: entry.slug,
+        name: String(entry.plan?.display_name || entry.slug),
+        status: entry.subscription.status,
+        started_at: entry.subscription.started_at || null,
+        expires_at: entry.subscription.expires_at || null
+      }))
+      : [];
+    const unlocks = (Array.isArray(access.featureUnlocks) ? access.featureUnlocks : [])
+      .filter((unlock) => !unlock?.expires_at || Date.parse(unlock.expires_at) > now)
+      .map((unlock) => ({
+        feature_key: normalizeFeatureKey(unlock.feature_key || unlock.featureKey),
+        unlocked_at: unlock.unlocked_at || null,
+        expires_at: unlock.expires_at || null
+      }));
+    writeSessionStatus({ ...status, plans, unlocks });
+  }
+
   function offlineIdentity() {
+    const live = String(window.cidAuthCurrentUserId || '').trim();
+    if (live) return live;
+    const status = readSessionStatus();
+    if (status?.status === 'disconnected') return '';
     return String(
-      window.cidAuthCurrentUserId
-      || window.__cidInitialSessionHint?.user?.id
+      window.__cidInitialSessionHint?.user?.id
+      || (status?.status === 'connected' ? status.userId : '')
       || ''
     ).trim();
   }
+  /* Public catalogue only: no balance, plan or unlock of any account. */
+  function visitorSnapshot(value) {
+    return {
+      ...value,
+      subscription: null,
+      activePlan: null,
+      subscriptions: [],
+      activePlans: [],
+      featureUnlocks: [],
+      earlyAccessUnlocks: [],
+      earlyAccessGrants: [],
+      stars: 0,
+      tokens: 0
+    };
+  }
   function rememberOfflineAccess(value) {
+    if (!value) return;
     const identity = offlineIdentity();
-    if (!identity || !value) return;
+    if (!identity) {
+      // Free modules stay readable offline for visitors too.
+      window.cidPersistentCache?.write?.(OFFLINE_ACCESS_NAME, VISITOR_IDENTITY, visitorSnapshot(value));
+      return;
+    }
     window.cidPersistentCache?.write?.(OFFLINE_ACCESS_NAME, identity, value);
+    rememberEntitlements(value);
   }
   function offlineAccess() {
     const identity = offlineIdentity();
-    if (!identity) return null;
+    if (!identity) {
+      const visitor = window.cidPersistentCache?.read?.(OFFLINE_ACCESS_NAME, VISITOR_IDENTITY, Infinity);
+      return visitor?.value
+        ? { ...visitorSnapshot(visitor.value), __offline: true, __complete: false }
+        : null;
+    }
     const cached = window.cidPersistentCache?.read?.(OFFLINE_ACCESS_NAME, identity, Infinity);
     if (!cached?.value) return null;
     // Every subscription known on this device (multi-abonnements) is merged
@@ -354,6 +457,18 @@
     preload: () => load(),
     refresh: () => load(),
     /*
+     * Reuse the live answer read less than maxAgeMs ago (default 60 s).
+     * Archive syncs call this once per date: without it a nine-day sync
+     * re-read the whole access state nine times.
+     */
+    fresh: (maxAgeMs = 60 * 1000) => (
+      state && !state.__offline && !state.__fromLedger
+        && Date.now() - lastLiveLoadAt < Math.max(0, Number(maxAgeMs) || 0)
+        ? Promise.resolve(state)
+        : load()
+    ),
+    sessionStatus: readSessionStatus,
+    /*
      * A successful debit response already contains the authoritative access
      * snapshot. Adopt it immediately instead of allowing an older refresh
      * request to repaint the card as locked again.
@@ -389,7 +504,10 @@
     },
     protectedFeatures: Object.freeze([])
   });
-  window.addEventListener('cid:auth-sync', () => {
+  window.addEventListener('cid:auth-sync', (event) => {
+    const profile = event?.detail || null;
+    if (String(profile?.id || profile?.uid || '').trim()) markConnected(profile);
+    else markDisconnected();
     authEpoch += 1;
     state = null;
     // Do not wait for the old request to finish before locking the cards.

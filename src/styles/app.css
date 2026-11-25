@@ -33328,3 +33328,61 @@ html body #tableauxViewContainer#tableauxViewContainer .table-container th,
   }
   .cid-publication-history__post-header { padding: 8px 10px 6px !important; }
 }
+
+/* ==== Historique · same publication mould for every module (v8) ====
+   Tableaux, Matrice, Boules rejetées and Croix nationale archives share
+   one wide card: white, continuous, outlined with the module colour, the
+   Cidmap header on top and no Like / Share row. Each card keeps the width
+   of a normal publication and the next date peeks on the right. */
+.cid-publication-history__card[data-history-kind="matrix"],
+.cid-publication-history__card[data-history-kind="rejected"] {
+  --cid-history-module-fallback: var(--daily-publication-color, #0962D6);
+}
+html body .cid-publication-history__track > .cid-publication-history__card,
+html body .cid-publication-history__track > .cid-publication-history__card.is-tableau {
+  flex: 0 0 min(760px, calc(100% - 44px)) !important;
+  width: min(760px, calc(100% - 44px)) !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  border: 2px solid var(--cid-history-module-color, var(--cid-history-module-fallback, #fdba74)) !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 4px 14px rgba(154, 52, 18, .16) !important;
+  overflow: hidden !important;
+}
+html body .cid-publication-history__track > .cid-publication-history__card:not(.is-tableau) .cid-publication-history__body {
+  padding: 10px 14px 14px !important;
+}
+html body .cid-publication-history__social {
+  display: none !important;
+}
+html body #croixViewContainer .cid-croix-history-track > .cid-fb-post[data-post-type="cross"],
+html body #croixViewContainer .cid-croix-history-track > .cid-croix-history-card {
+  flex: 0 0 min(760px, calc(100% - 44px)) !important;
+  width: min(760px, calc(100% - 44px)) !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+html body .cid-croix-history-track > .cid-fb-post :is(.cid-fb-actions, .cid-fb-summary) {
+  display: none !important;
+}
+@media (min-width: 900px) {
+  html body .cid-publication-history__track > .cid-publication-history__card,
+  html body .cid-publication-history__track > .cid-publication-history__card.is-tableau,
+  html body #croixViewContainer .cid-croix-history-track > .cid-fb-post[data-post-type="cross"],
+  html body #croixViewContainer .cid-croix-history-track > .cid-croix-history-card {
+    flex-basis: min(760px, calc(100% - 96px)) !important;
+    width: min(760px, calc(100% - 96px)) !important;
+  }
+}
+@media (max-width: 380px) {
+  html body .cid-publication-history__track > .cid-publication-history__card,
+  html body .cid-publication-history__track > .cid-publication-history__card.is-tableau,
+  html body #croixViewContainer .cid-croix-history-track > .cid-fb-post[data-post-type="cross"],
+  html body #croixViewContainer .cid-croix-history-track > .cid-croix-history-card {
+    flex-basis: calc(100% - 36px) !important;
+    width: calc(100% - 36px) !important;
+  }
+}

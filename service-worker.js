@@ -2,12 +2,12 @@
 // the byte change makes installed PWAs fetch, install and activate the new
 // worker, which then purges every older cidmap-cache-* entry.
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const SW_VERSION = 'v54-cumulative-access-history-card';
+const SW_VERSION = 'v55-history-mould-session-status';
 const CACHE_NAME = `cidmap-cache-${SW_VERSION}`;
 const DOCUMENT_NETWORK_TIMEOUT_MS = 3500;
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
-const APP_CSS = '/src/styles/app.css?v=unified-v7-history-continuity';
+const APP_CSS = '/src/styles/app.css?v=unified-v8-history-mould';
 
 // The current shell, styles, fonts, and images are precached. The remaining
 // scripts are cached as they are requested and are also warmed here where
@@ -29,7 +29,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-192.png',
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav', '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v48',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v49',
   '/src/shared/translation.js?language-session-v5',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
@@ -53,7 +53,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/services/social-repository.js',
   '/src/services/subscription-union.js?subscription-union-v1',
   '/src/shared/programme-sync.js?programme-sync-v2-elapsed',
-  '/src/services/feature-access.js?feature-access-cumulative-v3',
+  '/src/services/feature-access.js?feature-access-session-v4',
   '/src/services/access-actions.js?access-actions-cumulative-v2',
   '/src/services/early-access-ui.js?anticipation-v2',
   '/src/shared/unlock-feedback.js', '/src/auth/message-repository.js',
@@ -61,7 +61,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/auth/admin-dashboard.js?v=functions-dashboard-v1',
   '/src/auth/auth.js', '/src/services/paystack-payment.js',
   '/src/services/paystack-return.js',
-  '/src/auth/account-service.js?auth-flow-v4',
+  '/src/auth/account-service.js?auth-flow-v5-session-status',
   '/src/notifications/notification-repository.js',
   '/src/notifications/notification-center.js', '/src/auth/header-sync.js',
   '/src/auth/referral-system.js', '/src/shared/balance-panel.js',
@@ -77,9 +77,9 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/categories-view.js?navigation-v11-stable-rejected',
   '/src/shared/anticipation-view.js?anticipation-v13-cumulative',
   '/src/shared/croix-section.js?history-local-first-v5',
-  '/src/shared/publication-history-view.js?publication-history-v11-post-continuity',
+  '/src/shared/publication-history-view.js?publication-history-v12-uniform-mould',
   '/src/shared/affichageSecurise.js',
-  '/src/tableaux/tableaux-view.js?tableaux-unified-v7-cumulative',
+  '/src/tableaux/tableaux-view.js?tableaux-unified-v8-light-sync',
   '/src/croix/image-scanner.js',
   '/src/modules/croix-nationale/CroixNationaleView.js',
   '/src/modules/boules-rejetees/BoulesRejeteesView.js',

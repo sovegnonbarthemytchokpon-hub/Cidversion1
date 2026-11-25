@@ -866,15 +866,12 @@ import {
                 : `<span>${escapeHtml(row.value || '—')}</span>`}
             </div>`).join('')
           : '<p>Aucun résultat publié pour cette date.</p>';
-    const archiveMeta = kind === 'tableaux'
-      ? publicationHeaderMarkup(date)
-      : `<div class="cid-publication-history__date">
-          <strong>${escapeHtml(dateLabel(date))}</strong>
-          <span>${escapeHtml(label)} · archive publiée</span>
-        </div>`;
-    const actions = kind === 'tableaux'
-      ? ''
-      : socialMarkup(kind, date, featureKey);
+    // Every archive (Tableaux, Matrice, Boules rejetées) uses the same
+    // publication mould: Cidmap header (logo, certified badge, elapsed time
+    // and date), white card, module outline, no Like / Share row.
+    const archiveMeta = publicationHeaderMarkup(date);
+    const actions = '';
+    void socialMarkup;
     const stableKey = `${kind}:${dateValue}:${featureKey || 'default'}`;
     return `
       <article
@@ -1361,15 +1358,18 @@ import {
      */
     const matrix = allowed('matrice');
     const rejected = allowed('boules-rejetees');
-    if (!paid && !matrix && !rejected) return null;
-    return {
-      matrix,
-      rejected,
-      tableaux: !paid ? [] : [
-        ...TABLEAU_DEFINITIONS.map(({ featureKey }) => normalizeTableauFeatureKey(featureKey)),
-        'tableaux-created'
-      ].filter((key, index, keys) => key && keys.indexOf(key) === index && allowed(key))
-    };
+    /*
+     * Free Tableaux (open to everyone, signed in or not) are pre-recorded
+     * too so they stay readable offline; paid ones only for the account
+     * that holds a valid plan or unlock. Past dates are fetched once per
+     * device: a cached publication is final for its date.
+     */
+    const tableaux = [
+      ...TABLEAU_DEFINITIONS.map(({ featureKey }) => normalizeTableauFeatureKey(featureKey)),
+      'tableaux-created'
+    ].filter((key, index, keys) => key && keys.indexOf(key) === index && allowed(key));
+    if (!paid && !matrix && !rejected && !tableaux.length) return null;
+    return { matrix, rejected, tableaux };
   }
 
   function needsPrefetch(kind, date, featureKey, today) {

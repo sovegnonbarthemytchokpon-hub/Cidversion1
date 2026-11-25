@@ -1,8 +1,8 @@
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v52-programme-sync';
+const CACHE_NAME = 'cidmap-cache-v53-publication-card';
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
-const APP_CSS = '/src/styles/app.css?v=unified-v5-native-scroll';
+const APP_CSS = '/src/styles/app.css?v=unified-v6-publication-card';
 
 // The current shell, styles, fonts, and images are precached. The remaining
 // scripts are cached as they are requested and are also warmed here where
@@ -24,7 +24,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-192.png',
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav', '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v46',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v47',
   '/src/shared/translation.js?language-session-v5',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
@@ -71,9 +71,9 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/categories-view.js?navigation-v11-stable-rejected',
   '/src/shared/anticipation-view.js?anticipation-v12-rejected-banner',
   '/src/shared/croix-section.js?history-local-first-v5',
-  '/src/shared/publication-history-view.js?publication-history-v9-free-prefetch',
+  '/src/shared/publication-history-view.js?publication-history-v10-post-actions',
   '/src/shared/affichageSecurise.js',
-  '/src/tableaux/tableaux-view.js?tableaux-unified-v5',
+  '/src/tableaux/tableaux-view.js?tableaux-unified-v6-post-card',
   '/src/croix/image-scanner.js',
   '/src/modules/croix-nationale/CroixNationaleView.js',
   '/src/modules/boules-rejetees/BoulesRejeteesView.js',

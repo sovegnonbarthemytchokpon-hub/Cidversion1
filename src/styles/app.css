@@ -32900,3 +32900,252 @@ html.cid-document-scroll body {
     env(safe-area-inset-top, 0px)
   ) !important;
 }
+
+/* ==========================================================================
+ * Tableaux publication card (reference layout, final authority).
+ *
+ * Every Tableau (Universelle, Intuition, Oracle, Balsa Plus, LNB, Stand-by
+ * and created programmes) is one continuous white publication card:
+ *   Cidmap header (avatar + blue verified badge + elapsed time · date)
+ *   → access status → [Acheter][Historique] on one line → divider
+ *   → key + cross side by side → associated tables.
+ * Each module keeps its own palette through --tableaux-action-color.
+ * ========================================================================== */
+html body #tableauxViewContainer#tableauxViewContainer :is(
+  .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+  .portfolio-manual, .portfolio-lnb, .portfolio-standby,
+  #createdProgramPortfolios
+):not([hidden]) {
+  display: grid !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 760px !important;
+  margin: 0 auto 12px !important;
+  padding: 12px 12px 14px !important;
+  border: 1px solid #e3e6ec !important;
+  border-radius: 16px !important;
+  background: #fff !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .06) !important;
+  row-gap: 8px !important;
+  column-gap: clamp(8px, 2.2vw, 14px) !important;
+  align-content: start !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer :is(
+  .portfolio-standby, #createdProgramPortfolios
+):not([hidden]) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* Header + status + actions: plain content of the card, no tinted box. */
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-access-badge {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 0 10px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #e6e9ef !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #10233f !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-header {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-avatar {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-author {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-author .cid-fb-author-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-author .cid-fb-page-name {
+  color: #10233f;
+  font: 800 16px/1.2 Arial, sans-serif;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-verified {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-time {
+  overflow: hidden;
+  color: #65676b;
+  font: 500 12px/1.3 Arial, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-access-status {
+  display: grid !important;
+  gap: 2px !important;
+  overflow: visible !important;
+  color: #10233f !important;
+  white-space: normal !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-access-status strong {
+  color: #10233f !important;
+  font: 800 15px/1.3 Arial, sans-serif !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-access-status small {
+  color: #1f2937 !important;
+  font: 500 13px/1.35 Arial, sans-serif !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-access-modes:empty {
+  display: none !important;
+}
+
+/* Acheter + Historique: one line, tight gap, module palette. */
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  margin: 2px 0 0 !important;
+  padding: 0 !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions:empty {
+  display: none !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions > button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  box-sizing: border-box !important;
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 40px !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  font: 800 14px/1.1 Arial, sans-serif !important;
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions > .tableaux-schema-unlock {
+  border: 1px solid var(--tableaux-action-color-strong, var(--tableaux-action-color, #1769e0)) !important;
+  background: var(--tableaux-action-color, #1769e0) !important;
+  color: var(--tableaux-action-contrast, #fff) !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions > .tableaux-history-button {
+  border: 1px solid var(--tableaux-action-color, #1769e0) !important;
+  background: #fff !important;
+  color: var(--tableaux-panel-ink, #10233f) !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions > .tableaux-history-button:hover,
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions > .tableaux-history-button:focus-visible {
+  background: var(--tableaux-panel-tint, #f1f5fb) !important;
+  outline: 0;
+}
+html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-action-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+/* A history button mounted before the badge stays compact at the bottom. */
+html body #tableauxViewContainer#tableauxViewContainer :is(
+  .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+  .portfolio-manual, .portfolio-lnb, .portfolio-standby,
+  #createdProgramPortfolios
+) > .tableaux-history-button {
+  margin: 0 auto !important;
+}
+
+/* Dense pairing: cards and tables close to the action bar. */
+html body #tableauxViewContainer#tableauxViewContainer :is(
+  .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+  .portfolio-manual, .portfolio-lnb, .portfolio-standby,
+  #createdProgramPortfolios
+) > :is(.container, .table-container, .created-program-grid) {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+html body #tableauxViewContainer#tableauxViewContainer :is(
+  .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+  .portfolio-manual, .portfolio-lnb
+) > .table-container {
+  padding-top: 0 !important;
+}
+
+/* Long titles (« croix universelle », « croix balsa plus »…) stay on one
+   line by shrinking the type, never by widening the card. */
+html body #tableauxViewContainer#tableauxViewContainer .container .title-text {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  text-overflow: clip !important;
+  letter-spacing: -.01em !important;
+  font-size: clamp(11px, 3.5vw, 21px) !important;
+  line-height: 1.2 !important;
+}
+@supports (container-type: inline-size) {
+  html body #tableauxViewContainer#tableauxViewContainer :is(
+    .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+    .portfolio-manual, .portfolio-lnb
+  ) > .container {
+    container-type: inline-size;
+  }
+  html body #tableauxViewContainer#tableauxViewContainer :is(
+    .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+    .portfolio-manual, .portfolio-lnb
+  ) > .container .title-text {
+    font-size: clamp(10px, 8.4cqi, 22px) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  html body #tableauxViewContainer#tableauxViewContainer :is(
+    .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+    .portfolio-manual, .portfolio-lnb, .portfolio-standby,
+    #createdProgramPortfolios
+  ):not([hidden]) {
+    padding: 10px 9px 12px !important;
+    border-radius: 14px !important;
+  }
+  html body #tableauxViewContainer#tableauxViewContainer .tableaux-post-actions > button {
+    font-size: 13px !important;
+    padding: 8px 6px !important;
+  }
+}
+@media (min-width: 900px) {
+  html body #tableauxViewContainer#tableauxViewContainer :is(
+    .portfolio-universal, .portfolio-intuition, .portfolio-oracle,
+    .portfolio-manual, .portfolio-lnb, .portfolio-standby,
+    #createdProgramPortfolios
+  ):not([hidden]) {
+    padding: 16px 18px 18px !important;
+  }
+}

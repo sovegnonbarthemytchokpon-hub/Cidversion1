@@ -398,8 +398,29 @@
   // while the app was closed does not need an extra event.
   if (readStoredBoundary() < firedBoundary) storeBoundary(firedBoundary);
 
+  /* Publication instant of a programme date: the D programme is generated
+   * at 16:00 UTC on D-1. Live cards and archive cards share this so both
+   * show the same « il y a X heures / X jours » label. */
+  function publishedAtMs(programmeDate) {
+    const day = Date.parse(`${String(programmeDate || '').slice(0, 10)}T00:00:00Z`);
+    if (!Number.isFinite(day)) return lastBoundaryMs();
+    return day - DAY_MS + BOUNDARY_HOUR_UTC * 60 * 60 * 1000;
+  }
+
+  function elapsedLabel(fromMs, nowMs = Date.now()) {
+    const minutes = Math.max(0, Math.floor((nowMs - Number(fromMs)) / 60000));
+    if (!Number.isFinite(minutes) || minutes < 5) return 'il y a quelques instants';
+    if (minutes < 60) return `il y a ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `il y a ${hours} heure${hours > 1 ? 's' : ''}`;
+    const days = Math.floor(hours / 24);
+    return `il y a ${days} jour${days > 1 ? 's' : ''}`;
+  }
+
   window.cidProgrammeClock = Object.freeze({
     BOUNDARY_HOUR_UTC,
+    publishedAtMs,
+    elapsedLabel,
     HISTORY_LENGTH,
     lastBoundaryMs,
     nextBoundaryMs,

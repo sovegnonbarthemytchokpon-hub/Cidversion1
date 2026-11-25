@@ -1137,26 +1137,33 @@ import {
       '--tableaux-panel-contrast': theme.contrast,
       '--tableaux-action-color': theme.accent,
       '--tableaux-action-color-strong': theme.accentStrong,
-      '--tableaux-action-contrast': theme.contrast
+      '--tableaux-action-contrast': theme.contrast,
+      // Publication card outline: identifies the module at a glance
+      // (bright yellow uses its stronger tone to stay visible on white).
+      '--tableaux-post-border': theme.key === 'yellow' ? theme.accentStrong : theme.accent
     }).forEach(([property, value]) => {
       portfolio.style.setProperty(property, value);
     });
     return theme;
   }
 
-  function isPlanActive(access, plan) {
+  function activePlanSlugs(access) {
+    const union = window.cidSubscriptionUnion;
+    if (union) return new Set(union.validPlans(access).map((entry) => entry.slug));
     const subscription = activeSubscriptionForAccess(access);
-    return Boolean(
-      subscription
-      && String(subscription.plan_slug || '') === String(plan?.slug || '')
-    );
+    return new Set(subscription?.plan_slug ? [String(subscription.plan_slug).toLowerCase()] : []);
+  }
+
+  function isPlanActive(access, plan) {
+    // Several plans can be active together; each one is checked by itself.
+    return activePlanSlugs(access).has(String(plan?.slug || '').toLowerCase());
   }
 
   function collectivePlansForAccess(access) {
-    const active = activeSubscriptionForAccess(access);
+    const activeSlugs = activePlanSlugs(access);
     const plans = (Array.isArray(access?.plans) ? access.plans : []).filter((plan) => (
       (plan?.enabled !== false
-        || String(plan?.slug || '') === String(active?.plan_slug || ''))
+        || activeSlugs.has(String(plan?.slug || '').toLowerCase()))
       &&
       Array.isArray(plan?.features)
       && plan.features.some((feature) => (
@@ -1513,25 +1520,12 @@ import {
         && (!unlock.expires_at || Date.parse(unlock.expires_at) > Date.now())
       ))
     );
-    const subscription = access?.subscription;
-    const subscriptionActive = subscription?.status === 'active'
-      && (!subscription.started_at || Date.parse(subscription.started_at) <= Date.now())
-      && (!subscription.expires_at || Date.parse(subscription.expires_at) > Date.now());
-    const collectiveActive = Boolean(
-      subscriptionActive
-      && (
-        tableauxPlanIncludesFeature(access?.activePlan, key)
-        || access?.rules?.some((item) => (
-          normalizeTableauxFeature(item?.feature_key || item?.featureKey) === key
-          && item.plan_slug === access?.activePlan?.slug
-        ))
-      )
-    );
+    // Cumulative plans: every valid plan covering this Tableau counts.
+    const coveringPlanNames = window.cidSubscriptionUnion?.planNames?.(access, key) || [];
+    const collectiveActive = coveringPlanNames.length > 0;
 
     let label = 'Accès requis';
-    const activePlanName = access?.activePlan?.display_name
-      || access?.activePlan?.slug
-      || '';
+    const activePlanName = coveringPlanNames.join(' + ');
     const configuredPlanNames = collectivePlans
       .map((plan) => plan.display_name || plan.slug)
       .filter(Boolean)
@@ -1607,26 +1601,8 @@ import {
       && (!unlock.expires_at || Date.parse(unlock.expires_at) > Date.now())
     )));
     if (individuallyUnlocked) return true;
-    const subscription = access?.subscription;
-    const activeSubscription = subscription?.status === 'active'
-      && (
-        !subscription.started_at
-        || Date.parse(subscription.started_at) <= Date.now()
-      )
-      && (
-        !subscription.expires_at
-        || Date.parse(subscription.expires_at) > Date.now()
-      );
-    return Boolean(
-      activeSubscription
-      && (
-        tableauxPlanIncludesFeature(access?.activePlan, key)
-        || access?.rules?.some((rule) => (
-          normalizeTableauxFeature(rule?.feature_key || rule?.featureKey) === key
-          && rule.plan_slug === access?.activePlan?.slug
-        ))
-      )
-    );
+    // Union of every active, non-expired plan (vip002 + premium001…).
+    return Boolean(window.cidSubscriptionUnion?.coveringPlans?.(access, key)?.length);
   }
 
   async function verifyTableauxAccessSet() {
@@ -1638,8 +1614,13 @@ import {
   }
 
   function accessGrantSignature(access) {
+    // Unlocks AND every valid plan: activating or prolonging any plan
+    // repaints the cards immediately.
+    const plans = (window.cidSubscriptionUnion?.validPlans?.(access) || [])
+      .map((entry) => `plan:${entry.slug}:${entry.subscription.expires_at || ''}`);
     return (access?.featureUnlocks || [])
       .map((unlock) => `${unlock.feature_key}:${unlock.expires_at || ''}`)
+      .concat(plans)
       .sort()
       .join('|');
   }
@@ -1655,17 +1636,10 @@ import {
     if (grants.some((grant) => !grant.expires_at)) return null;
     grants.forEach((grant) => dates.push(grant.expires_at));
 
-    const subscription = access.subscription;
-    const planCoversFeature = tableauxPlanIncludesFeature(access.activePlan, key)
-      || access.rules?.some((rule) => (
-        normalizeTableauxFeature(rule?.feature_key || rule?.featureKey) === key
-        && rule.plan_slug === access.activePlan?.slug
-      ));
-    if (subscription?.status === 'active' && planCoversFeature) {
-      if (!subscription.expires_at) return null;
-      if (Date.parse(subscription.expires_at) > Date.now()) {
-        dates.push(subscription.expires_at);
-      }
+    // Each covering plan keeps its own end date; the latest one wins.
+    for (const entry of window.cidSubscriptionUnion?.coveringPlans?.(access, key) || []) {
+      if (!entry.subscription.expires_at) return null;
+      dates.push(entry.subscription.expires_at);
     }
     return dates
       .filter(Boolean)
@@ -1739,7 +1713,9 @@ import {
   }
 
   function tableauPostElapsedLabel() {
-    // Programmes are published daily at 16:00 UTC.
+    // Programmes are published daily at 16:00 UTC (same label as History).
+    const clock = window.cidProgrammeClock;
+    if (clock?.elapsedLabel) return clock.elapsedLabel(clock.lastBoundaryMs());
     const now = new Date();
     const published = new Date(Date.UTC(
       now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 16

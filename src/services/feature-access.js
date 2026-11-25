@@ -179,6 +179,9 @@
         gridAssignments: Array.isArray(config?.gridAssignments) ? config.gridAssignments : [],
         subscription: access.subscription || null,
         activePlan: access.activePlan || null,
+        // Every active plan of the account (cumulative subscriptions).
+        subscriptions: Array.isArray(access.subscriptions) ? access.subscriptions : undefined,
+        activePlans: Array.isArray(access.activePlans) ? access.activePlans : undefined,
         featureUnlocks: Array.isArray(access.featureUnlocks)
           ? access.featureUnlocks
           : [],
@@ -266,6 +269,10 @@
       && Number(rule.required_stars || 0) === 0
       && Number(rule.required_tokens || 0) === 0
       && !isConfiguredInAnOffer) return true;
+    // Union of every valid plan (general003 + premium001 + vip002…): each
+    // plan only stops counting once its own expires_at has passed.
+    const union = window.cidSubscriptionUnion;
+    if (union) return union.coveringPlans(access, normalizedFeatureKey).length > 0;
     const subscription = activeSubscription(access);
     if (!subscription) return false;
     const plan = access.activePlan;

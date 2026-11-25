@@ -636,6 +636,7 @@ import {
       return;
     }
     const clone = source.cloneNode(true);
+    applyHistoryModuleColor(card, source);
     const isCreated = normalizedFeatureKey === 'tableaux-created';
     const renderRoot = isCreated
       ? document.createElement('div')
@@ -658,10 +659,11 @@ import {
       'repeat(2, minmax(0, 1fr))',
       'important'
     );
-    clone.style.setProperty('gap', '12px', 'important');
+    // Same dense pairing as the live publication (key + cross, tables).
+    clone.style.setProperty('gap', '8px', 'important');
     clone.style.setProperty('width', '100%', 'important');
     clone.style.setProperty('min-width', '0', 'important');
-    clone.style.setProperty('padding', isCreated ? '16px 10px' : '0 12px', 'important');
+    clone.style.setProperty('padding', isCreated ? '10px 8px' : '0 10px', 'important');
     if (!isCreated) {
       clone.querySelectorAll('[id]').forEach((element) => {
         element.removeAttribute('id');
@@ -723,6 +725,48 @@ import {
       paintHistoricalTable(table, plan);
     }
     mount.replaceChildren(clone);
+  }
+
+  const HISTORY_VERIFIED_BADGE = '<svg class="cid-fb-verified tableaux-post-verified" viewBox="0 0 24 24" width="18" height="18" role="img" aria-label="Page vérifiée" focusable="false"><title>Page vérifiée</title><path d="M12 1.8 14.2 3l2.5-.3 1.2 2.2 2.2 1.2-.3 2.5 1.2 2.2-1.2 2.2.3 2.5-2.2 1.2-1.2 2.2-2.5-.3-2.2 1.2-2.2-1.2-2.5.3-1.2-2.2-2.2-1.2.3-2.5-1.2-2.2 1.2-2.2-.3-2.5 2.2-1.2L9.8 3z" fill="#1877F2"/><path d="M7.4 12.1l3.2 3.2 6.1-6.1" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function historyElapsedLabel(date) {
+    const clock = window.cidProgrammeClock;
+    if (clock?.publishedAtMs && clock?.elapsedLabel) {
+      return clock.elapsedLabel(clock.publishedAtMs(isoDate(date)));
+    }
+    const published = Date.parse(`${isoDate(date)}T00:00:00Z`) - 8 * 3600000;
+    const days = Math.max(0, Math.floor((Date.now() - published) / 86400000));
+    return days ? `il y a ${days} jour${days > 1 ? 's' : ''}` : 'aujourd’hui';
+  }
+
+  /* Same header as the live publication: Cidmap logo, blue certified
+   * badge, elapsed time since publication and exact date. */
+  function publicationHeaderMarkup(date) {
+    const avatar = window.__cidBrandAvatarSrc || '/src/shared/images/squirrel-croix-192.png';
+    return `
+      <header class="cid-fb-post-header tableaux-post-header cid-publication-history__post-header">
+        <div class="cid-fb-avatar tableaux-post-avatar">
+          <img data-cid-brand-avatar src="${escapeAttribute(avatar)}" alt="Photo de profil Cidmap" width="44" height="44" decoding="async" loading="lazy">
+        </div>
+        <div class="cid-fb-author tableaux-post-author">
+          <div class="cid-fb-author-line">
+            <span class="cid-fb-page-name">Cidmap</span>
+            ${HISTORY_VERIFIED_BADGE}
+          </div>
+          <div class="cid-fb-time tableaux-post-time">${escapeHtml(
+            `${historyElapsedLabel(date)} · ${dateLabel(date)} · 🌐`
+          )}</div>
+        </div>
+      </header>`;
+  }
+
+  /* The archive card carries the module outline colour of its Tableau. */
+  function applyHistoryModuleColor(card, source) {
+    if (!card || !source) return;
+    const color = source.style?.getPropertyValue('--tableaux-post-border')
+      || source.style?.getPropertyValue('--tableaux-action-color')
+      || '';
+    if (color) card.style.setProperty('--cid-history-module-color', color.trim());
   }
 
   function socialPostId(kind, date, featureKey = '') {
@@ -823,7 +867,7 @@ import {
             </div>`).join('')
           : '<p>Aucun résultat publié pour cette date.</p>';
     const archiveMeta = kind === 'tableaux'
-      ? ''
+      ? publicationHeaderMarkup(date)
       : `<div class="cid-publication-history__date">
           <strong>${escapeHtml(dateLabel(date))}</strong>
           <span>${escapeHtml(label)} · archive publiée</span>
@@ -835,6 +879,7 @@ import {
     return `
       <article
         class="cid-publication-history__card${kind === 'tableaux' ? ' is-tableau' : ''}"
+        ${kind === 'tableaux' ? `data-history-feature="${escapeAttribute(featureKey)}"` : ''}
         data-history-key="${escapeAttribute(stableKey)}"
         data-history-kind="${escapeAttribute(kind)}"
         data-history-date="${escapeAttribute(dateValue)}"
@@ -1293,8 +1338,10 @@ import {
   function hasPaidEntitlement(access) {
     if (!access) return false;
     const subscription = access.subscription;
-    const subscribed = subscription?.status === 'active'
-      && (!subscription.expires_at || Date.parse(subscription.expires_at) > Date.now());
+    const subscribed = window.cidSubscriptionUnion
+      ? window.cidSubscriptionUnion.hasAnyPlan(access)
+      : subscription?.status === 'active'
+        && (!subscription.expires_at || Date.parse(subscription.expires_at) > Date.now());
     const unlocked = (access.featureUnlocks || []).some((unlock) => (
       !unlock?.expires_at || Date.parse(unlock.expires_at) > Date.now()
     ));

@@ -711,9 +711,15 @@
         const label = clean(plan.display_name, slug);
         const duration = Math.max(1, Math.trunc(Number(plan.duration_days) || 30));
         const price = `${formatAmount(required)} ${currencyLabel(currency, required !== 1)}`;
-        const currentExpiry = access?.subscription?.expires_at
-          && Date.parse(access.subscription.expires_at) > Date.now()
-          ? new Date(access.subscription.expires_at)
+        // Only THIS plan's own period is prolonged; other active plans
+        // are left untouched.
+        const samePlan = window.cidSubscriptionUnion?.planSubscription?.(access, slug)
+          || (String(access?.subscription?.plan_slug || '').toLowerCase() === slug
+            ? access.subscription
+            : null);
+        const currentExpiry = samePlan?.expires_at
+          && Date.parse(samePlan.expires_at) > Date.now()
+          ? new Date(samePlan.expires_at)
           : null;
         const validityStart = currentExpiry
           ? `après la fin de l’accès actuel (${validityDateLabel(currentExpiry)})`

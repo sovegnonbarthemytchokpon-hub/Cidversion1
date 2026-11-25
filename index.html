@@ -144,7 +144,7 @@
 </script>
 <!-- Cache lifecycle runs before DOMContentLoaded and before route modules.
      It invalidates stale application data without blocking first paint. -->
-<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v47" defer></script>
+<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v48" defer></script>
 <base href="/">
 <link rel="canonical" href="https://cidmap.com/" />
 <meta name="description" content="Cidmap — publications et programmes du jour." />
@@ -169,7 +169,7 @@
 <meta charset="UTF-8">
 <title>Cidmap</title>
 <!-- Single application stylesheet (render-blocking on purpose: the first frame is final). -->
-<link rel="stylesheet" href="/src/styles/app.css?v=unified-v6-publication-card">
+<link rel="stylesheet" href="/src/styles/app.css?v=unified-v7-history-continuity">
 <!-- Self-hosted fonts: same glyphs and weights on the first visit and offline. -->
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/archivo-black-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/noto-sans-latin.woff2" crossorigin>
@@ -189,7 +189,8 @@
 <!-- Translation runtime is registered before dynamic modules render UI. -->
 <script src="/src/shared/translation.js?language-session-v5"></script>
 <script src="/src/shared/persistent-cache.js?persistent-cache-v40"></script>
-<script src="/src/shared/programme-sync.js?programme-sync-v1"></script>
+<script src="/src/services/subscription-union.js?subscription-union-v1"></script>
+<script src="/src/shared/programme-sync.js?programme-sync-v2-elapsed"></script>
 <script src="/src/shared/component-runtime.js?component-runtime-v41-persistent-paint"></script>
 <script src="/src/shared/international-phone.js?dial-codes-v2-iso-profile"></script>
 <script src="/src/shared/scroll-stability.js?scroll-stability-v4"></script>
@@ -200,7 +201,7 @@
 <script src="/src/matrice/displayResults.js"></script>
 <script type="module" src="/src/services/site-config.js?anticipation-v2"></script>
 <script type="module" src="/src/services/public-social-links.js"></script>
-<script type="module" src="/src/services/public-offers.js?offers-dedicated-v2"></script>
+<script type="module" src="/src/services/public-offers.js?offers-cumulative-v3"></script>
 <script type="module" src="/src/services/promo-banners.js"></script>
 <script type="module" src="/src/services/resultat-aide.js?result-rectangle-v26-i18n"></script>
 <script type="module" src="/src/services/history-access.js?history-v4-cache-stable"></script>
@@ -214,11 +215,11 @@
 <!-- Remote account service and compatibility facade. -->
 <script src="/src/auth/user-stats.js"></script>
 <script src="/src/auth/supabase-config.js"></script>
-<script type="module" src="/src/shared/pwa-register.js"></script>
+<script type="module" src="/src/shared/pwa-register.js?pwa-update-v2"></script>
 <script type="module" src="/src/services/supabaseClient.js"></script>
 <script type="module" src="/src/services/social-repository.js"></script>
-<script src="/src/services/feature-access.js?feature-access-ledger-v2"></script>
-<script src="/src/services/access-actions.js"></script>
+<script src="/src/services/feature-access.js?feature-access-cumulative-v3"></script>
+<script src="/src/services/access-actions.js?access-actions-cumulative-v2"></script>
 <script src="/src/services/early-access-ui.js?anticipation-v2"></script>
 <script src="/src/shared/unlock-feedback.js"></script>
 <script src="/src/auth/message-repository.js"></script>
@@ -250,11 +251,11 @@
 <script type="module" src="/src/shared/view-transition.js"></script>
 <script type="module" src="/src/shared/dedicated-view-shell.js"></script>
 <script type="module" src="/src/shared/categories-view.js?navigation-v11-stable-rejected"></script>
-<script type="module" src="/src/shared/anticipation-view.js?anticipation-v12-rejected-banner"></script>
+<script type="module" src="/src/shared/anticipation-view.js?anticipation-v13-cumulative"></script>
 <script type="module" src="/src/shared/croix-section.js?history-local-first-v5"></script>
-<script type="module" src="/src/shared/publication-history-view.js?publication-history-v10-post-actions"></script>
+<script type="module" src="/src/shared/publication-history-view.js?publication-history-v11-post-continuity"></script>
 <script type="module" src="/src/shared/affichageSecurise.js"></script>
-<script type="module" src="/src/tableaux/tableaux-view.js?tableaux-unified-v6-post-card"></script>
+<script type="module" src="/src/tableaux/tableaux-view.js?tableaux-unified-v7-cumulative"></script>
 <script type="module" src="/src/croix/image-scanner.js"></script>
 <script type="module" src="/src/modules/croix-nationale/CroixNationaleView.js"></script>
 <script type="module" src="/src/modules/boules-rejetees/BoulesRejeteesView.js"></script>

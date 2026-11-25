@@ -121,9 +121,18 @@
     return subscription;
   }
 
-  function isActivePlan(access, plan) {
+  // Several plans can be active at once: each offer reads its OWN row.
+  function planSubscription(access, plan) {
+    const union = window.cidSubscriptionUnion;
+    if (union) return union.planSubscription(access, plan?.slug);
     const subscription = activeSubscription(access);
-    return Boolean(subscription && String(subscription.plan_slug || '') === String(plan?.slug || ''));
+    return subscription && String(subscription.plan_slug || '') === String(plan?.slug || '')
+      ? subscription
+      : null;
+  }
+
+  function isActivePlan(access, plan) {
+    return Boolean(planSubscription(access, plan));
   }
 
   function expiryLabel(value) {
@@ -159,12 +168,8 @@
   }
 
   function offerPlans(access, { tableauxOnly = false } = {}) {
-    const active = activeSubscription(access);
     return (Array.isArray(access?.plans) ? access.plans : [])
-      .filter((plan) => (
-        plan?.enabled !== false
-        || String(plan?.slug || '') === String(active?.plan_slug || '')
-      ))
+      .filter((plan) => plan?.enabled !== false || isActivePlan(access, plan))
       .filter((plan) => !tableauxOnly || isTableauxPlan(plan))
       .filter((plan) => Array.isArray(plan.features) && plan.features.length);
   }
@@ -185,7 +190,6 @@
       return;
     }
 
-    const active = activeSubscription(access);
     const sortedPlans = plans.slice().sort((left, right) => (
       Number(isActivePlan(access, right)) - Number(isActivePlan(access, left))
       || Number(left?.sort_order ?? left?.position ?? 0)
@@ -237,7 +241,7 @@
       const action = isActive
         ? t('offers.active', 'Actif')
         : `${t('offers.purchase', 'Achat')} ${formatAmount(current)}${usesStars ? ` ${currencyLabel}` : ''}`;
-          const expiresAt = isActive ? active?.expires_at : '';
+          const expiresAt = isActive ? planSubscription(access, plan)?.expires_at : '';
           return `
             <article class="cid-public-offer${isActive ? ' is-active' : ''}"
                      data-plan-slug="${escapeHtml(plan.slug)}"

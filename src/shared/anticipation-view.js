@@ -483,23 +483,34 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
     }
 
     const individualActive = activeIndividualFeatureGrant(access, key);
-    const subscription = activeSubscription(access);
-    const activePlan = access?.activePlan;
-    const collectiveActive = Boolean(
-      subscription
-      && (
-        planCoversFeature(activePlan, key)
-        || (access?.rules || []).some((rule) => (
-          keyOf(rule) === key
-          && String(rule?.plan_slug || '') === String(activePlan?.slug || '')
-        ))
-      )
-    );
+    const union = window.cidSubscriptionUnion;
+    let collectiveActive = false;
+    let planName = '';
+    if (union) {
+      // Union of every valid plan covering this programme.
+      const names = union.planNames(access, key);
+      collectiveActive = names.length > 0;
+      planName = names.join(' + ');
+    } else {
+      const subscription = activeSubscription(access);
+      const activePlan = access?.activePlan;
+      collectiveActive = Boolean(
+        subscription
+        && (
+          planCoversFeature(activePlan, key)
+          || (access?.rules || []).some((rule) => (
+            keyOf(rule) === key
+            && String(rule?.plan_slug || '') === String(activePlan?.slug || '')
+          ))
+        )
+      );
+      planName = activePlan?.display_name || activePlan?.slug || '';
+    }
     return {
       hasAccess: individualActive || collectiveActive,
       individualActive,
       collectiveActive,
-      planName: activePlan?.display_name || activePlan?.slug || ''
+      planName
     };
   }
 
@@ -699,6 +710,17 @@ import { SECURE_DISPLAY } from '/src/shared/affichageSecurise.js';
       dates.push(new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Africa/Abidjan'
       }).format(new Date(grant.expires_at)));
+    }
+    // Every covering plan keeps its own end date; the latest wins.
+    const covering = window.cidSubscriptionUnion?.coveringPlans?.(access, key);
+    if (covering) {
+      for (const entry of covering) {
+        if (!entry.subscription.expires_at) return null;
+        dates.push(new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Africa/Abidjan'
+        }).format(new Date(entry.subscription.expires_at)));
+      }
+      return dates.filter(Boolean).sort().at(-1) || '';
     }
     const subscription = access?.subscription;
     const planFeatures = Array.isArray(access?.activePlan?.features)

@@ -1,8 +1,13 @@
+// Release version. Bump on EVERY deployment that changes front-end files:
+// the byte change makes installed PWAs fetch, install and activate the new
+// worker, which then purges every older cidmap-cache-* entry.
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const CACHE_NAME = 'cidmap-cache-v53-publication-card';
+const SW_VERSION = 'v54-cumulative-access-history-card';
+const CACHE_NAME = `cidmap-cache-${SW_VERSION}`;
+const DOCUMENT_NETWORK_TIMEOUT_MS = 3500;
 const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
-const APP_CSS = '/src/styles/app.css?v=unified-v6-publication-card';
+const APP_CSS = '/src/styles/app.css?v=unified-v7-history-continuity';
 
 // The current shell, styles, fonts, and images are precached. The remaining
 // scripts are cached as they are requested and are also warmed here where
@@ -24,7 +29,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-192.png',
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav', '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v47',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v48',
   '/src/shared/translation.js?language-session-v5',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
@@ -35,7 +40,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/croix/draggableCross.js', '/src/matrice/displayResults.js',
   '/src/services/site-config.js?anticipation-v2',
   '/src/services/public-social-links.js',
-  '/src/services/public-offers.js?offers-dedicated-v2',
+  '/src/services/public-offers.js?offers-cumulative-v3',
   '/src/services/promo-banners.js',
   '/src/services/resultat-aide.js?result-rectangle-v26-i18n',
   '/src/services/history-access.js?history-v4-cache-stable',
@@ -44,11 +49,12 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/splash-squirrel.js?squirrel-v4',
   '/src/croix/downloadCross.js', '/src/shared/security.js',
   '/src/auth/user-stats.js', '/src/auth/supabase-config.js',
-  '/src/shared/pwa-register.js', '/src/services/supabaseClient.js',
+  '/src/shared/pwa-register.js?pwa-update-v2', '/src/services/supabaseClient.js',
   '/src/services/social-repository.js',
-  '/src/shared/programme-sync.js?programme-sync-v1',
-  '/src/services/feature-access.js?feature-access-ledger-v2',
-  '/src/services/access-actions.js',
+  '/src/services/subscription-union.js?subscription-union-v1',
+  '/src/shared/programme-sync.js?programme-sync-v2-elapsed',
+  '/src/services/feature-access.js?feature-access-cumulative-v3',
+  '/src/services/access-actions.js?access-actions-cumulative-v2',
   '/src/services/early-access-ui.js?anticipation-v2',
   '/src/shared/unlock-feedback.js', '/src/auth/message-repository.js',
   '/src/auth/admin-architecture.js', '/src/auth/admin-config.js',
@@ -69,11 +75,11 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/route-persistence.js?route-persistence-v3-result-route',
   '/src/shared/view-transition.js', '/src/shared/dedicated-view-shell.js',
   '/src/shared/categories-view.js?navigation-v11-stable-rejected',
-  '/src/shared/anticipation-view.js?anticipation-v12-rejected-banner',
+  '/src/shared/anticipation-view.js?anticipation-v13-cumulative',
   '/src/shared/croix-section.js?history-local-first-v5',
-  '/src/shared/publication-history-view.js?publication-history-v10-post-actions',
+  '/src/shared/publication-history-view.js?publication-history-v11-post-continuity',
   '/src/shared/affichageSecurise.js',
-  '/src/tableaux/tableaux-view.js?tableaux-unified-v6-post-card',
+  '/src/tableaux/tableaux-view.js?tableaux-unified-v7-cumulative',
   '/src/croix/image-scanner.js',
   '/src/modules/croix-nationale/CroixNationaleView.js',
   '/src/modules/boules-rejetees/BoulesRejeteesView.js',
@@ -268,8 +274,14 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
+    if (self.registration.navigationPreload) {
+      try { await self.registration.navigationPreload.enable(); } catch (_) {}
+    }
     await purgeOldCaches();
     await self.clients.claim();
+    // Tell open windows a new release controls them (clean reload there).
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    windows.forEach((client) => client.postMessage({ type: 'CIDMAP_SW_ACTIVATED', version: SW_VERSION }));
   })());
 });
 
@@ -277,7 +289,47 @@ self.addEventListener('message', (event) => {
   if (event.data?.type === 'CIDMAP_PURGE_OLD_CACHES') {
     event.waitUntil(purgeOldCaches());
   }
+  if (event.data?.type === 'CIDMAP_SKIP_WAITING') {
+    event.waitUntil(self.skipWaiting());
+  }
+  if (event.data?.type === 'CIDMAP_GET_VERSION') {
+    event.source?.postMessage?.({ type: 'CIDMAP_SW_VERSION', version: SW_VERSION });
+  }
 });
+
+/* Documents are network-first: an installed app always opens the latest
+ * index.html (and therefore the latest versioned assets). The cached copy
+ * is only used offline or when the network is too slow. */
+async function respondToDocument(event, cache) {
+  const request = event.request;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DOCUMENT_NETWORK_TIMEOUT_MS);
+  try {
+    const preloaded = await event.preloadResponse;
+    const response = preloaded || await fetch(request, { cache: 'no-store', signal: controller.signal });
+    if (isCacheableResponse(response)) {
+      const copy = response.clone();
+      event.waitUntil((async () => {
+        try {
+          await cache.put(request, copy.clone());
+          const url = new URL(request.url);
+          if (url.pathname === '/' || url.pathname === '/index.html') {
+            await cache.put(new Request(new URL('/index.html', self.location.origin)), copy);
+          }
+        } catch (_) {}
+      })());
+      return response;
+    }
+    if (response && response.status < 500) return response;
+  } catch (_) {
+    // Offline or slow network: fall back to the stored shell below.
+  } finally {
+    clearTimeout(timer);
+  }
+  const cached = await matchAcrossCaches(request)
+    || await matchAcrossCaches(new Request(new URL('/index.html', self.location.origin)));
+  return cached || offlineDocument();
+}
 
 function offlineDocument() {
   return new Response(
@@ -332,27 +384,28 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    const cached = await matchAcrossCaches(request)
-      || await matchAcrossCaches(request, { ignoreSearch: true });
+    if (isDocument) return respondToDocument(event, cache);
 
-    const refresh = fetchWithTimeout(request, { cache: 'no-store' })
+    // Exact URL only: a new ?v= revision must never be answered with the
+    // previous release's file.
+    const cached = await matchAcrossCaches(request);
+    const versioned = url.search.length > 1;
+    const refresh = () => fetchWithTimeout(request, { cache: 'no-store' })
       .then((response) => saveResponse(cache, request, response));
 
     if (cached) {
-      // Immediate cache/localStorage-first paint; network refresh never gates it.
-      event.waitUntil(refresh.catch(() => {}));
+      // Versioned URLs are immutable; unversioned ones revalidate quietly.
+      if (!versioned) event.waitUntil(refresh().catch(() => {}));
       return cached;
     }
 
     try {
-      const response = await refresh;
+      const response = await refresh();
       if (response) return response;
     } catch (_) {}
 
-    if (isDocument) {
-      const fallback = await matchAcrossCaches(new Request(new URL('/index.html', self.location.origin)));
-      return fallback || offlineDocument();
-    }
-    return offlineAsset(request);
+    // Offline only: an older revision of the same file beats nothing.
+    const older = await matchAcrossCaches(request, { ignoreSearch: true });
+    return older || offlineAsset(request);
   })());
 });

@@ -24,6 +24,13 @@ function format(type, position = '') {
 }
 
 export function isVerifiedActiveSubscription(access) {
+  // Any one valid plan with a server end date (cumulative plans).
+  const union = typeof window !== 'undefined' ? window.cidSubscriptionUnion : null;
+  if (union) {
+    return union.validPlans(access).some((entry) => (
+      Number.isFinite(Date.parse(entry.subscription.expires_at || ''))
+    ));
+  }
   const subscription = access?.subscription;
   if (!subscription || subscription.status !== 'active') return false;
   const startedAt = subscription.started_at

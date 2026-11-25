@@ -144,7 +144,7 @@
 </script>
 <!-- Cache lifecycle runs before DOMContentLoaded and before route modules.
      It invalidates stale application data without blocking first paint. -->
-<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v49" defer></script>
+<script src="/src/shared/cache-lifecycle.js?cache-lifecycle-v50" defer></script>
 <base href="/">
 <link rel="canonical" href="https://cidmap.com/" />
 <meta name="description" content="Cidmap — publications et programmes du jour." />
@@ -168,8 +168,15 @@
 <link id="cidDynamicFavicon" rel="icon" type="image/png" href="/src/shared/images/squirrel-croix-192.png">
 <meta charset="UTF-8">
 <title>Cidmap</title>
+<!-- Safety net used only if the stylesheet fails to load (never raw text or giant icons). -->
+<style id="cidCssGuard">
+html.cid-css-missing body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.4;overflow-x:hidden}
+html.cid-css-missing img,html.cid-css-missing svg,html.cid-css-missing video,html.cid-css-missing canvas{max-width:100%;height:auto;max-height:48px}
+html.cid-css-missing button{max-width:100%}
+</style>
 <!-- Single application stylesheet (render-blocking on purpose: the first frame is final). -->
-<link rel="stylesheet" href="/src/styles/app.css?v=unified-v8-history-mould">
+<link rel="stylesheet" id="cidAppCss" href="/src/styles/app.css?v=unified-v9-network-first">
+<script src="/src/shared/css-guard.js?css-guard-v1"></script>
 <!-- Self-hosted fonts: same glyphs and weights on the first visit and offline. -->
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/archivo-black-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/src/shared/fonts/noto-sans-latin.woff2" crossorigin>
@@ -215,7 +222,7 @@
 <!-- Remote account service and compatibility facade. -->
 <script src="/src/auth/user-stats.js"></script>
 <script src="/src/auth/supabase-config.js"></script>
-<script type="module" src="/src/shared/pwa-register.js?pwa-update-v2"></script>
+<script type="module" src="/src/shared/pwa-register.js?pwa-update-v3"></script>
 <script type="module" src="/src/services/supabaseClient.js"></script>
 <script type="module" src="/src/services/social-repository.js"></script>
 <script src="/src/services/feature-access.js?feature-access-session-v4"></script>

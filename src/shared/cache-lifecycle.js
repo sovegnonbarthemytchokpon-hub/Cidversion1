@@ -10,8 +10,8 @@
 
   const APP_VERSION = 'v41-mobile-scroll-cache';
   const VERSION_KEY = 'cidmap:app-version';
-  // Must equal CACHE_NAME in /service-worker.js (cidmap-cache-v55-history-mould-session-status).
-  const CURRENT_SW_CACHE = 'cidmap-cache-v55-history-mould-session-status';
+  // Must equal CACHE_NAME in /service-worker.js (cidmap-cache-v56-network-first-assets).
+  const CURRENT_SW_CACHE = 'cidmap-cache-v56-network-first-assets';
 
   const OLD_LOCAL_STORAGE = [
     /^cidmap:/,
@@ -47,7 +47,7 @@
   // account and publication data must continue through their existing access
   // checks and local-first repositories.
   const STATIC_ASSETS = [
-    '/src/styles/app.css?v=unified-v8-history-mould',
+    '/src/styles/app.css?v=unified-v9-network-first',
     '/src/styles/auth-frame.css?v=unified-v1',
     '/src/shared/images/squirrel-red-mask.png',
     '/src/shared/images/squirrel-croix-192.png',

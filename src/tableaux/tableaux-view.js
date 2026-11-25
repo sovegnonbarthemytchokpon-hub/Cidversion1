@@ -603,7 +603,201 @@ import {
     viewportSyncFrame = raf(sync);
   }
 
+  /*
+   * Tableaux scroll guard.
+   *
+   * Access revalidation (window focus, visibility, account/entitlement
+   * events) re-locks the cards for a moment: the LNB satellite rows collapse
+   * to one masked row and the cards are re-ordered, then the verified render
+   * restores them. While the visitor sits at the bottom (blue LNB card) that
+   * transient shrink made the browser clamp the scroll position, so the view
+   * jumped back up to Balsa Plus and stayed there.
+   *
+   * The guard remembers the position the visitor actually scrolled to and,
+   * when the position moves without any gesture or intentional scroll,
+   * restores it. A bottom spacer temporarily keeps the scroll extent while
+   * the content is shorter; it shrinks as soon as the content grows back or
+   * the visitor scrolls up.
+   */
+  const SCROLL_GUARD_JUMP_PX = 24;
+  const SCROLL_GUARD_GESTURE_MS = 1200;
+  const SCROLL_GUARD_MOMENTUM_MS = 260;
+  const SCROLL_GUARD_RESTORE_MS = 1600;
+  const SCROLL_GUARD_RELEASE_MS = 8000;
+  const tableauxScrollGuard = {
+    view: null,
+    floor: null,
+    anchor: 0,
+    gestureUntil: 0,
+    programmaticUntil: 0,
+    lastUserScrollAt: 0,
+    restoreUntil: 0,
+    restoreFrame: 0,
+    releaseTimer: 0,
+    restoring: false
+  };
+
+  function markTableauxProgrammaticScroll(durationMs = 2000) {
+    tableauxScrollGuard.programmaticUntil = Date.now() + durationMs;
+    tableauxScrollGuard.restoreUntil = 0;
+  }
+
+  function resetTableauxScrollGuard() {
+    tableauxScrollGuard.anchor = 0;
+    tableauxScrollGuard.restoreUntil = 0;
+    markTableauxProgrammaticScroll();
+    setTableauxScrollFloor(0);
+  }
+
+  function tableauxScrollFloor() {
+    const { view } = tableauxScrollGuard;
+    if (!view) return null;
+    let floor = tableauxScrollGuard.floor;
+    if (!floor || floor.parentNode !== view) {
+      floor = view.querySelector(':scope > .cid-tableaux-scroll-floor')
+        || document.createElement('div');
+      floor.className = 'cid-tableaux-scroll-floor';
+      floor.setAttribute('aria-hidden', 'true');
+      floor.style.cssText = 'display:block;height:0;margin:0;padding:0;'
+        + 'border:0;pointer-events:none;flex:none;';
+      tableauxScrollGuard.floor = floor;
+    }
+    // Keep the spacer after every card (re-renders append into the stack).
+    if (floor.parentNode !== view || view.lastElementChild !== floor) {
+      view.appendChild(floor);
+    }
+    return floor;
+  }
+
+  function tableauxScrollFloorHeight() {
+    const floor = tableauxScrollGuard.floor;
+    return floor && floor.parentNode === tableauxScrollGuard.view
+      ? (parseFloat(floor.style.height) || 0)
+      : 0;
+  }
+
+  function setTableauxScrollFloor(height) {
+    const next = Math.max(0, Math.ceil(height));
+    if (!next) {
+      // No spacer in the layout at all when it is not needed (no grid gap).
+      tableauxScrollGuard.floor?.remove();
+      return;
+    }
+    const floor = tableauxScrollFloor();
+    if (floor) floor.style.height = `${next}px`;
+  }
+
+  /* Natural scroll extent of the cards, without the temporary spacer. */
+  function tableauxNaturalMaxScroll() {
+    const { view } = tableauxScrollGuard;
+    if (!view) return 0;
+    return Math.max(0, view.scrollHeight - tableauxScrollFloorHeight() - view.clientHeight);
+  }
+
+  /* Never keep more spacer than needed to reach the remembered position. */
+  function trimTableauxScrollFloor() {
+    const current = tableauxScrollFloorHeight();
+    if (!current) return;
+    const { view } = tableauxScrollGuard;
+    const needed = Math.max(0, Math.max(view.scrollTop, tableauxScrollGuard.anchor)
+      - tableauxNaturalMaxScroll());
+    if (needed < current) setTableauxScrollFloor(needed);
+  }
+
+  function restoreTableauxScroll() {
+    const guard = tableauxScrollGuard;
+    const { view } = guard;
+    guard.restoreFrame = 0;
+    if (!view || view.hidden || Date.now() > guard.restoreUntil) {
+      trimTableauxScrollFloor();
+      // If the cards stay shorter (e.g. access really changed), release the
+      // spacer later instead of leaving blank space below the last card.
+      window.clearTimeout(guard.releaseTimer);
+      if (tableauxScrollFloorHeight()) {
+        guard.releaseTimer = window.setTimeout(() => {
+          if (Date.now() < guard.restoreUntil) return;
+          markTableauxProgrammaticScroll(400);
+          setTableauxScrollFloor(0);
+        }, SCROLL_GUARD_RELEASE_MS);
+      }
+      return;
+    }
+    const deficit = guard.anchor - tableauxNaturalMaxScroll();
+    if (deficit > tableauxScrollFloorHeight()) setTableauxScrollFloor(deficit);
+    if (Math.abs(view.scrollTop - guard.anchor) > 1) {
+      guard.restoring = true;
+      view.scrollTop = guard.anchor;
+      guard.restoring = false;
+    }
+    guard.restoreFrame = requestAnimationFrame(restoreTableauxScroll);
+  }
+
+  function scheduleTableauxScrollRestore() {
+    const guard = tableauxScrollGuard;
+    guard.restoreUntil = Date.now() + SCROLL_GUARD_RESTORE_MS;
+    if (!guard.restoreFrame) {
+      guard.restoreFrame = requestAnimationFrame(restoreTableauxScroll);
+    }
+  }
+
+  function installTableauxScrollGuard() {
+    const view = get(VIEW_ID);
+    const guard = tableauxScrollGuard;
+    if (!view || guard.view === view) return;
+    guard.view = view;
+    const gesture = () => {
+      guard.gestureUntil = Date.now() + SCROLL_GUARD_GESTURE_MS;
+      guard.restoreUntil = 0;
+    };
+    ['pointerdown', 'touchstart', 'touchmove', 'wheel', 'keydown']
+      .forEach((type) => view.addEventListener(type, gesture, { passive: true, capture: true }));
+    // iOS momentum continues after the finger leaves the screen.
+    view.addEventListener('touchend', gesture, { passive: true, capture: true });
+    view.addEventListener('scroll', () => {
+      if (guard.restoring || view.hidden) return;
+      const now = Date.now();
+      const top = view.scrollTop;
+      const userDriven = now < guard.gestureUntil
+        || now - guard.lastUserScrollAt < SCROLL_GUARD_MOMENTUM_MS;
+      if (userDriven || now < guard.programmaticUntil) {
+        if (userDriven) guard.lastUserScrollAt = now;
+        guard.anchor = top;
+        guard.restoreUntil = 0;
+        trimTableauxScrollFloor();
+        return;
+      }
+      // A move to the very top is an explicit route/catalogue reset.
+      if (top <= 1) {
+        guard.anchor = 0;
+        setTableauxScrollFloor(0);
+        return;
+      }
+      if (guard.anchor - top > SCROLL_GUARD_JUMP_PX) {
+        scheduleTableauxScrollRestore();
+        return;
+      }
+      guard.anchor = top;
+    }, { passive: true });
+    // Content grew back (verified render): drop the spacer that is no longer needed.
+    if ('ResizeObserver' in window) {
+      const observer = new ResizeObserver(() => {
+        if (!tableauxScrollFloorHeight()) return;
+        if (Date.now() < guard.restoreUntil) return;
+        trimTableauxScrollFloor();
+      });
+      observer.observe(view);
+      const watchStack = () => {
+        Array.from(view.children).forEach((child) => {
+          if (child !== guard.floor) observer.observe(child);
+        });
+      };
+      watchStack();
+      new MutationObserver(watchStack).observe(view, { childList: true });
+    }
+  }
+
   function bindTableauxViewportSync() {
+    installTableauxScrollGuard();
     if (viewportSyncBound) return;
     viewportSyncBound = true;
     const schedule = () => {
@@ -1866,6 +2060,7 @@ import {
           if (!view) return;
           view.dataset.tableauxCatalogueMode = 'collective';
           view.dataset.tableauxActiveFeature = featureKey;
+          markTableauxProgrammaticScroll();
           view.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
           renderTableauxSections(currentAccessState);
         });
@@ -3609,6 +3804,7 @@ import {
     const top = priority
       ? 0
       : Math.max(0, portfolio.offsetTop - 12);
+    markTableauxProgrammaticScroll();
     view.scrollTo({ top, left: 0, behavior: 'smooth' });
     const purchase = portfolio.querySelector(
       '.tableaux-schema-unlock, [data-tableaux-purchase]'
@@ -3658,6 +3854,7 @@ import {
     setViewVisibility(true);
     bindTableauxViewportSync();
     syncTableauxViewport({ resetScroll: true });
+    resetTableauxScrollGuard();
     if (updateHistory) {
       const url = new URL(window.location.href);
       url.searchParams.set('section', 'tableaux');
@@ -3905,6 +4102,7 @@ import {
       event.stopImmediatePropagation();
       if (document.body.classList.contains('tableaux-active') &&
           !get(VIEW_ID)?.hidden) {
+        markTableauxProgrammaticScroll();
         scheduleTableauxViewportSync({ resetScroll: true, settle: true });
         get(VIEW_ID)?.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
         return;

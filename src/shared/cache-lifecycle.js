@@ -8,10 +8,16 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = 'v41-mobile-scroll-cache';
+  const APP_VERSION = 'v42-auto-update-offline-sections';
   const VERSION_KEY = 'cidmap:app-version';
-  // Must equal CACHE_NAME in /service-worker.js (cidmap-cache-v56-network-first-assets).
-  const CURRENT_SW_CACHE = 'cidmap-cache-v56-network-first-assets';
+  // Must equal CACHE_NAME in /service-worker.js (cidmap-cache-v57-auto-update-offline-sections).
+  const CURRENT_SW_CACHE = 'cidmap-cache-v57-auto-update-offline-sections';
+  // Long-lived image cache owned by the worker (never holds code).
+  const KEPT_CACHES = ['cidmap-images-v1'];
+  // The only stylesheets the application document may load.
+  const CURRENT_STYLESHEETS = {
+    '/src/styles/app.css': 'unified-v9-network-first'
+  };
 
   const OLD_LOCAL_STORAGE = [
     /^cidmap:/,
@@ -93,14 +99,36 @@
     purgeStorage(window.sessionStorage, OLD_SESSION_STORAGE);
   }
 
+  /*
+   * Delete every cache of an older release. Only once the current release
+   * cache exists: until then the new worker is still installing and copies
+   * its offline seed from the previous cache.
+   */
   async function purgeBrowserCaches() {
     if (!('caches' in window)) return [];
     try {
       const names = await caches.keys();
-      return names.filter((name) => name === CURRENT_SW_CACHE);
+      if (!names.includes(CURRENT_SW_CACHE)) return [];
+      const stale = names.filter((name) => (
+        name !== CURRENT_SW_CACHE && !KEPT_CACHES.includes(name)
+      ));
+      await Promise.all(stale.map((name) => caches.delete(name).catch(() => false)));
+      return stale;
     } catch (_) {
       return [];
     }
+  }
+
+  /* Old stylesheet revisions or legacy component styles injected earlier. */
+  function purgeLegacyStylesheets() {
+    document.querySelectorAll('link[rel~="stylesheet"][href]').forEach((link) => {
+      let url;
+      try { url = new URL(link.getAttribute('href'), location.href); } catch (_) { return; }
+      if (url.origin !== location.origin) return;
+      const expected = CURRENT_STYLESHEETS[url.pathname];
+      if (expected && url.searchParams.get('v') === expected) return;
+      link.remove();
+    });
   }
 
   async function warmStaticAssets() {
@@ -143,6 +171,7 @@
   function purgeLegacyDom() {
     if (document.querySelectorAll) {
       document.querySelectorAll(OLD_DOM_MARKERS).forEach((node) => node.remove());
+      purgeLegacyStylesheets();
     }
   }
 

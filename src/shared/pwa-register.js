@@ -14,6 +14,12 @@
  *   4. the page reloads once, cleanly, onto the new release — immediately if
  *      it is in the background, otherwise at the next return to the app or
  *      after a short idle delay so a tap in progress is never interrupted.
+ *      The visitor is never asked to confirm anything.
+ *
+ * Offline sections: every same-origin file a visited section used (scripts,
+ * styles, fonts, images, locales) is handed to the worker, which keeps it in
+ * the release cache. Sections already opened therefore reopen offline with
+ * their code and stylesheet, without downloading the CSS again.
  */
 (() => {
   'use strict';
@@ -75,10 +81,64 @@
     }, { once: true });
   }
 
+  const warmedUrls = new Set();
+  let warmTimer = 0;
+
+  function visitedResourceUrls() {
+    const urls = [];
+    const push = (value) => {
+      try {
+        const url = new URL(value, location.href);
+        if (url.origin !== location.origin || url.searchParams.has('retry')) return;
+        const href = url.pathname + url.search;
+        if (warmedUrls.has(href)) return;
+        warmedUrls.add(href);
+        urls.push(href);
+      } catch (_) {}
+    };
+    try {
+      performance.getEntriesByType('resource').forEach((entry) => push(entry.name));
+    } catch (_) {}
+    document.querySelectorAll('script[src], link[rel="stylesheet"][href], link[rel="preload"][href], img[src]')
+      .forEach((node) => push(node.getAttribute('src') || node.getAttribute('href')));
+    return urls;
+  }
+
+  function warmVisitedSections() {
+    warmTimer = 0;
+    const worker = navigator.serviceWorker.controller;
+    if (!worker || !navigator.onLine) return;
+    const urls = visitedResourceUrls();
+    if (urls.length) worker.postMessage({ type: 'CIDMAP_WARM_URLS', urls });
+  }
+
+  function scheduleWarmVisitedSections(delay = 1800) {
+    if (warmTimer) return;
+    warmTimer = window.setTimeout(() => {
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(warmVisitedSections, { timeout: 3000 });
+      } else {
+        warmVisitedSections();
+      }
+    }, delay);
+  }
+
+  // Section changes toggle body classes (accueil-active, tableaux-active…).
+  const observeSections = () => {
+    if (!document.body || typeof MutationObserver !== 'function') return;
+    new MutationObserver(() => scheduleWarmVisitedSections())
+      .observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  };
+  if (document.body) observeSections();
+  else document.addEventListener('DOMContentLoaded', observeSections, { once: true });
+  window.addEventListener('popstate', () => scheduleWarmVisitedSections());
+  window.addEventListener('online', () => scheduleWarmVisitedSections(800));
+
   // First install: the worker claims the page without a reload. Afterwards
   // a controller change means a new release is in charge.
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (hadController) scheduleReload();
+    else scheduleWarmVisitedSections(600);
   });
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data?.type === 'CIDMAP_SW_ACTIVATED' && hadController) scheduleReload();
@@ -102,6 +162,7 @@
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState === 'visible') checkForUpdate(registration);
         });
+        scheduleWarmVisitedSections(2500);
         if (!window.__cidPwaReadyDispatched) {
           window.__cidPwaReadyDispatched = true;
           window.dispatchEvent(new CustomEvent('cid:pwa-ready', { detail: { registration } }));

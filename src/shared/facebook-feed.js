@@ -62,7 +62,13 @@ const pendingCommentsRequests = new WeakMap();
 const pendingMetricsRequests = new WeakMap();
 const pendingHomeHistoryHydrations = new WeakMap();
 const FEED_CACHE_KEY = 'cidgroup.feed-hydration.v40';
-const FEED_CACHE_TTL = 2 * 60 * 1000;
+/*
+ * Local pre-save of the Accueil counters/comments. It is a paint cache:
+ * every visit still revalidates with Supabase, but a return visit (or an
+ * offline one) paints the last known values at once instead of zeros.
+ */
+const FEED_CACHE_TTL = 30 * 24 * 60 * 60 * 1000;
+const feedIsOffline = () => typeof navigator !== 'undefined' && navigator.onLine === false;
 // Public comments are paused for now; the social row keeps like and share.
 const COMMENTS_ENABLED = false;
 let commentsSheetState = null;
@@ -2818,7 +2824,7 @@ async function refreshPostComments(post) {
         commentsSheetState.loading = false;
         renderCommentsSheet();
       }
-      if (!isSocialAuthError(error)) {
+      if (!isSocialAuthError(error) && !(cached && feedIsOffline())) {
         setStatus(post, 'Les commentaires sont indisponibles pour le moment.');
       }
     }
@@ -2838,7 +2844,8 @@ async function refreshPostMetrics(post) {
       applyPostMetrics(post, metrics);
       writeFeedCache(postId, { ...(readFeedCache(postId) || {}), metrics });
     } catch (error) {
-      if (!isSocialAuthError(error)) {
+      // Offline with saved counters: the pre-saved values stay, silently.
+      if (!isSocialAuthError(error) && !(cached?.metrics && feedIsOffline())) {
         setStatus(post, 'Les compteurs sont indisponibles pour le moment.');
       }
     }

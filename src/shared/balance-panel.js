@@ -607,10 +607,19 @@
     }
   }
 
+  /*
+   * Offline copy of the last balance verified by the server, kept under the
+   * signed-in account only. The live Supabase read stays the source of
+   * truth; the copy is displayed only when that read fails (offline).
+   */
+  const OFFLINE_WALLET_NAME = 'wallet-access';
+  let walletUserId = '';
+
   async function load() {
     if (loading) return;
     loading = true;
     loadError = '';
+    walletUserId = '';
     try {
       const bridge = await window.cidSupabaseReady;
       // Read the live Supabase session first. This is intentionally done at
@@ -635,6 +644,7 @@
         return;
       }
       authState = 'signed-in';
+      walletUserId = String(user.id);
       if (!bridge?.client?.functions?.invoke) throw new Error('Service de solde indisponible.');
       const response = await bridge.client.functions.invoke('subscription-access', {
         body: { countryCode: currentCountryCode() }
@@ -643,6 +653,7 @@
         throw new Error(response.data?.error || response.error?.message || 'Solde indisponible.');
       }
       access = response.data.access || null;
+      if (access) window.cidPersistentCache?.write?.(OFFLINE_WALLET_NAME, walletUserId, access);
       if (purchaseContext && activePurchase === 'tokens') {
         purchaseContext.currentTokens = number(access.tokens);
         purchaseQuantity = Math.max(
@@ -653,6 +664,19 @@
       setStatus(purchaseNotice, purchaseNotice ? purchaseNoticeKind : '');
       render();
     } catch (error) {
+      const saved = walletUserId
+        ? window.cidPersistentCache?.read?.(OFFLINE_WALLET_NAME, walletUserId, Infinity)
+        : null;
+      if (saved?.value) {
+        access = saved.value;
+        loadError = '';
+        setStatus(t(
+          'wallet.offlineSnapshot',
+          'Hors connexion : dernier solde enregistré sur cet appareil.'
+        ));
+        render();
+        return;
+      }
       loadError = error?.message || 'Impossible d’actualiser votre solde.';
       setStatus('Impossible d’actualiser le portefeuille.', 'error');
       render();

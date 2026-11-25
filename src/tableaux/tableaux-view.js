@@ -3871,7 +3871,11 @@ import {
         return currentPrograms;
       }
       const date = parseDate(dateKey);
-      const access = await window.cidFeatureAccess?.refresh?.();
+      // One live access read covers the whole nine-date sync.
+      const featureAccess = window.cidFeatureAccess;
+      const access = await (featureAccess?.fresh
+        ? featureAccess.fresh(60 * 1000)
+        : featureAccess?.refresh?.());
       const verifiedFeatures = await verifyTableauxAccessSet();
       return loadRemotePrograms(date, access || null, verifiedFeatures, { isolated: true });
     };

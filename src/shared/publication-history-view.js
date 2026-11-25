@@ -1215,7 +1215,19 @@ import {
        */
       if (!portfolio.closest('#tableauxViewContainer')) return;
       if (portfolio.closest('[data-created-portfolio-clone="true"]')) return;
-      if (portfolio.querySelector(':scope > .tableaux-history-button')) return;
+      const actionRow = portfolio.querySelector(
+        ':scope > .tableaux-access-badge > .tableaux-post-actions'
+      );
+      const existing = portfolio.querySelector(
+        ':scope > .tableaux-history-button, :scope > .tableaux-access-badge .tableaux-history-button'
+      );
+      if (existing) {
+        // Keep Historique on the same line as Acheter once the badge exists.
+        if (actionRow && existing.parentElement !== actionRow) {
+          actionRow.appendChild(existing);
+        }
+        return;
+      }
       const rawFeatureKey = portfolio.dataset.tableauxAccess
         || portfolio.dataset.tableauxFeature
         || (portfolio.dataset.tableauxProgram
@@ -1227,7 +1239,7 @@ import {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'tableaux-history-button';
-      button.textContent = 'Voir plus';
+      button.innerHTML = '<svg class="tableaux-post-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 4.5V9h4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Historique</span>';
       button.setAttribute('aria-label', `Voir l’historique ${labelForTableau(featureKey)}`);
       button.addEventListener('click', () => {
         const componentId = ({
@@ -1246,7 +1258,7 @@ import {
           returnTo: () => window.showTableauxView?.({ updateHistory: false })
         });
       });
-      portfolio.appendChild(button);
+      (actionRow || portfolio).appendChild(button);
     });
   }
 

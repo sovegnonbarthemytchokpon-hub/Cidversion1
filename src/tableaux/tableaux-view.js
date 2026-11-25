@@ -1719,6 +1719,59 @@ import {
       : `${label} — schéma verrouillé`;
   }
 
+  const TABLEAU_BUY_ICON = '<svg class="tableaux-post-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="m12 7.2 1.4 2.9 3.2.4-2.3 2.2.6 3.1L12 14.3l-2.9 1.5.6-3.1-2.3-2.2 3.2-.4z" fill="currentColor"/></svg>';
+  const TABLEAU_VERIFIED_BADGE = '<svg class="cid-fb-verified tableaux-post-verified" viewBox="0 0 24 24" width="18" height="18" role="img" aria-label="Page vérifiée" focusable="false"><title>Page vérifiée</title><path d="M12 1.8 14.2 3l2.5-.3 1.2 2.2 2.2 1.2-.3 2.5 1.2 2.2-1.2 2.2.3 2.5-2.2 1.2-1.2 2.2-2.5-.3-2.2 1.2-2.2-1.2-2.5.3-1.2-2.2-2.2-1.2.3-2.5-1.2-2.2 1.2-2.2-.3-2.5 2.2-1.2L9.8 3z" fill="#1877F2"/><path d="M7.4 12.1l3.2 3.2 6.1-6.1" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function tableauPostDateLabel(portfolio) {
+    const cardDate = String(
+      portfolio.querySelector(':scope > .container .date, .table-date')?.textContent || ''
+    ).trim();
+    if (cardDate && cardDate !== LOCKED_VALUE && /\p{L}/u.test(cardDate)) {
+      return cardDate;
+    }
+    return new Intl.DateTimeFormat(uiLocale(), {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'Africa/Abidjan'
+    }).format(new Date());
+  }
+
+  function tableauPostElapsedLabel() {
+    // Programmes are published daily at 16:00 UTC.
+    const now = new Date();
+    const published = new Date(Date.UTC(
+      now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 16
+    ));
+    if (published > now) published.setUTCDate(published.getUTCDate() - 1);
+    const minutes = Math.max(0, Math.floor((now - published) / 60000));
+    if (minutes < 5) return 'il y a quelques instants';
+    if (minutes < 60) return `il y a ${minutes} min`;
+    return `il y a ${Math.floor(minutes / 60)} h`;
+  }
+
+  function buildTableauPostHeader(portfolio) {
+    const header = document.createElement('header');
+    header.className = 'cid-fb-post-header tableaux-post-header';
+    const avatar = window.__cidBrandAvatarSrc || '/src/shared/images/squirrel-croix-192.png';
+    header.innerHTML = `
+      <div class="cid-fb-avatar tableaux-post-avatar">
+        <img data-cid-brand-avatar src="${escapeAccessHtml(avatar)}" alt="Photo de profil Cidmap" width="44" height="44" decoding="async">
+      </div>
+      <div class="cid-fb-author tableaux-post-author">
+        <div class="cid-fb-author-line">
+          <span class="cid-fb-page-name">Cidmap</span>
+          ${TABLEAU_VERIFIED_BADGE}
+        </div>
+        <div class="cid-fb-time tableaux-post-time"></div>
+      </div>`;
+    header.querySelector('.tableaux-post-time').textContent = `${
+      tableauPostElapsedLabel()
+    } · ${tableauPostDateLabel(portfolio)} · 🌐`;
+    return header;
+  }
+
   function renderPortfolioAccessBadge(portfolio, allowed, label) {
     let badge = portfolio.querySelector(':scope > .tableaux-access-badge');
     if (!badge) {
@@ -1730,7 +1783,13 @@ import {
       badge.setAttribute('role', 'status');
     }
     badge.classList.toggle('is-locked', !allowed);
+    // The history button lives in the action row of the badge. Keep the same
+    // node across re-renders so its listener and label are preserved.
+    const historyButton = portfolio.querySelector('.tableaux-history-button');
     badge.replaceChildren();
+    badge.appendChild(buildTableauPostHeader(portfolio));
+    const actions = document.createElement('div');
+    actions.className = 'tableaux-post-actions';
     const status = document.createElement('span');
     const featureKey = featureKeyForPortfolio(portfolio);
     const rule = tableauxRule(featureKey);
@@ -1774,6 +1833,8 @@ import {
         : `<strong>🔓 ${escapeAccessHtml(label)} · Accès libre</strong>
            <small class="tableaux-access-source">Mode d’accès : ${escapeAccessHtml(modeAccessLabel)}</small>`;
     badge.appendChild(status);
+    badge.appendChild(actions);
+    if (historyButton) actions.appendChild(historyButton);
     const modes = document.createElement('div');
     modes.className = 'tableaux-access-modes';
     const individualMode = document.createElement('div');
@@ -1794,9 +1855,9 @@ import {
         : accessSource.collectiveConfigured
           ? `Disponible${accessSource.planName ? ` · ${escapeAccessHtml(accessSource.planName)}` : ''}`
           : 'Non configuré'}</small>`;
-    if (!collectiveCatalogue && (accessSource.individualConfigured || isPaid)) {
-      modes.appendChild(individualMode);
-    }
+    // Individual catalogue: the purchase action sits directly in the action
+    // row next to Historique, without the repeated « Individuel » text.
+    void individualMode;
     if (collectiveCatalogue && accessSource.collectiveConfigured) {
       modes.appendChild(collectiveMode);
     }
@@ -1849,9 +1910,9 @@ import {
       'cid-buy-button'
     ].join(' ');
     const actionLabel = individualIsActive ? 'Prolonger' : 'Acheter';
-    unlock.innerHTML = individualIsActive
-      ? `<span>${actionLabel}</span><span class="cid-inline-cost" aria-hidden="true">${formatAccessAmount(required)} ${escapeAccessHtml(currency)}</span>`
-      : `<span class="cid-token-icon" aria-hidden="true"></span><span>${actionLabel}</span><span class="cid-inline-cost" aria-hidden="true">${formatAccessAmount(required)} ${escapeAccessHtml(currency)}</span>`;
+    // Compact action: only the word « Acheter »; the price and duration are
+    // shown in the confirmation step and kept in the accessible label.
+    unlock.innerHTML = `${TABLEAU_BUY_ICON}<span>Acheter</span>`;
     unlock.disabled = false;
     unlock.setAttribute(
       'aria-label',
@@ -1944,7 +2005,7 @@ import {
         delete unlock.dataset.confirming;
       }
     });
-    individualMode.appendChild(unlock);
+    actions.insertBefore(unlock, actions.firstChild);
     // Keep the access status before the programme cards. It belongs to the
     // section header, not on top of a key/cross card where it can hide the
     // date and the programme title.

@@ -2,18 +2,20 @@
 // the byte change makes installed PWAs fetch, install and activate the new
 // worker, which then purges every older cidmap-cache-* entry.
 // Keep in sync with CURRENT_SW_CACHE in /src/shared/cache-lifecycle.js.
-const SW_VERSION = 'v55-history-mould-session-status';
+const SW_VERSION = 'v56-network-first-assets';
 const CACHE_NAME = `cidmap-cache-${SW_VERSION}`;
 const DOCUMENT_NETWORK_TIMEOUT_MS = 3500;
-const LEGACY_CACHE_PREFIX = 'cidgroup-cache-';
 const NETWORK_TIMEOUT_MS = 1400;
-const APP_CSS = '/src/styles/app.css?v=unified-v8-history-mould';
+// HTML, JS and CSS are network-first; slow networks fall back to the cache.
+const CODE_NETWORK_TIMEOUT_MS = 3000;
+const APP_CSS = '/src/styles/app.css?v=unified-v9-network-first';
 
 // The current shell, styles, fonts, and images are precached. The remaining
 // scripts are cached as they are requested and are also warmed here where
 // possible. A failed optional request must never prevent worker installation.
 const URLS_TO_CACHE = [...new Set([
   '/', '/index.html', '/pwa.htm', '/manifest.json', APP_CSS,
+  '/src/shared/css-guard.js?css-guard-v1',
   '/src/shared/fonts/archivo-black-latin.woff2',
   '/src/shared/fonts/archivo-black-latin-ext.woff2',
   '/src/shared/fonts/audiowide-latin.woff2',
@@ -29,7 +31,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/images/app-icon-192.png',
   '/src/shared/images/app-icon-512.png',
   '/sfx/like-confirmation.wav', '/sfx/unlock-success.wav',
-  '/src/shared/cache-lifecycle.js?cache-lifecycle-v49',
+  '/src/shared/cache-lifecycle.js?cache-lifecycle-v50',
   '/src/shared/translation.js?language-session-v5',
   '/src/shared/persistent-cache.js?persistent-cache-v40',
   '/src/shared/component-runtime.js?component-runtime-v41-persistent-paint',
@@ -49,7 +51,7 @@ const URLS_TO_CACHE = [...new Set([
   '/src/shared/splash-squirrel.js?squirrel-v4',
   '/src/croix/downloadCross.js', '/src/shared/security.js',
   '/src/auth/user-stats.js', '/src/auth/supabase-config.js',
-  '/src/shared/pwa-register.js?pwa-update-v2', '/src/services/supabaseClient.js',
+  '/src/shared/pwa-register.js?pwa-update-v3', '/src/services/supabaseClient.js',
   '/src/services/social-repository.js',
   '/src/services/subscription-union.js?subscription-union-v1',
   '/src/shared/programme-sync.js?programme-sync-v2-elapsed',
@@ -127,11 +129,56 @@ const CDN_URLS_TO_CACHE = [
 ];
 const CDN_NETWORK_TIMEOUT_MS = 8000;
 
+// Publication images (daily illustrations, banners) are public Supabase
+// Storage files. They are kept in a dedicated, size-capped cache that
+// survives releases (it never holds code), so they open instantly offline.
+const IMAGE_CACHE_NAME = 'cidmap-images-v1';
+const IMAGE_CACHE_MAX_ENTRIES = 80;
+function isRemotePublicImage(request) {
+  const url = new URL(request.url);
+  return url.hostname.endsWith('.supabase.co')
+    && url.pathname.startsWith('/storage/v1/object/public/')
+    && (request.destination === 'image' || /\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(url.pathname));
+}
+
+async function trimImageCache(cache) {
+  try {
+    const keys = await cache.keys();
+    const excess = keys.length - IMAGE_CACHE_MAX_ENTRIES;
+    for (let index = 0; index < excess; index += 1) await cache.delete(keys[index]);
+  } catch (_) {}
+}
+
+async function respondFromRemoteImage(event) {
+  const request = event.request;
+  const cache = await caches.open(IMAGE_CACHE_NAME);
+  const cached = await cache.match(request.url, { ignoreVary: true });
+  const refresh = (async () => {
+    // A CORS copy is readable and small to store (no opaque padding).
+    const response = await fetch(new Request(request.url, { mode: 'cors', credentials: 'omit' }),
+      { signal: AbortSignal.timeout ? AbortSignal.timeout(CDN_NETWORK_TIMEOUT_MS) : undefined });
+    if (isCacheableResponse(response)) {
+      await cache.put(request.url, response.clone());
+      await trimImageCache(cache);
+    }
+    return response;
+  })();
+  if (cached) {
+    event.waitUntil(refresh.catch(() => {}));
+    return cached;
+  }
+  try {
+    const response = await refresh;
+    if (response && response.ok) return response;
+  } catch (_) {}
+  try { return await fetch(request); } catch (_) { return offlineAsset(request); }
+}
+
 const SHELL_URLS = ['/', '/index.html', APP_CSS];
 
-async function fetchWithTimeout(request, options = {}) {
+async function fetchWithTimeout(request, options = {}, timeoutMs = NETWORK_TIMEOUT_MS) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), NETWORK_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(request, { ...options, signal: controller.signal });
   } finally {
@@ -240,16 +287,13 @@ async function warmUrl(cache, url) {
 
 async function purgeOldCaches() {
   const names = await caches.keys();
-  const shellReady = await Promise.all(SHELL_URLS.map(async (url) => Boolean(
-    await seedFromPreviousCaches(await caches.open(CACHE_NAME), url)
-  ))).then((values) => values.every(Boolean));
-  // Never delete the working offline shell if the new version could not inherit it.
-  if (!shellReady) return;
+  // Copy the offline shell into the new cache first (no-op when the install
+  // already refreshed it), then delete every older cache: no stale HTML, JS
+  // or CSS from a previous release can be served by the installed app.
+  const cache = await caches.open(CACHE_NAME);
+  await Promise.all(SHELL_URLS.map((url) => seedFromPreviousCaches(cache, url).catch(() => {})));
   await Promise.all(names
-    .filter((name) => (
-      (name.startsWith('cidmap-cache-') || name.startsWith(LEGACY_CACHE_PREFIX)
-        || name.startsWith('lotto-cache-')) && name !== CACHE_NAME
-    ))
+    .filter((name) => name !== CACHE_NAME && name !== IMAGE_CACHE_NAME)
     .map((name) => caches.delete(name)));
 }
 
@@ -367,6 +411,7 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (!sameOriginRequest(request)) {
     if (isCdnRequest(request)) event.respondWith(respondFromCdn(event));
+    else if (isRemotePublicImage(request)) event.respondWith(respondFromRemoteImage(event));
     return;
   }
   const url = new URL(request.url);
@@ -382,19 +427,41 @@ self.addEventListener('fetch', (event) => {
   // only the shell and static front-end assets belong in this cache.
   if (!isStaticAsset) return;
 
+  // JS, CSS and locale files: network-first so an installed app never keeps
+  // an outdated component or stylesheet once a deployment is online.
+  const isCode = request.destination === 'style' || request.destination === 'script'
+    || /\.(?:css|mjs|js)$/i.test(url.pathname)
+    || /^\/locales\/[a-z-]+\.json$/i.test(url.pathname);
+
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     if (isDocument) return respondToDocument(event, cache);
 
-    // Exact URL only: a new ?v= revision must never be answered with the
-    // previous release's file.
+    if (isCode) {
+      try {
+        // 'no-cache' revalidates with the server (304 when unchanged), so the
+        // network-first path stays light.
+        const response = await fetchWithTimeout(request, { cache: 'no-cache' }, CODE_NETWORK_TIMEOUT_MS);
+        if (isCacheableResponse(response)) {
+          event.waitUntil(saveResponse(cache, request, response.clone()).catch(() => {}));
+          return response;
+        }
+        if (response && response.status < 500 && response.status !== 404) return response;
+      } catch (_) {
+        // Offline or slow network: answer from the cache below.
+      }
+      const cachedCode = await matchAcrossCaches(request)
+        || await matchAcrossCaches(request, { ignoreSearch: true });
+      return cachedCode || offlineAsset(request);
+    }
+
+    // Images and fonts: cache-first (stable files), refreshed in background.
     const cached = await matchAcrossCaches(request);
     const versioned = url.search.length > 1;
-    const refresh = () => fetchWithTimeout(request, { cache: 'no-store' })
+    const refresh = () => fetchWithTimeout(request, { cache: 'no-cache' })
       .then((response) => saveResponse(cache, request, response));
 
     if (cached) {
-      // Versioned URLs are immutable; unversioned ones revalidate quietly.
       if (!versioned) event.waitUntil(refresh().catch(() => {}));
       return cached;
     }
